@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36915.13 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11626.88 stable
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MarioGame", "MarioGame.vcxproj", "{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mario", "Mario.vcxproj", "{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}.Debug|x64.ActiveCfg = Debug|x64
-		{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}.Debug|x64.Build.0 = Debug|x64
-		{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}.Debug|x86.ActiveCfg = Debug|Win32
-		{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}.Debug|x86.Build.0 = Debug|Win32
-		{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}.Release|x64.ActiveCfg = Release|x64
-		{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}.Release|x64.Build.0 = Release|x64
-		{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}.Release|x86.ActiveCfg = Release|Win32
-		{ABBEFE6E-977A-4A28-89CE-081BB365A1F9}.Release|x86.Build.0 = Release|Win32
+		{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}.Debug|x64.ActiveCfg = Debug|x64
+		{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}.Debug|x64.Build.0 = Debug|x64
+		{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}.Debug|x86.ActiveCfg = Debug|Win32
+		{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}.Debug|x86.Build.0 = Debug|Win32
+		{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}.Release|x64.ActiveCfg = Release|x64
+		{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}.Release|x64.Build.0 = Release|x64
+		{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}.Release|x86.ActiveCfg = Release|Win32
+		{BE30EE51-F356-46D9-8AE2-FEBE6B1FC92A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
