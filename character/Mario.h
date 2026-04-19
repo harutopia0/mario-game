@@ -10,6 +10,7 @@ class Mario : public GameObject
 {
 public:
     Mario(float x, float y);
-    void Update(DWORD dt) override;
+    void GetBoundingBox(float& left, float& top, float& right, float& bottom);
+    void Update(DWORD dt, vector<GameObject*>* coObjects);
     void Render() override;
 };
