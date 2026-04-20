@@ -128,7 +128,9 @@
   <ItemGroup>
     <ClCompile Include="animation\Animation.cpp" />
     <ClCompile Include="animation\Animations.cpp" />
+    <ClCompile Include="character\Flag.cpp" />
     <ClCompile Include="character\Mario.cpp" />
+    <ClCompile Include="physics\Collision.cpp" />
     <ClCompile Include="core\Game.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="gameplay\Brick.cpp" />
@@ -155,7 +157,9 @@
   <ItemGroup>
     <ClInclude Include="animation\Animation.h" />
     <ClInclude Include="animation\Animations.h" />
+    <ClInclude Include="character\Flag.h" />
     <ClInclude Include="character\Mario.h" />
+    <ClInclude Include="physics\Collision.h" />
     <ClInclude Include="core\Game.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="gameplay\Brick.h" />

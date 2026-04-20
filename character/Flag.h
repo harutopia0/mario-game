@@ -11,6 +11,7 @@ public :
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 	void Render() override;
 	void SetVisited() { isVisited = true;}
-	bool GetVisited() { return isVisited; }
+	void GetVisited() const { return isVisited; }
+	void Update(DWORD dt, vector<GameObject*>* coObjects) override {}
 };
 

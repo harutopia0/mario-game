@@ -1,7 +1,10 @@
 #include "Mario.h"
 #include "../gameplay/Brick.h"
 #include "../character/Flag.h"
+#include "../character/Enemy.h"
+#include "../gameplay/Buff.h"
 #include "../animation/Animations.h"
+#include "../gameplay/GameManager.h"
 #include "../physics/Collision.h"
 #include <algorithm>
 
@@ -76,6 +79,13 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 
     if (ny_col != 0) vy = 0.0f;
     if (nx_col != 0) vx = 0.0f;
+
+    if (IsDied())
+    {
+        GameManager::GetInstance()->SetGameOver(true);
+        std::printf("game over\n");
+	}
+
 }
 
 void Mario::Render()
@@ -112,5 +122,20 @@ void Mario::OnCollision(GameObject* obj)
         {
             flag->SetVisited();
         }
+    }
+
+    else if (Enemy* enemy = dynamic_cast<Enemy*>(obj))
+    {
+        if (!enemy->IsDied())
+        {
+            lives--;
+			IsDied();
+        }
+    }
+
+    else if (Buff* buff = dynamic_cast<Buff*>(obj))
+    {
+        lives++;
+		//Destroy buff after collecting
     }
 }

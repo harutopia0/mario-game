@@ -1,6 +1,6 @@
 ﻿#include "Flag.h"
 #include "../animation/Animations.h"
-#
+#include "../gameplay/GameManager.h"
 
 Flag::Flag(float x, float y, float width, float height, bool isVisited)
 	: GameObject(x, y), isVisited(isVisited), width(width), height(height) {
@@ -27,6 +27,15 @@ void Flag::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 	top = y;
 	right = x + width;
 	bottom = y + height;
+}
+
+void Flag::Update(DWORD dt, vector<GameObject*>* coObjects)
+{
+	if (isVisited)
+	{
+		GameManager::GetInstance()->SetGameWin(true);
+		std::printf("Game Win!\n");
+	}
 }
 
 
