@@ -4,8 +4,8 @@
 #include "render/Sprites.h"
 #include "animation/Animations.h"
 #include "render/Textures.h"
-#include "character/Mario.h"
-#include "gameplay/Brick.h"
+#include "gameobject/Mario.h"
+#include "gameobject/Brick.h"
 #include "ui/HUB.h"
 #include "ui/Intro.h"
 
@@ -394,7 +394,7 @@ void LoadResources()
     // ==========================================
 
     // Khởi tạo Mario
-    Mario* mario = new Mario(100.0f, 200.0f);
+    Mario* mario = new Mario(100.0f, 200.0f, MARIO_WIDTH, MARIO_HEIGHT);
     g_objectList.push_back(mario);
 
     // Khởi tạp map
