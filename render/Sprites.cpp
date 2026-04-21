@@ -8,9 +8,11 @@ Sprites* Sprites::GetInstance()
     return __instance;
 }
 
-void Sprites::Add(int id, int left, int top, int right, int bottom, ID3D10ShaderResourceView* tex, int texWidth, int texHeight)
+void Sprites::Add(int id, int left, int top, int right, int bottom, int textureId)
 {
-    Sprite* sprite = new Sprite(id, left, top, right, bottom, tex, texWidth, texHeight);
+    LPDIRECT3DTEXTURE tex = Textures::GetInstance()->Get(textureId);
+
+    Sprite* sprite = new Sprite(id, left, top, right, bottom, tex);
     sprites[id] = sprite;
 }
 

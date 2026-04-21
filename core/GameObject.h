@@ -12,6 +12,9 @@ protected:
     int nx;
 
 public:
+    float GetX() { return x; }
+    float GetY() { return y; }
+    bool isStatic = false;
     GameObject(float x = 0.0f, float y = 0.0f);
     virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom) = 0;
     void SweptAABB(

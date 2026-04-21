@@ -11,6 +11,7 @@ private:
 
 public:
     AnimationFrame(Sprite* sprite, int time) { this->sprite = sprite; this->time = time; }
+    ~AnimationFrame() {}
     DWORD GetTime() { return time; }
     Sprite* GetSprite() { return sprite; }
 };
@@ -25,6 +26,11 @@ private:
 
 public:
     Animation(int defaultTime = 100);
+    ~Animation()
+    {
+        for (int i = 0; i < frames.size(); i++) delete frames[i];
+        frames.clear();
+    }
     void Add(int spriteId, DWORD time = 0);
     void Render(float x, float y);
 };
