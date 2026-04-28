@@ -8,9 +8,11 @@ class HUD
 private:
     static HUD* __instance;
 
-    // Thêm các biến đếm thời gian
     int time;
     DWORD timeAccumulator;
+
+    DWORD pMeterBlinkTime;
+    bool isPMeterBlinkVisible;
 
     void DrawString(std::string text, float x, float y);
 
