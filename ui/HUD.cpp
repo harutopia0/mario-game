@@ -19,6 +19,8 @@ HUD::HUD()
 
     pMeterBlinkTime = 0;
     isPMeterBlinkVisible = true;
+
+    currentPMeter = 0;
 }
 
 HUD* HUD::GetInstance()
@@ -79,6 +81,8 @@ void HUD::Render()
     DrawScore(0);
     DrawCoins(0);
     DrawTime(time);
+
+    DrawPMeter(currentPMeter);
 
 }
 

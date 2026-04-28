@@ -14,6 +14,8 @@ private:
     DWORD pMeterBlinkTime;
     bool isPMeterBlinkVisible;
 
+    int currentPMeter;
+
     void DrawString(std::string text, float x, float y);
 
 public:
