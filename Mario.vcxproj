@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="animation\Animation.cpp" />
     <ClCompile Include="animation\Animations.cpp" />
+    <ClCompile Include="audio\AudioManager.cpp" />
     <ClCompile Include="core\Game.cpp" />
     <ClCompile Include="core\GameObject.cpp" />
     <ClCompile Include="gameobject\Brick.cpp" />
@@ -152,6 +153,8 @@
   <ItemGroup>
     <ClInclude Include="animation\Animation.h" />
     <ClInclude Include="animation\Animations.h" />
+    <ClInclude Include="audio\AudioManager.h" />
+    <ClInclude Include="audio\miniaudio.h" />
     <ClInclude Include="core\Game.h" />
     <ClInclude Include="core\GameObject.h" />
     <ClInclude Include="gameobject\Brick.h" />

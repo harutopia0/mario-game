@@ -259,3 +259,12 @@ void HUD::AddCard(int cardType)
         }
     }
 }
+
+void HUD::DestroyInstance()
+{
+    if (__instance != NULL)
+    {
+        delete __instance;
+        __instance = NULL;
+    }
+}

@@ -8,6 +8,7 @@
 #include "gameobject/Brick.h"
 #include "ui/HUD.h"
 #include "ui/Intro.h"
+#include "audio/AudioManager.h"
 
 #include <string.h>
 #include <vector>
@@ -168,6 +169,7 @@ void Update(DWORD dt)
         introScene->Update(dt);
         if (introScene->IsDone()) {
             currentState = STATE_PLAYING;
+            AudioManager::GetInstance()->StopMusic();
         }
     }
     else {
@@ -408,14 +410,39 @@ void LoadResources()
     intro->LoadSprites();
     // Khởi tạo Intro
     introScene = new Intro();
+
+    // ==========================================
+    // 5. NẠP VÀ PHÁT ÂM THANH (Thêm toàn bộ đoạn này)
+    // ==========================================
+    AudioManager::GetInstance()->LoadSound("intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
+    AudioManager::GetInstance()->PlayMusic("intro_theme", true);
 }
 
 void Cleanup()
 {
+    // Dọn dẹp danh sách Object (Mario, Brick,...)
     for (GameObject* obj : g_objectList) delete obj;
     g_objectList.clear();
-    Game::GetInstance()->ReleaseDirectX();
+
+    // Dọn dẹp Intro
+    if (introScene != NULL)
+    {
+        delete introScene;
+        introScene = NULL;
+    }
+
+    // Dọn dẹp HUD
+    HUD::DestroyInstance();
+
+    // Dọn dẹp các Manager hệ thống
     Animations::GetInstance()->Clear();
+    AudioManager::GetInstance()->CleanUp();
+
+    // Dọn dẹp Sprites và Textures (nếu các class này có hàm Clear)
+    // Sprites::GetInstance()->Clear();
+    // Textures::GetInstance()->Clear();
+
+    Game::GetInstance()->ReleaseDirectX();
 }
 
 #pragma endregion

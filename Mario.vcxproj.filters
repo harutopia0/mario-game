@@ -95,6 +95,9 @@
     <ClCompile Include="gameplay\GameManager.cpp">
       <Filter>Source Files\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="audio\AudioManager.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation\Animation.h">
@@ -150,6 +153,12 @@
     </ClInclude>
     <ClInclude Include="physics\Collision.h">
       <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\AudioManager.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\miniaudio.h">
+      <Filter>Source Files\audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

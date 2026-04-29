@@ -24,6 +24,8 @@ private:
     void DrawString(std::string text, float x, float y);
 
 public:
+    static void DestroyInstance();
+
     HUD();
     static HUD* GetInstance();
     void LoadSprites();
