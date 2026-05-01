@@ -18,6 +18,8 @@ private:
     int currentPlayer;
     int currentScore;
     int currentCoins;
+    int currentLives;
+    int currentWorld;
 
     int cards[3];
 
@@ -39,11 +41,15 @@ public:
     void DrawPMeter(int powerLevel);
     void DrawPlayerIcon(int player);
     void DrawCards();
+    void DrawLives(int lives);
+    void DrawWorld(int world);
 
     void SetPMeter(int level) { currentPMeter = level; }
     void SetPlayer(int player) { currentPlayer = player; }
     void SetScore(int score) { currentScore = score; }
     void SetCoins(int coins) { currentCoins = coins; }
+    void SetLives(int lives) { currentLives = lives; }
+    void SetWorld(int world) { currentWorld = world; }
 
     void AddCard(int cardType);
     void ClearCards() {

@@ -14,6 +14,14 @@
 #define HUD_ICON_X 52.0f 
 #define HUD_ICON_Y 19.0f 
 
+// Tọa độ X Y của số mạng (căn cạnh icon người chơi)
+#define HUD_LIVES_X 111.0f
+#define HUD_LIVES_Y 19.0f
+
+// Tọa độ vẽ số World
+#define HUD_WORLD_X 130.0f 
+#define HUD_WORLD_Y 38.0f
+
 // Tọa độ X Y của 3 thẻ bài trên HUD
 #define HUD_CARD_1_X 426.0f
 #define HUD_CARD_2_X 482.0f
@@ -24,21 +32,23 @@ HUD* HUD::__instance = NULL;
 
 HUD::HUD()
 {
-	// Khởi tạo thời gian và bộ đếm thời gian
+    // Khởi tạo thời gian và bộ đếm thời gian
     time = 300;
     timeAccumulator = 0;
 
-	// Khởi tạo trạng thái nhấp nháy của PMeter
+    // Khởi tạo trạng thái nhấp nháy của PMeter
     pMeterBlinkTime = 0;
     isPMeterBlinkVisible = true;
 
-	// Khởi tạo các giá trị mặc định cho HUD
+    // Khởi tạo các giá trị mặc định cho HUD
     currentPMeter = 0;
     currentPlayer = 1;
     currentScore = 0;
     currentCoins = 0;
+    currentLives = 4;
+    currentWorld = 1;
 
-	// Khởi tạo mảng thẻ bài với giá trị 0 (chưa có thẻ nào)
+    // Khởi tạo mảng thẻ bài với giá trị 0 (chưa có thẻ nào)
     cards[0] = 0;
     cards[1] = 0;
     cards[2] = 0;
@@ -54,10 +64,10 @@ void HUD::LoadSprites()
 {
     Sprites* sprites = Sprites::GetInstance();
 
-	//Sprite nền HUD
+    //Sprite nền HUD
     sprites->Add(3000, 0, 0, 640, 75, TEX_HUD);
 
-	//Sprites số cho điểm, tiền, thời gian (1000-1009)
+    //Sprites số cho điểm, tiền, thời gian (1000-1009)
     sprites->Add(1000, 649, 75, 668, 91, TEX_HUD);
     sprites->Add(1001, 669, 75, 688, 91, TEX_HUD);
     sprites->Add(1002, 689, 75, 708, 91, TEX_HUD);
@@ -69,11 +79,11 @@ void HUD::LoadSprites()
     sprites->Add(1008, 809, 75, 828, 91, TEX_HUD);
     sprites->Add(1009, 829, 75, 848, 91, TEX_HUD);
 
-	//Sprites mũi tên PMeter
+    //Sprites mũi tên PMeter
     sprites->Add(3010, 932, 76, 951, 92, TEX_HUD);
     sprites->Add(3011, 953, 76, 988, 92, TEX_HUD);
 
-	//Sprites icon người chơi
+    //Sprites icon người chơi
     sprites->Add(3012, 601, 86, 639, 102, TEX_HUD);
     sprites->Add(3013, 601, 103, 639, 119, TEX_HUD);
 
@@ -93,6 +103,24 @@ void HUD::Update(DWORD dt)
             time--;
             timeAccumulator = 0;
         }
+    }
+
+    // ==========================================
+    // CODE TEST: ẤN 'R' ĐỂ GIẢM SỐ MẠNG
+    // ==========================================
+    static bool isRPressed = false;
+    if (GetAsyncKeyState('R') & 0x8000)
+    {
+        if (!isRPressed)
+        {
+            currentLives--;
+            if (currentLives < 0) currentLives = 99; // Nếu dưới 0 thì quay lại 99
+            isRPressed = true;
+        }
+    }
+    else
+    {
+        isRPressed = false;
     }
 
     pMeterBlinkTime += dt;
@@ -134,12 +162,14 @@ void HUD::Render()
 
     if (sprites->Get(3000)) sprites->Get(3000)->Draw(0.0f, 0.0f);
 
-	// Vẽ các phần tử HUD theo thứ tự: điểm, tiền, thời gian, PMeter, icon người chơi, thẻ bài
+    // Vẽ các phần tử HUD theo thứ tự
     DrawScore(currentScore);
     DrawCoins(currentCoins);
     DrawTime(time);
     DrawPMeter(currentPMeter);
     DrawPlayerIcon(currentPlayer);
+    DrawLives(currentLives);
+    DrawWorld(currentWorld);
     DrawCards();
 }
 
@@ -186,6 +216,21 @@ void HUD::DrawTime(int t)
     while (str.length() < 3) str = "0" + str;
 
     DrawString(str, HUD_TIME_X, HUD_TIME_Y);
+}
+
+void HUD::DrawLives(int lives)
+{
+    std::string str = std::to_string(lives);
+    while (str.length() < 2) str = "0" + str; // Đảm bảo luôn có 2 số (VD: 04)
+
+    DrawString(str, HUD_LIVES_X, HUD_LIVES_Y);
+}
+
+void HUD::DrawWorld(int world)
+{
+    // Chỉ cần 1 chữ số cho World
+    std::string str = std::to_string(world);
+    DrawString(str, HUD_WORLD_X, HUD_WORLD_Y);
 }
 
 void HUD::DrawPMeter(int powerLevel)
