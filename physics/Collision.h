@@ -1,29 +1,44 @@
 ﻿#pragma once
-
 #include <vector>
-#include "../gameplay/GameObject.h"
+#include <algorithm>
+#include "../core/GameObject.h"
 
-class CCollision
+using namespace std;
+
+class GameObject;
+
+struct CollisionEvent
+{
+    GameObject* obj;
+    float t, nx, ny;
+
+    CollisionEvent(float t, float nx, float ny, GameObject* obj)
+    {
+        this->t = t;
+        this->nx = nx;
+        this->ny = ny;
+        this->obj = obj;
+    }
+};
+
+typedef CollisionEvent* LPCOLLISIONEVENT;
+
+class Collision
 {
 private:
-    static CCollision* __instance;
+    static Collision* __instance;
 
 public:
-    static CCollision* GetInstance();
+    static Collision* GetInstance();
 
-    // kiểm tra AABB đơn giản (giống hàm nền trong engine)
     void SweptAABB(
         float ml, float mt, float mr, float mb,
-        float sl, float st, float sr, float sb
-    );
-
-    // check 2 object có va chạm không (wrapper giống SweptAABB style)
-    bool CheckCollision(GameObject* src, GameObject* dest);
-
-    // lấy danh sách collision (giống Scan style)
+        float dx, float dy,
+        float sl, float st, float sr, float sb,
+        float& t, float& nx, float& ny);
     void Scan(
-        GameObject* src,
-        std::vector<GameObject*>* objects,      
-        std::vector<LPCOLLISIONEVENT>& events
-    );
+        GameObject* objSrc,
+        float dx, float dy,
+        vector<GameObject*>* coObjects,
+        vector<LPCOLLISIONEVENT>& coEvents);
 };

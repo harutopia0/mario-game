@@ -1,5 +1,5 @@
 #pragma once
-#include "../gameplay/GameObject.h"
+#include "../core/GameObject.h"
 
 class Enemy : public GameObject
 {

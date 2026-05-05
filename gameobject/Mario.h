@@ -1,8 +1,8 @@
 #pragma once
-#include "../gameplay/GameObject.h"
+#include "../core/GameObject.h"
 
-#define MARIO_WIDTH 32.0f  
-#define MARIO_HEIGHT 32.0f
+#define MARIO_WIDTH 13.0f  
+#define MARIO_HEIGHT 16.0f
 #define MARIO_JUMP_SPEED_Y 1.0f
 #define MARIO_GRAVITY -0.002f 
 

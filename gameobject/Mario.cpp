@@ -1,8 +1,8 @@
 #include "Mario.h"
-#include "../gameplay/Brick.h"
-#include "../character/Flag.h"
-#include "../character/Enemy.h"
-#include "../gameplay/Buff.h"
+#include "../gameobject/Brick.h"
+#include "../gameobject/Flag.h"
+#include "../gameobject/Enemy.h"
+#include "../gameobject/Buff.h"
 #include "../animation/Animations.h"
 #include "../gameplay/GameManager.h"
 #include "../physics/Collision.h"
@@ -22,38 +22,35 @@ Mario::Mario(float x, float y, float width, float height) : GameObject(x, y), wi
 
 void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
-    left = x;
+    float realHitboxWidth = 13.0f;
+    float offsetX = (this->width - realHitboxWidth) / 2.0f;
+
+    left = x + offsetX;
     top = y;
-    right = x + width;
-    bottom = y + height;
+    right = left + realHitboxWidth;
+    bottom = y + this->height;
 }
 
 void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 {
-    if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
-    {
+    if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
         ax = MARIO_ACCEL_WALK_X;
         nx = 1;
     }
-    else if (GetAsyncKeyState(VK_LEFT) & 0x8000)
-    {
+    else if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
         ax = -MARIO_ACCEL_WALK_X;
         nx = -1;
     }
-    else
-    {
+    else {
         ax = 0.0f;
     }
 
-    if (ax == 0.0f)
-    {
-        if (vx > 0)
-        {
+    if (ax == 0.0f) {
+        if (vx > 0) {
             vx -= MARIO_FRICTION * dt;
             if (vx < 0) vx = 0.0f;
         }
-        else if (vx < 0)
-        {
+        else if (vx < 0) {
             vx += MARIO_FRICTION * dt;
             if (vx > 0) vx = 0.0f;
         }
@@ -63,8 +60,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
     if (vx > MARIO_WALKING_SPEED) vx = MARIO_WALKING_SPEED;
     if (vx < -MARIO_WALKING_SPEED) vx = -MARIO_WALKING_SPEED;
 
-    if ((GetAsyncKeyState(VK_SPACE) & 0x8000) && isOnGround)
-    {
+    if ((GetAsyncKeyState(VK_SPACE) & 0x8000) && isOnGround) {
         vy = MARIO_JUMP_SPEED_Y;
         isOnGround = false;
     }
@@ -74,6 +70,9 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
     float dx = vx * dt;
     float dy = vy * dt;
 
+    // ============================================
+    // QUÉT VA CHẠM TRỤC X
+    // ============================================
     float min_tx = 1.0f;
     float nx_col = 0;
     float ml, mt, mr, mb;
@@ -92,7 +91,9 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
             if (mb > st && mt < sb)
             {
                 float t, temp_nx, temp_ny;
-                SweptAABB(ml, mt, mr, mb, dx, 0.0f, sl, st, sr, sb, t, temp_nx, temp_ny);
+
+                Collision::GetInstance()->SweptAABB(ml, mt, mr, mb, dx, 0.0f, sl, st, sr, sb, t, temp_nx, temp_ny);
+
                 if (t < min_tx && temp_nx != 0)
                 {
                     min_tx = t;
@@ -105,6 +106,10 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
     x += min_tx * dx + nx_col * 0.01f;
     if (nx_col != 0) vx = 0.0f;
 
+
+    // ============================================
+    // QUÉT VA CHẠM TRỤC Y
+    // ============================================
     GetBoundingBox(ml, mt, mr, mb);
     float min_ty = 1.0f;
     float ny_col = 0;
@@ -122,7 +127,9 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
             if (mr > sl && ml < sr)
             {
                 float t, temp_nx, temp_ny;
-                SweptAABB(ml, mt, mr, mb, 0.0f, dy, sl, st, sr, sb, t, temp_nx, temp_ny);
+
+                Collision::GetInstance()->SweptAABB(ml, mt, mr, mb, 0.0f, dy, sl, st, sr, sb, t, temp_nx, temp_ny);
+
                 if (t < min_ty && temp_ny != 0)
                 {
                     min_ty = t;
@@ -143,13 +150,12 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
     {
         isOnGround = false;
     }
-    
+
     if (IsDied())
     {
         GameManager::GetInstance()->SetGameOver(true);
         std::printf("game over\n");
-	}
-
+    }
 }
 
 void Mario::Render()

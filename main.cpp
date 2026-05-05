@@ -4,10 +4,11 @@
 #include "render/Sprites.h"
 #include "animation/Animations.h"
 #include "render/Textures.h"
-#include "character/Mario.h"
-#include "gameplay/Brick.h"
-#include "ui/HUB.h"
+#include "gameobject/Mario.h"
+#include "gameobject/Brick.h"
+#include "ui/HUD.h"
 #include "ui/Intro.h"
+#include "audio/AudioManager.h"
 
 #include <string.h>
 #include <vector>
@@ -48,7 +49,7 @@ Intro* introScene = NULL;
 enum TEXTURE_ID {
     TEX_MARIO = 0,
     TEX_COMMON = 1,
-    TEX_FONT = 20,
+    TEX_HUD = 20,
     TEX_INTRO = 30,
     TEX_BBOX = 99
 };
@@ -168,6 +169,7 @@ void Update(DWORD dt)
         introScene->Update(dt);
         if (introScene->IsDone()) {
             currentState = STATE_PLAYING;
+            AudioManager::GetInstance()->StopMusic();
         }
     }
     else {
@@ -336,7 +338,7 @@ void LoadResources()
 
     textures->Add(TEX_MARIO, L"assets/mario.png");
     textures->Add(TEX_COMMON, L"assets/CommonObjects&Pipes.png");
-    textures->Add(TEX_FONT, L"assets/font.png");
+    textures->Add(TEX_HUD, L"assets/hud.png");
     textures->Add(TEX_INTRO, L"assets/intro_items.png");
     textures->Add(TEX_BBOX, L"assets/bbox.png");
 
@@ -363,12 +365,6 @@ void LoadResources()
     //  Brick
     sprites->Add(10, 119, 36, 134, 51, TEX_COMMON);
 
-    // Intro
-    sprites->Add(2000, 8, 19, 648, 499, TEX_INTRO);    // 2000: Nền màn nhung đỏ
-    sprites->Add(2001, 8, 642, 308, 792, TEX_INTRO);  // 2001: Logo Super Mario
-    sprites->Add(2002, 411, 601, 611, 651, TEX_INTRO); // 2002: Chữ 1 Player / 2 Player
-    sprites->Add(2003, 388, 601, 409, 620, TEX_INTRO); // 2003: Con trỏ (Nấm)
-
     // Bounding Box
     sprites->Add(99999, 0, 0, 9, 9, 99);
     
@@ -394,7 +390,7 @@ void LoadResources()
     // ==========================================
 
     // Khởi tạo Mario
-    Mario* mario = new Mario(100.0f, 200.0f);
+    Mario* mario = new Mario(100.0f, 200.0f, MARIO_WIDTH, MARIO_HEIGHT);
     g_objectList.push_back(mario);
 
     // Khởi tạp map
@@ -403,19 +399,50 @@ void LoadResources()
     // Cắt 10 số (0-9)
     for (int i = 0; i < 10; i++)
     {
-        sprites->Add(1000 + i, 22 + i * 16, 136, 22 + (i + 1) * 16, 136 + 16, TEX_FONT);
+        sprites->Add(1000 + i, 22 + i * 16, 136, 22 + (i + 1) * 16, 136 + 16, TEX_HUD);
     }
 
+    //HUD
+    HUD::GetInstance()->LoadSprites();
+
+    //Intro
+    Intro* intro = new Intro();
+    intro->LoadSprites();
     // Khởi tạo Intro
     introScene = new Intro();
+
+    // ==========================================
+    // 5. NẠP VÀ PHÁT ÂM THANH (Thêm toàn bộ đoạn này)
+    // ==========================================
+    AudioManager::GetInstance()->LoadSound("intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
+    AudioManager::GetInstance()->PlayMusic("intro_theme", true);
 }
 
 void Cleanup()
 {
+    // Dọn dẹp danh sách Object (Mario, Brick,...)
     for (GameObject* obj : g_objectList) delete obj;
     g_objectList.clear();
-    Game::GetInstance()->ReleaseDirectX();
+
+    // Dọn dẹp Intro
+    if (introScene != NULL)
+    {
+        delete introScene;
+        introScene = NULL;
+    }
+
+    // Dọn dẹp HUD
+    HUD::DestroyInstance();
+
+    // Dọn dẹp các Manager hệ thống
     Animations::GetInstance()->Clear();
+    AudioManager::GetInstance()->CleanUp();
+
+    // Dọn dẹp Sprites và Textures (nếu các class này có hàm Clear)
+    // Sprites::GetInstance()->Clear();
+    // Textures::GetInstance()->Clear();
+
+    Game::GetInstance()->ReleaseDirectX();
 }
 
 #pragma endregion
