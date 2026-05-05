@@ -108,11 +108,11 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
                 else if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
                    
                 }
-                // 3. ĐỤNG NẤM / TIỀN (Đi xuyên qua)
+                // 3. ĐỤNG BUFF
                 else if (Buff* buff = dynamic_cast<Buff*>(e)) {
 
                 }
-                // 4. CHẠM CỜ (Thắng)
+                // 4. CHẠM CỜ
                 else if (Flag* flag = dynamic_cast<Flag*>(e)) {
 
                 }
@@ -194,6 +194,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 void Mario::Render()
 {
     Animation* ani = NULL;
+    bool isSkidding = (vx > 0 && nx < 0) || (vx < 0 && nx > 0);
 
     if (!isOnGround)
     {
@@ -202,7 +203,12 @@ void Mario::Render()
     }
     else
     {
-        if (vx == 0.0f)
+        if (isSkidding)
+        {
+            if (nx > 0) ani = Animations::GetInstance()->Get(107);
+            else ani = Animations::GetInstance()->Get(106);
+        }
+        else if (vx == 0.0f)
         {
             if (nx > 0) ani = Animations::GetInstance()->Get(100);
             else ani = Animations::GetInstance()->Get(101);

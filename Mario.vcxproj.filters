@@ -65,9 +65,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ui\HUD.cpp">
-      <Filter>Source Files\ui</Filter>
-    </ClCompile>
     <ClCompile Include="ui\Intro.cpp">
       <Filter>Source Files\ui</Filter>
     </ClCompile>
@@ -95,6 +92,9 @@
     <ClCompile Include="gameplay\GameManager.cpp">
       <Filter>Source Files\gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="ui\HUD.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
     <ClCompile Include="audio\AudioManager.cpp">
       <Filter>Source Files\audio</Filter>
     </ClCompile>
@@ -117,9 +117,6 @@
     </ClInclude>
     <ClInclude Include="render\Textures.h">
       <Filter>Source Files\render</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\HUD.h">
-      <Filter>Source Files\ui</Filter>
     </ClInclude>
     <ClInclude Include="ui\Intro.h">
       <Filter>Source Files\ui</Filter>
@@ -153,6 +150,9 @@
     </ClInclude>
     <ClInclude Include="physics\Collision.h">
       <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\HUD.h">
+      <Filter>Source Files\ui</Filter>
     </ClInclude>
     <ClInclude Include="audio\AudioManager.h">
       <Filter>Source Files\audio</Filter>
