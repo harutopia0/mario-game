@@ -318,7 +318,7 @@ void LoadMap(LPCWSTR filePath)
                 int cellY = (int)(realY / GRID_CELL_SIZE);
 
                 if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
-                    grid[cellY][cellX].push_back(brick);
+                    AddObjectToGrid(brick);
                 }
             }
             else if (tileID == 3)
@@ -330,14 +330,55 @@ void LoadMap(LPCWSTR filePath)
                 int cellY = (int)(realY / GRID_CELL_SIZE);
 
                 if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
-                    grid[cellY][cellX].push_back(platform);
+                    AddObjectToGrid(platform);
                 }
             }
         }
     }
     f.close();
 }
+//thêm object vào grid ngay sau khi được khởi tạo
+void AddObjectToGrid(GameObject* obj)
+{
+    int col = (int)(obj->GetX() / GRID_CELL_SIZE);
+    int row = (int)(obj->GetY() / GRID_CELL_SIZE);
+    if (col < 0 || col >= MAX_CELL_COL ||
+        row < 0 || row >= MAX_CELL_ROW)
+        return;
+    grid[row][col].push_back(obj);
 
+    obj->gridRow = row;
+    obj->gridCol = col;
+}
+//xóa object khỏi grid khi nó bị hủy hoặc di chuyển ra khỏi cell cũ
+void RemoveObjectFromGrid(GameObject* obj)
+{
+    if (obj->gridRow < 0 || obj->gridCol < 0)
+        return;
+    auto& cell = grid[obj->gridRow][obj->gridCol];
+    cell.erase(
+        std::remove(cell.begin(), cell.end(), obj),
+        cell.end()
+    );
+}
+//cập nhật vị trí của object trong grid khi nó di chuyển
+void UpdateObjectGrid(GameObject* obj)
+{
+    int newCol = (int)(obj->GetX() / GRID_CELL_SIZE);
+    int newRow = (int)(obj->GetY() / GRID_CELL_SIZE);
+
+    if (newCol == obj->gridCol &&
+        newRow == obj->gridRow)
+        return;
+    RemoveObjectFromGrid(obj);
+    if (newCol < 0 || newCol >= MAX_CELL_COL ||
+        newRow < 0 || newRow >= MAX_CELL_ROW)
+        return;
+    grid[newRow][newCol].push_back(obj);
+
+    obj->gridRow = newRow;
+    obj->gridCol = newCol;
+}
 void LoadResources()
 {
     Textures* textures = Textures::GetInstance();

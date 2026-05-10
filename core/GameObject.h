@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Windows.h>
 #include <algorithm>
 #include <vector>
@@ -12,6 +12,9 @@ protected:
     int nx;
 
 public:
+    //địa chỉ trong grid của object
+    int gridRow;
+    int gridCol;
     float GetX() { return x; }
     float GetY() { return y; }
     bool isStatic = false;

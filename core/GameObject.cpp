@@ -8,6 +8,9 @@ GameObject::GameObject(float x, float y)
     this->vx = 0.0f;
     this->vy = 0.0f;
     this->nx = 1;
+
+    gridRow = -1;
+    gridCol = -1;
 }
 
 void GameObject::Update(DWORD dt, vector<GameObject*>* coObjects)
