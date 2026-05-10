@@ -7,6 +7,7 @@
 #include "gameobject/Mario.h"
 #include "gameobject/Brick.h"
 #include "gameobject/Platform.h"
+#include "gameobject/Enemy.h"
 #include "ui/HUD.h"
 #include "ui/Intro.h"
 #include "audio/AudioManager.h"
@@ -52,7 +53,8 @@ enum TEXTURE_ID {
     TEX_COMMON = 1,
     TEX_HUD = 20,
     TEX_INTRO = 30,
-    TEX_BBOX = 99
+    TEX_BBOX = 99,
+	TEX_ENEMY_TEST = 100
 };
 
 #pragma endregion
@@ -65,6 +67,10 @@ void LoadResources();
 void Update(DWORD dt);
 void Render();
 void Cleanup();
+void AddObjectToGrid(GameObject* obj);
+void RemoveObjectFromGrid(GameObject* obj);
+void UpdateObjectGrid(GameObject* obj);
+void SpawnEnemy(float x, float y);
 
 #pragma endregion
 
@@ -181,7 +187,7 @@ void Update(DWORD dt)
                 obj->Update(dt, NULL);
                 continue;
             }
-
+            UpdateObjectGrid(obj);
             int currentCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
             int currentCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
 
@@ -194,7 +200,12 @@ void Update(DWORD dt)
 
                     if (checkRow >= 0 && checkRow < MAX_CELL_ROW && checkCol >= 0 && checkCol < MAX_CELL_COL) {
                         for (GameObject* g : grid[checkRow][checkCol]) {
-                            nearbyObjects.push_back(g);
+                            if (std::find(nearbyObjects.begin(),
+                                nearbyObjects.end(),
+                                g) == nearbyObjects.end())
+                            {
+                                nearbyObjects.push_back(g);
+                            }
                         }
                     }
                 }
@@ -395,6 +406,7 @@ void LoadResources()
     textures->Add(TEX_HUD, L"assets/hud.png");
     textures->Add(TEX_INTRO, L"assets/intro_items.png");
     textures->Add(TEX_BBOX, L"assets/bbox.png");
+    textures->Add(TEX_ENEMY_TEST, L"assets/enemy.png");
 
     // ==========================================
     // 2. CẮT SPRITES
@@ -425,6 +437,9 @@ void LoadResources()
 
     // Bounding Box
     sprites->Add(99999, 0, 0, 9, 9, 99);
+
+    //enemy
+    sprites->Add(100, 0, 0, 16, 16, TEX_ENEMY_TEST);
     
     // ==========================================
     // 3. GOM SPRITES TẠO ANIMATION
@@ -446,6 +461,9 @@ void LoadResources()
     // Tạo animation cho Brick
     ani = new Animation(100); ani->Add(10, 1000); animations->Add(201, ani);
 
+    //Tạo animation cho Enemy
+	ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
+
     // ==========================================
     // 4. KHỞI TẠO OBJECT
     // ==========================================
@@ -453,6 +471,9 @@ void LoadResources()
     // Khởi tạo Mario
     Mario* mario = new Mario(100.0f, 200.0f, MARIO_WIDTH, MARIO_HEIGHT);
     g_objectList.push_back(mario);
+
+	//Khởi tạo Enemy
+	SpawnEnemy(200.0f, 200.0f);
 
     // Khởi tạp map
     LoadMap(L"levels/testmap.txt");
@@ -504,6 +525,12 @@ void Cleanup()
     // Textures::GetInstance()->Clear();
 
     Game::GetInstance()->ReleaseDirectX();
+}
+void SpawnEnemy(float x, float y)
+{
+    Enemy* enemy = new Enemy(x, y, 16.0f, 16.0f);
+    g_objectList.push_back(enemy);
+    AddObjectToGrid(enemy);
 }
 
 #pragma endregion

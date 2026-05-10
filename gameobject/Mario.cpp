@@ -33,9 +33,7 @@ void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 
 void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 {
-    // ============================================
     // PHẦN VẬT LÝ DI CHUYỂN
-    // ============================================
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
         ax = MARIO_ACCEL_WALK_X;
         nx = 1;
@@ -73,10 +71,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
     float dx = vx * dt;
     float dy = vy * dt;
 
-
-    // ============================================
     // QUÉT VA CHẠM TRỤC X (ĐI NGANG)
-    // ============================================
     float min_tx = 1.0f;
     float nx_col = 0;
     float ml, mt, mr, mb;
@@ -106,6 +101,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
                 }
                 // 2. ĐỤNG QUÁI VẬT (Bị thương)
                 else if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
+                    OutputDebugStringA("Mario collided with enemy\n");
                    
                 }
                 // 3. ĐỤNG BUFF
@@ -123,10 +119,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
     x += min_tx * dx + nx_col * 0.01f;
     if (nx_col != 0) vx = 0.0f;
 
-
-    // ============================================
     // QUÉT VA CHẠM TRỤC Y (RƠI / NHẢY)
-    // ============================================
     GetBoundingBox(ml, mt, mr, mb);
     float min_ty = 1.0f;
     float ny_col = 0;
@@ -166,12 +159,21 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
                 // 3. ĐỤNG QUÁI VẬT TRỤC DỌC
                 else if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
                     if (!enemy->IsDied()) {
-                        if (temp_ny == -1) {
+                        if (temp_ny == 1) {
                             // Rơi xuống đụng enemy
-                            vy = -MARIO_JUMP_SPEED_Y; // Nảy nhẹ lên
+                            vy = MARIO_JUMP_SPEED_Y * 0.5f; // Nảy nhẹ lên
+                            OutputDebugStringA("Enemy stomped!\n");
+                            enemy->SetDied(true);
                         }
-                        else if (temp_ny == 1) {
+                        else if (temp_ny == -1) {
+                            OutputDebugStringA("Mario damaged by enemy\n");
                             // Nhảy lên đụng enemy
+                            lives--;
+
+                            if (lives <= 0)
+                            {
+                                SetDied(true);
+                            }
                         }
                     }
                 }
@@ -191,9 +193,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
         isOnGround = false;
     }
 
-    // ============================================
     // XỬ LÝ GAME OVER
-    // ============================================
     if (IsDied())
     {
         GameManager::GetInstance()->SetGameOver(true);
@@ -248,7 +248,10 @@ void Mario::OnCollision(GameObject* obj)
         if (!enemy->IsDied())
         {
             lives--;
-			IsDied();
+            if (lives <= 0)
+            {
+                SetDied(true);
+            }
         }
     }
 

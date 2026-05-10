@@ -21,4 +21,7 @@ public:
     void Render() override;
 	void OnCollision(GameObject* obj);
 	bool IsDied() const { return lives <= 0; }
+    bool SetDied(bool died) {
+        return true;
+	}
 };
