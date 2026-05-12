@@ -1,18 +1,16 @@
 #pragma once
 
-#include "GameObject.h"
-#include "Animation.h"
-#include "Animations.h"
+#include "../core/GameObject.h"
 
 #define ID_ANI_GROUND 10
 #define GROUND_WIDTH 1
 #define GROUND_BBOX_WIDTH 1
 #define GROUND_BBOX_HEIGHT 1
 
-class CGround : public CGameObject {
+class Ground : public GameObject {
 public:
-	CGround(float x, float y) : CGameObject(x, y) {}
+	Ground(float x, float y) : GameObject(x, y) {}
 	void Render();
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {}
+	void Update(DWORD dt, vector<GameObject*>* coObjects) {}
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 };
