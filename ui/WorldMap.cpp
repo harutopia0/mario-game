@@ -1,22 +1,22 @@
 #include "WorldMap.h"
+#include "../render/Sprites.h"
 
 WorldMap::WorldMap()
 {
     isDone = false;
     selectedLevel = 1; // Mặc định ở Level 1
-    marioX = 100.0f;   // Tọa độ giả định của Level 1
+    marioX = 100.0f;   // Tọa độ của Level 1
     marioY = 100.0f;
 }
 
 void WorldMap::LoadSprites()
 {
-    // Load ảnh nền map, icon Mario ở đây
+    // Tạm thời để trống, ta dùng lại sprite đã load ở main.cpp
 }
 
 void WorldMap::Update(DWORD dt)
 {
     // 1. CHỐNG TRÔI PHÍM ENTER / SPACE
-    // Khởi tạo true để nó bỏ qua cú nhấn Enter còn sót lại từ màn Intro
     static bool isEnterPressed = true;
 
     if ((GetAsyncKeyState(VK_RETURN) & 0x8000) || (GetAsyncKeyState(VK_SPACE) & 0x8000))
@@ -29,12 +29,10 @@ void WorldMap::Update(DWORD dt)
     }
     else
     {
-        // Khi người chơi thực sự nhả phím ra thì mới reset
         isEnterPressed = false;
     }
 
-
-    // 2. CHỐNG TRÔI PHÍM MŨI TÊN (Tương tự)
+    // 2. CHỐNG TRÔI PHÍM MŨI TÊN
     static bool isRightPressed = false;
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
     {
@@ -60,9 +58,18 @@ void WorldMap::Update(DWORD dt)
 
 void WorldMap::Render()
 {
-    // Vẽ nền map
-    // Sprites::GetInstance()->Get(ID_BG_MAP)->Draw(0, 0);
+    Sprites* sprites = Sprites::GetInstance();
 
-    // Vẽ icon Mario
-    // Sprites::GetInstance()->Get(ID_MARIO_MAP)->Draw(marioX, marioY);
+    // Vẽ 2 cục gạch làm 2 mốc Level 1 và Level 2 (Dùng Sprite ID 10 của cục gạch)
+    if (sprites->Get(10))
+    {
+        sprites->Get(10)->Draw(100.0f, 120.0f); // Mốc Level 1
+        sprites->Get(10)->Draw(200.0f, 120.0f); // Mốc Level 2
+    }
+
+    // Vẽ Mario đứng trên mốc (Dùng Sprite ID 0 của Mario Idle)
+    if (sprites->Get(0))
+    {
+        sprites->Get(0)->Draw(marioX, marioY);
+    }
 }
