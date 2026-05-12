@@ -12,6 +12,7 @@
 #include "gameobject/Flag.h"
 #include "ui/HUD.h"
 #include "ui/Intro.h"
+#include "ui/WorldMap.h"
 #include "audio/AudioManager.h"
 
 #include <string.h>
@@ -43,10 +44,12 @@ bool g_showBBox = false;
 
 enum GameState {
     STATE_INTRO,
+    STATE_WORLD_MAP,
     STATE_PLAYING
 };
 
 GameState currentState = STATE_INTRO;
+WorldMap* worldMapScene = NULL;
 
 Intro* introScene = NULL;
 
@@ -178,9 +181,19 @@ void Update(DWORD dt)
     if (currentState == STATE_INTRO)
     {
         introScene->Update(dt);
-        if (introScene->IsDone()) {
-            currentState = STATE_PLAYING;
-            AudioManager::GetInstance()->StopMusic();
+        if (introScene->IsDone())
+        {
+            currentState = STATE_WORLD_MAP; // Chuyển sang World Map
+        }
+    }
+    else if (currentState == STATE_WORLD_MAP)
+    {
+        worldMapScene->Update(dt);
+        if (worldMapScene->IsDone())
+        {
+            currentState = STATE_PLAYING; // Vào game
+            int levelToLoad = worldMapScene->GetSelectedLevel();
+            // Gọi hàm load map / level tương ứng ở đây (VD: LoadLevel(levelToLoad))
         }
     }
     else {
@@ -266,6 +279,10 @@ void Render()
             game->GetSpriteHandler()->SetViewTransform(&matZoom);
 
             if (introScene) introScene->Render();
+        }
+        else if (currentState == STATE_WORLD_MAP)
+        {
+            worldMapScene->Render();
         }
         else
         {
@@ -519,6 +536,9 @@ void LoadResources()
     //Intro
     Intro* intro = new Intro();
     intro->LoadSprites();
+	//World Map
+    worldMapScene = new WorldMap();
+    worldMapScene->LoadSprites();
     // Khởi tạo Intro
     introScene = new Intro();
     //Khởi tạo Potion
