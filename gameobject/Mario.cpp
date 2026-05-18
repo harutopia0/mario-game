@@ -1,8 +1,11 @@
 #include "Mario.h"
+#include "../gameobject/Breakable.h"
 #include "../gameobject/Brick.h"
-#include "../gameobject/Flag.h"
-#include "../gameobject/Enemy.h"
 #include "../gameobject/Buff.h"
+#include "../gameobject/Enemy.h"
+#include "../gameobject/Flag.h"
+#include "../gameobject/LuckyBlock.h"
+#include "../gameobject/Pipe.h"
 #include "../animation/Animations.h"
 #include "../gameplay/GameManager.h"
 #include "../physics/Collision.h"
@@ -13,7 +16,7 @@
 #define MARIO_WALKING_SPEED		0.15f
 #define MARIO_ACCEL_WALK_X		0.0005f 
 #define MARIO_FRICTION			0.0004f
-//Thời gian bất tử
+// Thời gian bất tử
 #define MARIO_UNTOUCHABLE_TIME 5000
 
 Mario::Mario(float x, float y) : GameObject(x, y)
@@ -31,6 +34,7 @@ Mario::Mario(float x, float y) : GameObject(x, y)
 
 	untouchable = false;
 	untouchableStart = 0;
+	isEnteringPipe = false;
 }
 
 void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -75,6 +79,20 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 			GameManager::GetInstance()->SetGameOver(true);
 		}
 
+		return;
+	}
+
+	if (isEnteringPipe)
+	{
+		vy = -0.05f;
+		y += vy * dt;
+
+		if (pipeEnterStartY - y > height) {
+			x = pipeDestX;
+			y = pipeDestY;
+			isEnteringPipe = false;
+			vy = 0;
+		}
 		return;
 	}
 
@@ -137,8 +155,8 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 			if (t < 1.0f && temp_nx != 0)
 			{
-				// 1. ĐỤNG GẠCH (Cản đường lại)
-				if (dynamic_cast<Brick*>(e)) {
+				// 1. ĐỤNG BLOCK (Cản đường lại)
+				if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e)) {
 					if (t < min_tx) {
 						min_tx = t;
 						nx_col = temp_nx;
@@ -196,11 +214,47 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 			if (t < 1.0f && temp_ny != 0)
 			{
-				// 1. ĐỤNG GẠCH (Cản cả trên lẫn dưới)
-				if (dynamic_cast<Brick*>(e)) {
+				// 1. ĐỤNG BLOCK (Cản cả trên lẫn dưới)
+				if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e)) {
 					if (t < min_ty) {
 						min_ty = t;
 						ny_col = temp_ny;
+					}
+
+					// XỬ LÝ CHUI ỐNG
+					if (Pipe* pipe = dynamic_cast<Pipe*>(e)) {
+						if (temp_ny == 1) {
+							if (pipe->CanEnter() && (GetAsyncKeyState(VK_DOWN) & 0x8000)) {
+								float pipeCenterX = pipe->GetX() + pipe->GetWidth() / 2;
+								float marioCenterX = x + width / 2;
+
+								if (abs(pipeCenterX - marioCenterX) < 10.0f) {
+									isEnteringPipe = true;
+									pipeDestX = pipe->GetDestX();
+									pipeDestY = pipe->GetDestY();
+									pipeEnterStartY = y;
+
+									x = pipeCenterX - width / 2;
+									vx = 0;
+								}
+							}
+						}
+					}
+
+					// XỬ LÝ PHÁ GẠCH
+					if (Breakable* breakable = dynamic_cast<Breakable*>(e)) {
+						if (temp_ny == -1) {
+							if (this->IsBig() == true) {
+								breakable->Break();
+							}
+						}
+					}
+
+					// XỬ LÝ LUCKY BLOCK
+					if (LuckyBlock* lucky = dynamic_cast<LuckyBlock*>(e)) {
+						if (temp_ny == -1) { // Tông từ dưới lên
+							lucky->Hit(); // Bất kể to hay nhỏ, cứ đụng là chuyển trạng thái!
+						}
 					}
 				}
 

@@ -19,6 +19,12 @@ private:
 public:
 	DWORD deathStart;
 	bool isOnGround;
+
+	bool isEnteringPipe;
+	float pipeDestX;
+	float pipeDestY;
+	float pipeEnterStartY;
+
 	float ax;
 	Mario(float x, float y);
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);

@@ -5,11 +5,14 @@
 #include "animation/Animations.h"
 #include "render/Textures.h"
 #include "gameobject/Mario.h"
+#include "gameobject/Breakable.h"
 #include "gameobject/Brick.h"
-#include "gameobject/Platform.h"
-#include "gameobject/Enemy.h"
 #include "gameobject/Buff.h"
+#include "gameobject/Enemy.h"
 #include "gameobject/Flag.h"
+#include "gameobject/LuckyBlock.h"
+#include "gameobject/Pipe.h"
+#include "gameobject/Platform.h"
 #include "ui/HUD.h"
 #include "ui/Intro.h"
 #include "ui/WorldMap.h"
@@ -56,7 +59,8 @@ Intro* introScene = NULL;
 
 enum TEXTURE_ID {
     TEX_MARIO = 0,
-    TEX_COMMON = 1,
+    TEX_COMMON1 = 1,
+    TEX_COMMON2 = 2,
     TEX_HUD = 20,
     TEX_INTRO = 30,
     TEX_BBOX = 99,
@@ -81,7 +85,6 @@ void UpdateObjectGrid(GameObject* obj);
 void SpawnEnemy(float x, float y);
 
 #pragma endregion
-
 #pragma region MainFunction
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -305,6 +308,12 @@ void Render()
             game->GetSpriteHandler()->SetViewTransform(&matZoom);
             GameObject* mario = g_objectList.empty() ? NULL : g_objectList[0];
 
+            // NẾU MARIO ĐANG CHUI ỐNG -> VẼ MARIO ĐẦU TIÊN
+            Mario* realMario = dynamic_cast<Mario*>(mario);
+            if (realMario != NULL && realMario->isEnteringPipe == true) {
+                realMario->Render();
+            }
+
             for (size_t i = 1; i < g_objectList.size(); i++)
             {
                 GameObject* obj = g_objectList[i];
@@ -325,10 +334,15 @@ void Render()
                 }
             }
 
-            if (mario != NULL) {
-                mario->Render();
-                if (g_showBBox) mario->RenderBoundingBox();
+            // NẾU MARIO BÌNH THƯỜNG->VẼ MARIO CUỐI CÙNG
+            if (realMario != NULL && realMario->isEnteringPipe == false) {
+                realMario->Render();
             }
+
+            // Vẽ Bounding Box ở lớp cuối
+            if (g_showBBox && mario != NULL) mario->RenderBoundingBox();
+
+
             D3DXMATRIX matUI;
             D3DXMatrixScaling(&matUI, 1.0f, 1.0f, 1.0f);
             game->GetSpriteHandler()->SetViewTransform(&matUI);
@@ -380,7 +394,7 @@ void LoadMap(LPCWSTR filePath)
 
             if (tileID == 1 || tileID == 2)
             {
-                Brick* brick = new Brick(realX, realY);
+                Brick* brick = new Brick(realX, realY, 16.0f, 16.0f, 201);
                 g_objectList.push_back(brick);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -392,7 +406,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 3)
             {
-                Platform* platform = new Platform(realX, realY, 15.0f, 15.0f, 201);
+                Platform* platform = new Platform(realX, realY, 16.0f, 16.0f, 202);
                 g_objectList.push_back(platform);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -402,11 +416,48 @@ void LoadMap(LPCWSTR filePath)
                     AddObjectToGrid(platform);
                 }
             }
+            else if (tileID == 4)
+            {
+                Platform* platform = new Platform(realX, realY, 32.0f, 32.0f, 203);
+                g_objectList.push_back(platform);
+
+                int cellX = (int)(realX / GRID_CELL_SIZE);
+                int cellY = (int)(realY / GRID_CELL_SIZE);
+
+                if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
+                    AddObjectToGrid(platform);
+                }
+            }
+            else if (tileID == 5)
+            {
+                Breakable* breakableBlock = new Breakable(realX, realY, 16.0f, 16.0f, 205);
+                g_objectList.push_back(breakableBlock);
+
+                int cellX = (int)(realX / GRID_CELL_SIZE);
+                int cellY = (int)(realY / GRID_CELL_SIZE);
+
+                if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
+                    AddObjectToGrid(breakableBlock);
+                }
+            }
+            else if (tileID == 6)
+            {
+                LuckyBlock* lucky = new LuckyBlock(realX, realY, 16.0f, 16.0f, 206, 201);
+                g_objectList.push_back(lucky);
+
+                int cellX = (int)(realX / GRID_CELL_SIZE);
+                int cellY = (int)(realY / GRID_CELL_SIZE);
+
+                if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
+                    AddObjectToGrid(lucky);
+                }
+            }
         }
     }
     f.close();
 }
-//thêm object vào grid ngay sau khi được khởi tạo
+
+// Thêm object vào grid ngay sau khi được khởi tạo
 void AddObjectToGrid(GameObject* obj)
 {
     int col = (int)(obj->GetX() / GRID_CELL_SIZE);
@@ -419,7 +470,8 @@ void AddObjectToGrid(GameObject* obj)
     obj->gridRow = row;
     obj->gridCol = col;
 }
-//xóa object khỏi grid khi nó bị hủy hoặc di chuyển ra khỏi cell cũ
+
+// Xóa object khỏi grid khi nó bị hủy hoặc di chuyển ra khỏi cell cũ
 void RemoveObjectFromGrid(GameObject* obj)
 {
     if (obj->gridRow < 0 || obj->gridCol < 0)
@@ -430,7 +482,8 @@ void RemoveObjectFromGrid(GameObject* obj)
         cell.end()
     );
 }
-//cập nhật vị trí của object trong grid khi nó di chuyển
+
+// Cập nhật vị trí của object trong grid khi nó di chuyển
 void UpdateObjectGrid(GameObject* obj)
 {
     int newCol = (int)(obj->GetX() / GRID_CELL_SIZE);
@@ -448,6 +501,7 @@ void UpdateObjectGrid(GameObject* obj)
     obj->gridRow = newRow;
     obj->gridCol = newCol;
 }
+
 void LoadResources()
 {
     Textures* textures = Textures::GetInstance();
@@ -460,7 +514,9 @@ void LoadResources()
     // ==========================================
 
     textures->Add(TEX_MARIO, L"assets/mario-luigi.png");
-    textures->Add(TEX_COMMON, L"assets/CommonObjects&Pipes.png");
+    textures->Add(TEX_COMMON1, L"assets/CommonObjects1.png");
+    textures->Add(TEX_COMMON2, L"assets/CommonObjects2.png");
+
     textures->Add(TEX_HUD, L"assets/hud.png");
     textures->Add(TEX_INTRO, L"assets/intro_items.png");
     textures->Add(TEX_BBOX, L"assets/bbox.png");
@@ -491,15 +547,31 @@ void LoadResources()
     sprites->Add(8, 166, 44, 179, 59, TEX_MARIO);
     sprites->Add(9, 17, 44, 30, 59, TEX_MARIO);
 
-    //  Brick
-    sprites->Add(10, 435, 152, 450, 167, TEX_COMMON);
+    // Brick
+    sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
+
+    // Platform
+    sprites->Add(11, 481, 152, 496, 167, TEX_COMMON1);
+
+    // Big Block
+    sprites->Add(12, 469, 470, 500, 501, TEX_COMMON1);
+
+    // Pipe
+    sprites->Add(13, 5, 28, 36, 75, TEX_COMMON2);
+
+    // Breakable
+    sprites->Add(14, 453, 152, 468, 167, TEX_COMMON1);
+
+    // Luckky Block
+    sprites->Add(15, 185, 7, 200, 22, TEX_COMMON2);
 
     // Bounding Box
-    sprites->Add(99999, 0, 0, 9, 9, 99);
+    sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
 
-    //enemy
+    // Enemy
     sprites->Add(100, 0, 0, 16, 16, TEX_ENEMY_TEST);
-    //potion
+  
+    //Potion
     sprites->Add(101, 0, 0, 16, 16, TEX_POTION);
 
     // ==========================================
@@ -515,15 +587,30 @@ void LoadResources()
 
     ani = new Animation(100); ani->Add(6, 1000); animations->Add(104, ani);
     ani = new Animation(100); ani->Add(7, 1000); animations->Add(105, ani);
-
+    
     ani = new Animation(100); ani->Add(8, 1000); animations->Add(106, ani);
     ani = new Animation(100); ani->Add(9, 1000); animations->Add(107, ani);
 
     // Tạo animation cho Brick
     ani = new Animation(100); ani->Add(10, 1000); animations->Add(201, ani);
 
-    //Tạo animation cho Enemy
-    ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
+    // Tạo animation cho Platform
+    ani = new Animation(100); ani->Add(11, 1000); animations->Add(202, ani);
+
+    // Tạo animation cho Big Block
+    ani = new Animation(100); ani->Add(12, 1000); animations->Add(203, ani);
+
+    // Tạo animation cho Pipe
+    ani = new Animation(100); ani->Add(13, 1000); animations->Add(204, ani);
+
+    // Tạo animation cho Breakable
+    ani = new Animation(100); ani->Add(14, 1000); animations->Add(205, ani);
+
+    // Tạo animation cho Lucky Block
+    ani = new Animation(100); ani->Add(15, 1000); animations->Add(206, ani);
+
+    // Tạo animation cho Enemy
+	  ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
 
     // ==========================================
     // 4. KHỞI TẠO OBJECT
@@ -565,6 +652,10 @@ void LoadResources()
     Flag* flag = new Flag(300.0f, 100.0f);
     g_objectList.push_back(flag);
     AddObjectToGrid(flag);
+
+    Pipe* pipe = new Pipe(15.0f, 80.0f, 32.0f, 48.0f, 204, true, 300.0f, 300.0f);
+    g_objectList.push_back(pipe);
+    AddObjectToGrid(pipe);
 
     // ==========================================
     // 5. NẠP VÀ PHÁT ÂM THANH (Thêm toàn bộ đoạn này)

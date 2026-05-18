@@ -3,10 +3,15 @@
 
 class Brick : public GameObject
 {
+private:
+    float width;
+    float height;
+    int animationId;
+
 public:
-    Brick(float x, float y);
+    Brick(float x, float y, float width, float height, int animationId);
+
     virtual void Update(DWORD dt);
     virtual void Render();
     virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 };
-
