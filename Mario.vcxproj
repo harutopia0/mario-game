@@ -157,6 +157,7 @@
     <ClCompile Include="render\Textures.cpp" />
     <ClCompile Include="ui\HUD.cpp" />
     <ClCompile Include="ui\Intro.cpp" />
+    <ClCompile Include="ui\WorldMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation\Animation.h" />
@@ -187,9 +188,11 @@
     <ClInclude Include="ui\HUD.h" />
     <ClInclude Include="ui\Intro.h" />
     <ClInclude Include="ui\Scene.h" />
+    <ClInclude Include="ui\WorldMap.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="ui\.gitkeep" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="gameobject\Brick.txt" />
