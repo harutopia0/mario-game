@@ -6,15 +6,22 @@
 #include "../animation/Animations.h"
 #include "../gameplay/GameManager.h"
 #include "../physics/Collision.h"
+#include "../ui/HUD.h"
 #include <algorithm>
+#include <cmath>
 
 #define MARIO_JUMP_SPEED_Y      0.27f 
 #define MARIO_GRAVITY           -0.00067f
 #define MARIO_WALKING_SPEED		0.15f
 #define MARIO_ACCEL_WALK_X		0.0005f 
 #define MARIO_FRICTION			0.0004f
-//Thời gian bất tử
+
+// Thời gian bất tử
 #define MARIO_UNTOUCHABLE_TIME 5000
+
+// Step thời gian giữa các mức P-Meter (ms)
+#define PMETER_STEP_UP_TIME     150
+#define PMETER_STEP_DOWN_TIME    80
 
 Mario::Mario(float x, float y) : GameObject(x, y)
 {
@@ -26,11 +33,15 @@ Mario::Mario(float x, float y) : GameObject(x, y)
 
 	lives = 1;
 	isBig = false;
-	isDead = false;	
+	isDead = false;
 	deathStart = 0;
 
 	untouchable = false;
 	untouchableStart = 0;
+
+	// Khởi tạo trạng thái P-Meter
+	pMeterLevel = 0;
+	pMeterTimer = 0;
 }
 
 void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -46,15 +57,13 @@ void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 
 void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 {
-	//Thời gian bất tử`
+	// 1. Xử lý thời gian bất tử
 	if (untouchable)
 	{
-		DWORD elapsed =
-			GetTickCount64() - untouchableStart;
+		DWORD elapsed = GetTickCount64() - untouchableStart;
 		int remain = (MARIO_UNTOUCHABLE_TIME - elapsed) / 1000;
 		char debugText[100];
-		sprintf_s(debugText, "Mario invincible: %d s\n",remain);
-
+		sprintf_s(debugText, "Mario invincible: %d s\n", remain);
 		OutputDebugStringA(debugText);
 
 		if (elapsed > MARIO_UNTOUCHABLE_TIME)
@@ -63,7 +72,8 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 			OutputDebugStringA("Mario vulnerable again\n");
 		}
 	}
-	//Mario chết
+
+	// 2. Xử lý khi Mario chết
 	if (isDead)
 	{
 		vy += MARIO_GRAVITY * dt;
@@ -74,11 +84,10 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 			Delete();
 			GameManager::GetInstance()->SetGameOver(true);
 		}
-
 		return;
 	}
 
-	// PHẦN VẬT LÝ DI CHUYỂN
+	// 3. Vật lý di chuyển và bấm nút
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
 		ax = MARIO_ACCEL_WALK_X;
 		nx = 1;
@@ -106,6 +115,43 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	if (vx > MARIO_WALKING_SPEED) vx = MARIO_WALKING_SPEED;
 	if (vx < -MARIO_WALKING_SPEED) vx = -MARIO_WALKING_SPEED;
 
+	// 4. Xử lý P-Meter theo thời gian và trạng thái không gian
+	if (isOnGround)
+	{
+		if (std::abs(vx) >= MARIO_WALKING_SPEED * 0.95f)
+		{
+			if (pMeterLevel < 7)
+			{
+				pMeterTimer += dt;
+				if (pMeterTimer >= PMETER_STEP_UP_TIME)
+				{
+					pMeterLevel++;
+					pMeterTimer = 0;
+				}
+			}
+		}
+		else
+		{
+			if (pMeterLevel > 0)
+			{
+				pMeterTimer += dt;
+				if (pMeterTimer >= PMETER_STEP_DOWN_TIME)
+				{
+					pMeterLevel--;
+					pMeterTimer = 0;
+				}
+			}
+			else {
+				pMeterTimer = 0;
+			}
+		}
+	}
+	// Nếu bay trên không (!isOnGround): Giữ nguyên pMeterLevel và đóng băng pMeterTimer
+
+	// Đồng bộ mức năng lượng sang HUD
+	HUD::GetInstance()->SetPMeter(pMeterLevel);
+
+	// 5. Xử lý Nhảy
 	if ((GetAsyncKeyState(VK_SPACE) & 0x8000) && isOnGround) {
 		vy = MARIO_JUMP_SPEED_Y;
 		isOnGround = false;
@@ -116,7 +162,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	float dx = vx * dt;
 	float dy = vy * dt;
 
-	// QUÉT VA CHẠM TRỤC X (ĐI NGANG)
+	// 6. Quét va chạm trục X
 	float min_tx = 1.0f;
 	float nx_col = 0;
 	float ml, mt, mr, mb;
@@ -137,34 +183,23 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 			if (t < 1.0f && temp_nx != 0)
 			{
-				// 1. ĐỤNG GẠCH (Cản đường lại)
 				if (dynamic_cast<Brick*>(e)) {
 					if (t < min_tx) {
 						min_tx = t;
 						nx_col = temp_nx;
 					}
 				}
-				// 2. ĐỤNG QUÁI VẬT (Bị thương)
 				else if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
-					if (!enemy->IsDied())
-					{
-						TakeDamage();
-					}
-
+					if (!enemy->IsDied()) TakeDamage();
 				}
-				// 3. ĐỤNG BUFF
 				else if (Buff* buff = dynamic_cast<Buff*>(e)) {
-					if (lives < 2)
-					{
+					if (lives < 2) {
 						lives = 2;
 						SetBig(true);
-
 						OutputDebugStringA("Mario became BIG\n");
 					}
-
 					buff->Delete();
 				}
-				// 4. CHẠM CỜ
 				else if (Flag* flag = dynamic_cast<Flag*>(e)) {
 					GameManager::GetInstance()->SetGameWin(true);
 					OutputDebugStringA("Win level\n");
@@ -176,7 +211,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	x += min_tx * dx + nx_col * 0.01f;
 	if (nx_col != 0) vx = 0.0f;
 
-	// QUÉT VA CHẠM TRỤC Y (RƠI / NHẢY)
+	// 7. Quét va chạm trục Y
 	GetBoundingBox(ml, mt, mr, mb);
 	float min_ty = 1.0f;
 	float ny_col = 0;
@@ -196,15 +231,12 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 			if (t < 1.0f && temp_ny != 0)
 			{
-				// 1. ĐỤNG GẠCH (Cản cả trên lẫn dưới)
 				if (dynamic_cast<Brick*>(e)) {
 					if (t < min_ty) {
 						min_ty = t;
 						ny_col = temp_ny;
 					}
 				}
-
-				// 2. ĐỤNG NỀN TẢNG 1 CHIỀU (Chỉ cản khi rơi từ trên xuống)
 				else if (dynamic_cast<Platform*>(e)) {
 					if (temp_ny == 1) {
 						if (t < min_ty) {
@@ -213,35 +245,27 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 						}
 					}
 				}
-				// 3. ĐỤNG QUÁI VẬT TRỤC DỌC
 				else if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
 					if (!enemy->IsDied()) {
 						if (temp_ny == 1) {
-							// Rơi xuống đụng enemy
-							vy = MARIO_JUMP_SPEED_Y * 0.5f; // Nảy nhẹ lên
+							vy = MARIO_JUMP_SPEED_Y * 0.5f;
 							OutputDebugStringA("Enemy stomped!\n");
 							enemy->SetDied(true);
 						}
 						else if (temp_ny == -1) {
 							OutputDebugStringA("Mario damaged by enemy\n");
-							// Nhảy lên đụng enemy
 							TakeDamage();
 						}
 					}
 				}
-				// 4. ĐỤNG BUFF
 				else if (Buff* buff = dynamic_cast<Buff*>(e)) {
-					if (lives < 2)
-					{
+					if (lives < 2) {
 						lives = 2;
 						SetBig(true);
-
 						OutputDebugStringA("Mario became BIG\n");
 					}
-
 					buff->Delete();
 				}
-				// 5. CHẠM CỜ
 				else if (Flag* flag = dynamic_cast<Flag*>(e)) {
 					GameManager::GetInstance()->SetGameWin(true);
 					OutputDebugStringA("Win level\n");
@@ -262,7 +286,6 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 		isOnGround = false;
 	}
 
-	// XỬ LÝ GAME OVER
 	if (IsDied())
 	{
 		GameManager::GetInstance()->SetGameOver(true);
@@ -273,110 +296,53 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 void Mario::Render()
 {
 	Animation* ani = NULL;
-	bool isSkidding =
-		(vx > 0 && nx < 0) ||
-		(vx < 0 && nx > 0);
+	bool isSkidding = (vx > 0 && nx < 0) || (vx < 0 && nx > 0);
 
-	//mario chết
 	if (isDead)
 	{
 		ani = Animations::GetInstance()->Get(108);
-
-		if (ani != NULL)
-			ani->Render(x, y);
-
+		if (ani != NULL) ani->Render(x, y);
 		return;
 	}
 
-	//mario lớn
 	if (isBig)
 	{
-		// Jump
 		if (!isOnGround)
 		{
-			if (nx > 0)
-				ani = Animations::GetInstance()->Get(204);
-			else
-				ani = Animations::GetInstance()->Get(205);
+			ani = (nx > 0) ? Animations::GetInstance()->Get(204) : Animations::GetInstance()->Get(205);
 		}
 		else
 		{
-			// Skid
 			if (isSkidding)
-			{
-				if (nx > 0)
-					ani = Animations::GetInstance()->Get(207);
-				else
-					ani = Animations::GetInstance()->Get(206);
-			}
-
-			// Idle
+				ani = (nx > 0) ? Animations::GetInstance()->Get(207) : Animations::GetInstance()->Get(206);
 			else if (vx == 0.0f)
-			{
-				if (nx > 0)
-					ani = Animations::GetInstance()->Get(200);
-				else
-					ani = Animations::GetInstance()->Get(201);
-			}
-
-			// Run
+				ani = (nx > 0) ? Animations::GetInstance()->Get(200) : Animations::GetInstance()->Get(201);
 			else
-			{
-				if (nx > 0)
-					ani = Animations::GetInstance()->Get(202);
-				else
-					ani = Animations::GetInstance()->Get(203);
-			}
+				ani = (nx > 0) ? Animations::GetInstance()->Get(202) : Animations::GetInstance()->Get(203);
 		}
 	}
-
-	//mario nhỏ
 	else
 	{
-		// Jump
 		if (!isOnGround)
 		{
-			if (nx > 0)
-				ani = Animations::GetInstance()->Get(104);
-			else
-				ani = Animations::GetInstance()->Get(105);
+			ani = (nx > 0) ? Animations::GetInstance()->Get(104) : Animations::GetInstance()->Get(105);
 		}
 		else
 		{
-			// Skid
 			if (isSkidding)
-			{
-				if (nx > 0)
-					ani = Animations::GetInstance()->Get(107);
-				else
-					ani = Animations::GetInstance()->Get(106);
-			}
-
-			// Idle
+				ani = (nx > 0) ? Animations::GetInstance()->Get(107) : Animations::GetInstance()->Get(106);
 			else if (vx == 0.0f)
-			{
-				if (nx > 0)
-					ani = Animations::GetInstance()->Get(100);
-				else
-					ani = Animations::GetInstance()->Get(101);
-			}
-
-			// Run
+				ani = (nx > 0) ? Animations::GetInstance()->Get(100) : Animations::GetInstance()->Get(101);
 			else
-			{
-				if (nx > 0)
-					ani = Animations::GetInstance()->Get(102);
-				else
-					ani = Animations::GetInstance()->Get(103);
-			}
+				ani = (nx > 0) ? Animations::GetInstance()->Get(102) : Animations::GetInstance()->Get(103);
 		}
 	}
-	//mario ô chớp chớp khi bất tử
-	if (untouchable)
+
+	if (untouchable && ((GetTickCount64() / 100) % 2 == 0))
 	{
-		if ((GetTickCount64() / 100) % 2 == 0)
-			return;
+		return;
 	}
+
 	if (ani != NULL)
 	{
 		ani->Render(x, y);
@@ -404,14 +370,11 @@ void Mario::SetBig(bool big)
 
 void Mario::Die()
 {
-	if (isDead)
-		return;
+	if (isDead) return;
 
 	isDead = true;
-
 	vx = 0;
 	vy = 0.2f;
-
 	deathStart = GetTickCount64();
 
 	OutputDebugStringA("Mario died\n");
@@ -419,22 +382,16 @@ void Mario::Die()
 
 void Mario::TakeDamage()
 {
-	// Đang bất tử
-	if (untouchable || isDead)
-		return;
+	if (untouchable || isDead) return;
 
-	// Mario to -> nhỏ lại
 	if (isBig)
 	{
 		lives = 1;
 		SetBig(false);
 		untouchable = true;
 		untouchableStart = GetTickCount64();
-
 		OutputDebugStringA("Mario shrinked + invincible\n");
 	}
-
-	// Mario nhỏ -> chết
 	else
 	{
 		lives = 0;

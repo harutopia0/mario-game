@@ -16,6 +16,9 @@ private:
 	int lives;
 	bool isBig;
 	bool isDead;
+	float pMeterValue;
+	int pMeterLevel;
+	DWORD pMeterTimer;
 public:
 	DWORD deathStart;
 	bool isOnGround;
