@@ -24,7 +24,7 @@ SceneManager::SceneManager() {
     introScene = nullptr;
     worldMapScene = nullptr;
     isMarioDying = false;
-    deathTimer = 0.0f;
+    deathStartTime = 0;
 }
 
 SceneManager* SceneManager::GetInstance() {
@@ -53,26 +53,33 @@ void SceneManager::SwitchTo(GameState newState) {
     }
 }
 
-void SceneManager::ProcessMarioDeath(DWORD dt) {
-    if (!isMarioDying) {
-        isMarioDying = true;
-        deathTimer = 5000.0f; // Chờ phát hết nhạc trong 5 giây
+void SceneManager::ProcessMarioDeath()
+{
+    if (isMarioDying)
+        return;
 
-        AudioManager::GetInstance()->StopMusic();
-        AudioManager::GetInstance()->PlaySFX("mario_die");
+    isMarioDying = true;
+    deathStartTime = GetTickCount64();
 
-        GameManager::GetInstance()->SetGameOver(true);
-        std::printf("game over\n");
-    }
+    AudioManager::GetInstance()->StopMusic();
+    AudioManager::GetInstance()->PlaySFX("mario_die");
 
-    deathTimer -= dt;
-    if (deathTimer <= 0) {
-        isMarioDying = false;
-        SwitchTo(STATE_WORLD_MAP);
-    }
+    GameManager::GetInstance()->SetGameOver(true);
 }
 
 void SceneManager::Update(DWORD dt) {
+    if (isMarioDying)
+    {
+        if (GetTickCount64() - deathStartTime >= 5000)
+        {
+            isMarioDying = false;
+
+            SwitchTo(STATE_WORLD_MAP);
+
+            return;
+        }
+    }
+
     if (currentState == STATE_INTRO) {
         if (introScene) {
             introScene->Update(dt);

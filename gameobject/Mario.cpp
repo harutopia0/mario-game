@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cmath>
 
+
 #define MARIO_JUMP_SPEED_Y      0.27f 
 #define MARIO_GRAVITY           -0.00067f
 #define MARIO_WALKING_SPEED		0.15f
@@ -358,9 +359,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	// XỬ LÝ GAME OVER
 	if (IsDied())
 	{
-		// Đẩy gánh nặng tính toán thời gian 5s và tránh lặp âm thanh cho SceneManager lo
-		SceneManager::GetInstance()->ProcessMarioDeath(dt);\
-		std::printf("game over\n");
+		OutputDebugStringA("Game over\n");
 	}
 }
 
@@ -452,6 +451,8 @@ void Mario::Die()
 	vy = 0.2f;
 	deathStart = GetTickCount64();
 
+	// Đẩy gánh nặng tính toán thời gian 5s và tránh lặp âm thanh cho SceneManager lo
+	SceneManager::GetInstance()->ProcessMarioDeath();
 	OutputDebugStringA("Mario died\n");
 }
 

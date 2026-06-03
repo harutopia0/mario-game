@@ -23,7 +23,7 @@ private:
 
     // Quản lý đếm ngược thời gian chết tập trung
     bool isMarioDying;
-    float deathTimer;
+    DWORD deathStartTime;
 
     SceneManager();
 public:
@@ -35,5 +35,5 @@ public:
 
     GameState GetState() const { return currentState; }
     void SwitchTo(GameState newState);
-    void ProcessMarioDeath(DWORD dt); // Hàm đếm ngược 5s khi Mario chết
+    void ProcessMarioDeath(); // Hàm đếm ngược 5s khi Mario chết
 };
