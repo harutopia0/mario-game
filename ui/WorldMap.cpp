@@ -4,14 +4,13 @@
 WorldMap::WorldMap()
 {
     isDone = false;
-    selectedLevel = 1; // Mặc định ở Level 1
-    marioX = 100.0f;   // Tọa độ của Level 1
+    selectedLevel = 1; 
+    marioX = 100.0f;   
     marioY = 100.0f;
 }
 
 void WorldMap::LoadSprites()
 {
-    // Tạm thời để trống, ta dùng lại sprite đã load ở main.cpp
 }
 
 void WorldMap::Update(DWORD dt)
@@ -60,14 +59,14 @@ void WorldMap::Render()
 {
     Sprites* sprites = Sprites::GetInstance();
 
-    // Vẽ 2 cục gạch làm 2 mốc Level 1 và Level 2 (Dùng Sprite ID 10 của cục gạch)
+    // Vẽ 2 mốc lựa chọn màn chơi (Quay về nền đen cơ bản ban đầu)
     if (sprites->Get(10))
     {
         sprites->Get(10)->Draw(100.0f, 120.0f); // Mốc Level 1
         sprites->Get(10)->Draw(200.0f, 120.0f); // Mốc Level 2
     }
 
-    // Vẽ Mario đứng trên mốc (Dùng Sprite ID 0 của Mario Idle)
+    // Vẽ Mario di chuyển trên mốc bản đồ
     if (sprites->Get(0))
     {
         sprites->Get(0)->Draw(marioX, marioY);

@@ -1,4 +1,6 @@
 #include "Mario.h"
+#include "../audio/AudioManager.h"
+#include "../gameplay/SceneManager.h"
 #include "../gameobject/Breakable.h"
 #include "../gameobject/Brick.h"
 #include "../gameobject/Buff.h"
@@ -356,7 +358,8 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	// XỬ LÝ GAME OVER
 	if (IsDied())
 	{
-		GameManager::GetInstance()->SetGameOver(true);
+		// Đẩy gánh nặng tính toán thời gian 5s và tránh lặp âm thanh cho SceneManager lo
+		SceneManager::GetInstance()->ProcessMarioDeath(dt);\
 		std::printf("game over\n");
 	}
 }
