@@ -15,7 +15,9 @@
 #include "gameobject/Platform.h"
 #include "ui/HUD.h"
 #include "ui/Intro.h"
+#include "ui/WorldMap.h"
 #include "audio/AudioManager.h"
+#include "gameplay/GameManager.h"
 
 #include <string.h>
 #include <vector>
@@ -46,10 +48,12 @@ bool g_showBBox = false;
 
 enum GameState {
     STATE_INTRO,
+    STATE_WORLD_MAP,
     STATE_PLAYING
 };
 
 GameState currentState = STATE_INTRO;
+WorldMap* worldMapScene = NULL;
 
 Intro* introScene = NULL;
 
@@ -60,9 +64,9 @@ enum TEXTURE_ID {
     TEX_HUD = 20,
     TEX_INTRO = 30,
     TEX_BBOX = 99,
-	TEX_ENEMY_TEST = 100,
-	TEX_POTION = 101,
-	TEX_FLAG = 102
+    TEX_ENEMY_TEST = 100,
+    TEX_POTION = 101,
+    TEX_FLAG = 102
 };
 
 #pragma endregion
@@ -181,9 +185,34 @@ void Update(DWORD dt)
     if (currentState == STATE_INTRO)
     {
         introScene->Update(dt);
-        if (introScene->IsDone()) {
+        if (introScene->IsDone())
+        {
+            currentState = STATE_WORLD_MAP;
+        }
+    }
+    else if (currentState == STATE_WORLD_MAP)
+    {
+        worldMapScene->Update(dt);
+        if (worldMapScene->IsDone())
+        {
             currentState = STATE_PLAYING;
-            AudioManager::GetInstance()->StopMusic();
+
+            // Lấy level người chơi đã chọn từ World Map
+            int levelToLoad = worldMapScene->GetSelectedLevel();
+
+            // CẬP NHẬT HUD VÀ GAMEMANAGER TẠI ĐÂY
+            HUD::GetInstance()->SetWorld(levelToLoad);
+            GameManager::GetInstance()->SetLevel(levelToLoad);
+
+            // SỬA LẠI TÊN FILE TẠI ĐÂY
+            if (levelToLoad == 2)
+            {
+                LoadMap(L"levels/testmaplevel2.txt");
+            }
+            else
+            {
+                LoadMap(L"levels/testmap.txt");
+            }
         }
     }
     else {
@@ -221,7 +250,7 @@ void Update(DWORD dt)
             }
             obj->Update(dt, &nearbyObjects);
         }
-		// Xóa những object đã bị đánh dấu xóa
+
         g_objectList.erase(
             remove_if(
                 g_objectList.begin(),
@@ -234,7 +263,6 @@ void Update(DWORD dt)
                         delete obj;
                         return true;
                     }
-
                     return false;
                 }),
             g_objectList.end()
@@ -269,6 +297,10 @@ void Render()
             game->GetSpriteHandler()->SetViewTransform(&matZoom);
 
             if (introScene) introScene->Render();
+        }
+        else if (currentState == STATE_WORLD_MAP)
+        {
+            worldMapScene->Render();
         }
         else
         {
@@ -489,7 +521,7 @@ void LoadResources()
     textures->Add(TEX_INTRO, L"assets/intro_items.png");
     textures->Add(TEX_BBOX, L"assets/bbox.png");
     textures->Add(TEX_ENEMY_TEST, L"assets/enemy.png");
-	textures->Add(TEX_POTION, L"assets/potion.png");
+    textures->Add(TEX_POTION, L"assets/potion.png");
 
     // ==========================================
     // 2. CẮT SPRITES
@@ -498,7 +530,7 @@ void LoadResources()
     // Idle
     sprites->Add(0, 115, 45, 126, 59, TEX_MARIO); // Phải
     sprites->Add(1, 70, 45, 81, 59, TEX_MARIO); // Trái
-    
+
     // Run
     sprites->Add(2, 131, 44, 145, 59, TEX_MARIO);
     sprites->Add(3, 148, 44, 163, 59, TEX_MARIO);
@@ -506,7 +538,7 @@ void LoadResources()
     sprites->Add(4, 51, 44, 65, 59, TEX_MARIO);
     sprites->Add(5, 33, 44, 48, 59, TEX_MARIO);
 
-    
+
     // Jump
     sprites->Add(6, 131, 26, 146, 41, TEX_MARIO);
     sprites->Add(7, 50, 26, 65, 41, TEX_MARIO);
@@ -538,9 +570,10 @@ void LoadResources()
 
     // Enemy
     sprites->Add(100, 0, 0, 16, 16, TEX_ENEMY_TEST);
-	// Potion
-	sprites->Add(101, 0, 0, 16, 16, TEX_POTION);
-    
+  
+    //Potion
+    sprites->Add(101, 0, 0, 16, 16, TEX_POTION);
+
     // ==========================================
     // 3. GOM SPRITES TẠO ANIMATION
     // ==========================================
@@ -548,10 +581,10 @@ void LoadResources()
     // Tạo animation cho Mario
     ani = new Animation(100); ani->Add(0, 1000); animations->Add(100, ani);
     ani = new Animation(100); ani->Add(1, 1000); animations->Add(101, ani);
-    
+
     ani = new Animation(100); ani->Add(2); ani->Add(0); ani->Add(3); animations->Add(102, ani);
     ani = new Animation(100); ani->Add(4); ani->Add(1); ani->Add(5); animations->Add(103, ani);
-    
+
     ani = new Animation(100); ani->Add(6, 1000); animations->Add(104, ani);
     ani = new Animation(100); ani->Add(7, 1000); animations->Add(105, ani);
     
@@ -577,7 +610,7 @@ void LoadResources()
     ani = new Animation(100); ani->Add(15, 1000); animations->Add(206, ani);
 
     // Tạo animation cho Enemy
-	ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
+	  ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
 
     // ==========================================
     // 4. KHỞI TẠO OBJECT
@@ -587,11 +620,11 @@ void LoadResources()
     Mario* mario = new Mario(100.0f, 200.0f);
     g_objectList.push_back(mario);
 
-	//Khởi tạo Enemy
-	SpawnEnemy(200.0f, 200.0f);
+    //Khởi tạo Enemy
+    SpawnEnemy(200.0f, 200.0f);
 
-    // Khởi tạp map
-    LoadMap(L"levels/testmap.txt");
+    // XÓA DÒNG LOADMAP MẶC ĐỊNH Ở ĐÂY ĐỂ TRÁNH LOAD 2 LẦN
+    // LoadMap(L"levels/testmap.txt");
 
     // Cắt 10 số (0-9)
     for (int i = 0; i < 10; i++)
@@ -605,15 +638,18 @@ void LoadResources()
     //Intro
     Intro* intro = new Intro();
     intro->LoadSprites();
+    //World Map
+    worldMapScene = new WorldMap();
+    worldMapScene->LoadSprites();
     // Khởi tạo Intro
     introScene = new Intro();
     //Khởi tạo Potion
-	Buff* potion = new Buff(150.0f, 200.0f);
+    Buff* potion = new Buff(150.0f, 200.0f);
     g_objectList.push_back(potion);
     AddObjectToGrid(potion);
 
-	//Khởi tạo cờ
-	Flag* flag = new Flag(300.0f, 100.0f);
+    //Khởi tạo cờ
+    Flag* flag = new Flag(300.0f, 100.0f);
     g_objectList.push_back(flag);
     AddObjectToGrid(flag);
 
