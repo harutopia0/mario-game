@@ -1,4 +1,4 @@
-﻿#pragma region ImportLibaries
+#pragma region ImportLibaries
 
 #include "core/Game.h"
 #include "render/Sprites.h"
@@ -233,7 +233,7 @@ void LoadMap(LPCWSTR filePath)
 
             if (tileID == 1 || tileID == 2)
             {
-                Brick* brick = new Brick(realX, realY, 16.0f, 16.0f, 201);
+                Brick* brick = new Brick(realX, realY, 201);
                 g_objectList.push_back(brick);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -245,7 +245,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 3)
             {
-                Platform* platform = new Platform(realX, realY, 16.0f, 16.0f, 202);
+                Platform* platform = new Platform(realX, realY, 202);
                 g_objectList.push_back(platform);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -257,7 +257,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 4)
             {
-                Platform* platform = new Platform(realX, realY, 32.0f, 32.0f, 203);
+                Platform* platform = new Platform(realX, realY, 203);
                 g_objectList.push_back(platform);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -269,7 +269,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 5)
             {
-                Breakable* breakableBlock = new Breakable(realX, realY, 16.0f, 16.0f, 205);
+                Breakable* breakableBlock = new Breakable(realX, realY, 205);
                 g_objectList.push_back(breakableBlock);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -281,7 +281,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 6)
             {
-                LuckyBlock* lucky = new LuckyBlock(realX, realY, 16.0f, 16.0f, 206, 201);
+                LuckyBlock* lucky = new LuckyBlock(realX, realY, 206, 201);
                 g_objectList.push_back(lucky);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -432,6 +432,7 @@ void LoadResources()
     ani = new Animation(100); ani->Add(14, 1000); animations->Add(205, ani);
     ani = new Animation(100); ani->Add(15, 1000); animations->Add(206, ani);
     ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
+    ani = new Animation(100); ani->Add(101, 1000); animations->Add(301, ani);
 
     // ==========================================
     // 4. KHỞI TẠO OBJECT
@@ -452,7 +453,7 @@ void LoadResources()
     // Khởi tạo các Scene và chuyển giao quyền cho SceneManager
     SceneManager::GetInstance()->Init();
 
-    Buff* potion = new Buff(150.0f, 200.0f);
+    Buff* potion = new Buff(150.0f, 200.0f, 301);
     g_objectList.push_back(potion);
     AddObjectToGrid(potion);
 
@@ -460,7 +461,7 @@ void LoadResources()
     g_objectList.push_back(flag);
     AddObjectToGrid(flag);
 
-    Pipe* pipe = new Pipe(15.0f, 80.0f, 32.0f, 48.0f, 204, true, 300.0f, 300.0f);
+    Pipe* pipe = new Pipe(15.0f, 80.0f, 204, true, 300.0f, 300.0f);
     g_objectList.push_back(pipe);
     AddObjectToGrid(pipe);
 
@@ -490,7 +491,7 @@ void Cleanup()
 
 void SpawnEnemy(float x, float y)
 {
-    Enemy* enemy = new Enemy(x, y, 16.0f, 16.0f);
+    Enemy* enemy = new Enemy(x, y, 300);
     g_objectList.push_back(enemy);
     AddObjectToGrid(enemy);
 }

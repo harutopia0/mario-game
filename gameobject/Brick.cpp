@@ -1,11 +1,17 @@
 #include "Brick.h"
 #include "../animation/animations.h"
 
-Brick::Brick(float x, float y, float width, float height, int animationId) : GameObject(x, y)
+Brick::Brick(float x, float y, int animationId) : GameObject(x, y)
 {
-    this->width = width;
-    this->height = height;
     this->animationId = animationId;
+    Animation* anim = Animations::GetInstance()->Get(animationId);
+    if (anim != NULL) {
+        this->width = anim->GetWidth();
+        this->height = anim->GetHeight();
+    } else {
+        this->width = 16;
+        this->height = 16;
+    }
     this->isStatic = true;
 }
 

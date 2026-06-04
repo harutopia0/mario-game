@@ -1,17 +1,24 @@
-﻿#include "Enemy.h"
+#include "Enemy.h"
 #include "../gameobject/Brick.h"
 #include "../physics/Collision.h"
 
 
 #include "../animation/Animations.h"
 
-Enemy::Enemy(float x, float y, float width, float height)
+Enemy::Enemy(float x, float y, int animationId)
     : GameObject(x, y)
 {
-    this->width = width;
-    this->height = height;
-
+    this->animationId = animationId;
+    Animation* anim = Animations::GetInstance()->Get(animationId);
+    if (anim != NULL) {
+        this->width = anim->GetWidth();
+        this->height = anim->GetHeight();
+    } else {
+        this->width = 16;
+        this->height = 16;
+    }
     vx = 0.0f;
+
     vy = 0.0f;
 
     died = false;
@@ -82,7 +89,7 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
 void Enemy::Render()
 {
     if (died) return;
-    Animations::GetInstance()->Get(300)->Render(x, y);
+    Animations::GetInstance()->Get(animationId)->Render(x, y);
 }
 
 void Enemy::OnCollision(GameObject* obj)
