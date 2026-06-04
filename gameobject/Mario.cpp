@@ -16,18 +16,7 @@
 #include <cmath>
 
 
-#define MARIO_JUMP_SPEED_Y      0.27f 
-#define MARIO_GRAVITY           -0.00067f
-#define MARIO_WALKING_SPEED		0.15f
-#define MARIO_ACCEL_WALK_X		0.0005f 
-#define MARIO_FRICTION			0.0004f
-
-// Thời gian bất tử
-#define MARIO_UNTOUCHABLE_TIME 5000
-
-// ĐỊNH NGHĨA STEP THỜI GIAN GIỮA CÁC MỨC PMETER (mili-giây)
-#define PMETER_STEP_UP_TIME     150
-#define PMETER_STEP_DOWN_TIME    80
+#include "../input/MarioInputHandler.h"
 
 Mario::Mario(float x, float y) : GameObject(x, y)
 {
@@ -49,6 +38,18 @@ Mario::Mario(float x, float y) : GameObject(x, y)
 	// Khởi tạo trạng thái P-Meter
 	pMeterLevel = 0;
 	pMeterTimer = 0;
+
+	isPressingDown = false;
+	inputHandler = new MarioInputHandler(this);
+}
+
+Mario::~Mario()
+{
+	if (inputHandler != NULL)
+	{
+		delete inputHandler;
+		inputHandler = NULL;
+	}
 }
 
 void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -109,19 +110,12 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 		return;
 	}
 
-	// PHẦN VẬT LÝ DI CHUYỂN
-	if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-		ax = MARIO_ACCEL_WALK_X;
-		nx = 1;
-	}
-	else if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-		ax = -MARIO_ACCEL_WALK_X;
-		nx = -1;
-	}
-	else {
-		ax = 0.0f;
+	if (inputHandler != NULL)
+	{
+		inputHandler->KeyState(NULL); // Update continuous keyboard state
 	}
 
+	// PHẦN VẬT LÝ DI CHUYỂN
 	// CHỈ ÁP DỤNG MA SÁT KHI ĐANG Ở TRÊN MẶT ĐẤT
 	// Nhảy lên buông nút (ax == 0) thì vận tốc ngang vx được bảo toàn quán tính, không bị trừ bừa bãi.
 	if (ax == 0.0f && isOnGround) {
@@ -170,11 +164,6 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 	// Đồng bộ mức vận tốc lên HUD
 	HUD::GetInstance()->SetPMeter(pMeterLevel);
-
-	if ((GetAsyncKeyState(VK_SPACE) & 0x8000) && isOnGround) {
-		vy = MARIO_JUMP_SPEED_Y;
-		isOnGround = false;
-	}
 
 	vy += MARIO_GRAVITY * dt;
 
@@ -268,7 +257,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 					// XỬ LÝ CHUI ỐNG
 					if (Pipe* pipe = dynamic_cast<Pipe*>(e)) {
 						if (temp_ny == 1) {
-							if (pipe->CanEnter() && (GetAsyncKeyState(VK_DOWN) & 0x8000)) {
+							if (pipe->CanEnter() && isPressingDown) {
 								float pipeCenterX = pipe->GetX() + pipe->GetWidth() / 2;
 								float marioCenterX = x + width / 2;
 
@@ -474,3 +463,27 @@ void Mario::TakeDamage()
 		Die();
 	}
 }
+
+void Mario::SetAccelX(float ax)
+{
+	this->ax = ax;
+}
+
+void Mario::SetDirection(int nx)
+{
+	this->nx = nx;
+}
+
+void Mario::Jump()
+{
+	if (isOnGround)
+	{
+		vy = MARIO_JUMP_SPEED_Y;
+		isOnGround = false;
+	}
+}
+
+void Mario::SetPressingDown(bool pressing)
+{
+	this->isPressingDown = pressing;
+}
