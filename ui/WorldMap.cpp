@@ -4,13 +4,34 @@
 WorldMap::WorldMap()
 {
     isDone = false;
-    selectedLevel = 1; 
-    marioX = 100.0f;   
+    selectedLevel = 1;
+    marioX = 100.0f;
     marioY = 100.0f;
 }
 
 void WorldMap::LoadSprites()
 {
+}
+
+void WorldMap::SetSelectedLevel(int level)
+{
+    selectedLevel = level;
+    // Điều hướng tọa độ điểm dừng cho Icon Mario trên bản đồ
+    if (selectedLevel == 1)
+    {
+        marioX = 100.0f;
+        marioY = 100.0f;
+    }
+    else if (selectedLevel == 2)
+    {
+        marioX = 200.0f;
+        marioY = 100.0f;
+    }
+    else if (selectedLevel == 3)
+    {
+        marioX = 300.0f;
+        marioY = 100.0f;
+    }
 }
 
 void WorldMap::Update(DWORD dt)
@@ -31,13 +52,14 @@ void WorldMap::Update(DWORD dt)
         isEnterPressed = false;
     }
 
-    // 2. CHỐNG TRÔI PHÍM MŨI TÊN
+    // 2. DI CHUYỂN TUẦN TIẾN ĐỒNG BỘ 3 LEVEL
     static bool isRightPressed = false;
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
     {
         if (!isRightPressed) {
-            selectedLevel = 2;
-            marioX = 200.0f;
+            if (selectedLevel < 3) {
+                SetSelectedLevel(selectedLevel + 1);
+            }
             isRightPressed = true;
         }
     }
@@ -47,8 +69,9 @@ void WorldMap::Update(DWORD dt)
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)
     {
         if (!isLeftPressed) {
-            selectedLevel = 1;
-            marioX = 100.0f;
+            if (selectedLevel > 1) {
+                SetSelectedLevel(selectedLevel - 1);
+            }
             isLeftPressed = true;
         }
     }
@@ -59,14 +82,14 @@ void WorldMap::Render()
 {
     Sprites* sprites = Sprites::GetInstance();
 
-    // Vẽ 2 mốc lựa chọn màn chơi (Quay về nền đen cơ bản ban đầu)
+    // Vẽ 3 mốc điểm màn chơi
     if (sprites->Get(10))
     {
-        sprites->Get(10)->Draw(100.0f, 120.0f); // Mốc Level 1
-        sprites->Get(10)->Draw(200.0f, 120.0f); // Mốc Level 2
+        sprites->Get(10)->Draw(100.0f, 120.0f);
+        sprites->Get(10)->Draw(200.0f, 120.0f);
+        sprites->Get(10)->Draw(300.0f, 120.0f);
     }
 
-    // Vẽ Mario di chuyển trên mốc bản đồ
     if (sprites->Get(0))
     {
         sprites->Get(0)->Draw(marioX, marioY);
