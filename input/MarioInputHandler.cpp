@@ -35,10 +35,15 @@ void MarioInputHandler::KeyState(BYTE* state)
         mario->SetPressingDown(false);
     }
 
-    // Process jump directly in KeyState to avoid missed inputs if OnKeyDown isn't wired up to the message loop
+    // Xử lý nhảy: giữ Space = nhảy cao, nhả sớm = nhảy thấp
     if (GetAsyncKeyState(VK_SPACE) & 0x8000)
     {
         mario->Jump();
+        mario->SetHoldingJump(true);
+    }
+    else
+    {
+        mario->SetHoldingJump(false);
     }
 }
 

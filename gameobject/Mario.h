@@ -8,6 +8,7 @@
 #define MARIO_BIG_HEIGHT 27.0f
 
 #define MARIO_JUMP_SPEED_Y      0.27f 
+#define MARIO_JUMP_DEFLECT_SPEED 0.1f
 #define MARIO_GRAVITY           -0.00067f
 #define MARIO_WALKING_SPEED		0.15f
 #define MARIO_ACCEL_WALK_X		0.0005f 
@@ -66,6 +67,7 @@ public:
 	void SetAccelX(float ax);
 	void SetDirection(int nx);
 	void Jump();
+	void SetHoldingJump(bool holding);
 	void SetPressingDown(bool pressing);
 
 	DWORD untouchableStart;

@@ -486,4 +486,13 @@ void Mario::Jump()
 void Mario::SetPressingDown(bool pressing)
 {
 	this->isPressingDown = pressing;
-}
+}
+
+// Nhả phím Space giữa chừng khi đang bay lên → cắt vy để nhảy thấp
+void Mario::SetHoldingJump(bool holding)
+{
+	if (!holding && vy > MARIO_JUMP_DEFLECT_SPEED)
+	{
+		vy = MARIO_JUMP_DEFLECT_SPEED;
+	}
+}
