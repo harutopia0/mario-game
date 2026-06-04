@@ -122,6 +122,12 @@
     <ClCompile Include="gameobject\LuckyBlock.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
+    <ClCompile Include="gameplay\SceneManager.cpp">
+      <Filter>Source Files\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\WorldMap.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation\Animation.h">
@@ -206,9 +212,19 @@
     <ClInclude Include="gameobject\LuckyBlock.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
+    <ClInclude Include="gameplay\SceneManager.h">
+      <Filter>Source Files\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\WorldMap.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="ui\.gitkeep" />
+    <None Include="gameplay\.gitkeep">
+      <Filter>Source Files\gameplay</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="gameobject\Flower.txt">
