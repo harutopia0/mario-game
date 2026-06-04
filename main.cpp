@@ -382,6 +382,27 @@ void LoadResources()
     sprites->Add(8, 166, 44, 179, 59, TEX_MARIO);
     sprites->Add(9, 17, 44, 30, 59, TEX_MARIO);
 
+    // ==========================================
+    // BIG MARIO SPRITES
+    // ==========================================
+    // Idle
+    sprites->Add(20, 112, 90, 125, 116, TEX_MARIO); // Phải
+    sprites->Add(21, 71, 90, 84, 116, TEX_MARIO); // Trái
+
+    // Run
+    sprites->Add(22, 129, 90, 144, 116, TEX_MARIO); // Phải 1
+    sprites->Add(23, 148, 91, 163, 116, TEX_MARIO); // Phải 2
+    sprites->Add(24, 52, 90, 67, 116, TEX_MARIO); // Trái 1
+    sprites->Add(25, 33, 91, 48, 116, TEX_MARIO); // Trái 2
+
+    // Jump
+    sprites->Add(26, 111, 62, 126, 87, TEX_MARIO); // Phải
+    sprites->Add(27, 70, 62, 85, 87, TEX_MARIO); // Trái
+
+    // Skid
+    sprites->Add(28, 166, 89, 181, 116, TEX_MARIO); // Phải sang trái (Skid Right)
+    sprites->Add(29, 15, 89, 30, 116, TEX_MARIO); // Trái sang phải (Skid Left)
+
     // Brick
     sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
 
@@ -431,6 +452,17 @@ void LoadResources()
     ani = new Animation(100); ani->Add(13, 1000); animations->Add(204, ani);
     ani = new Animation(100); ani->Add(14, 1000); animations->Add(205, ani);
     ani = new Animation(100); ani->Add(15, 1000); animations->Add(206, ani);
+
+    // Big Mario Animations
+    ani = new Animation(100); ani->Add(20, 1000); animations->Add(400, ani); // Idle Phải
+    ani = new Animation(100); ani->Add(21, 1000); animations->Add(401, ani); // Idle Trái
+    ani = new Animation(100); ani->Add(22); ani->Add(20); ani->Add(23); animations->Add(402, ani); // Run Phải
+    ani = new Animation(100); ani->Add(24); ani->Add(21); ani->Add(25); animations->Add(403, ani); // Run Trái
+    ani = new Animation(100); ani->Add(26, 1000); animations->Add(404, ani); // Jump Phải
+    ani = new Animation(100); ani->Add(27, 1000); animations->Add(405, ani); // Jump Trái
+    ani = new Animation(100); ani->Add(28, 1000); animations->Add(406, ani); // Skid Left
+    ani = new Animation(100); ani->Add(29, 1000); animations->Add(407, ani); // Skid Right
+
     ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
     ani = new Animation(100); ani->Add(101, 1000); animations->Add(301, ani);
 

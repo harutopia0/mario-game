@@ -370,16 +370,16 @@ void Mario::Render()
 	{
 		if (!isOnGround)
 		{
-			ani = (nx > 0) ? Animations::GetInstance()->Get(204) : Animations::GetInstance()->Get(205);
+			ani = (nx > 0) ? Animations::GetInstance()->Get(404) : Animations::GetInstance()->Get(405);
 		}
 		else
 		{
 			if (isSkidding)
-				ani = (nx > 0) ? Animations::GetInstance()->Get(207) : Animations::GetInstance()->Get(206);
+				ani = (nx > 0) ? Animations::GetInstance()->Get(407) : Animations::GetInstance()->Get(406);
 			else if (vx == 0.0f)
-				ani = (nx > 0) ? Animations::GetInstance()->Get(200) : Animations::GetInstance()->Get(201);
+				ani = (nx > 0) ? Animations::GetInstance()->Get(400) : Animations::GetInstance()->Get(401);
 			else
-				ani = (nx > 0) ? Animations::GetInstance()->Get(202) : Animations::GetInstance()->Get(203);
+				ani = (nx > 0) ? Animations::GetInstance()->Get(402) : Animations::GetInstance()->Get(403);
 		}
 	}
 	// Mario nhỏ
