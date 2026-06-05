@@ -64,6 +64,9 @@ void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 
 void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 {
+	// Cập nhật số mạng sống lên HUD
+	HUD::GetInstance()->SetLives(lives);
+
 	// Thời gian bất tử
 	if (untouchable)
 	{

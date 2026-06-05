@@ -293,11 +293,23 @@ void SceneManager::Render() {
 
         HUD::GetInstance()->Render();
 
-        // HIỂN THỊ ẢNH CLEAR MÀN LÊN UI KHI ĐANG TRONG TRẠNG THÁI KHÓA ĐẾM NGƯỢC
-        if (isMarioLevelClearing || isMarioGameWinning) {
-            Sprite* winSprite = Sprites::GetInstance()->Get(7001);
+        // HIỂN THỊ UI THÔNG BÁO THEO TỪNG TRẠNG THÁI ĐẾM NGƯỢC
+        if (isMarioDying) {
+            Sprite* gameOverSprite = Sprites::GetInstance()->Get(7003); // Sprite Game Over
+            if (gameOverSprite) {
+                gameOverSprite->Draw(0.0f, 200.0f);
+            }
+        }
+        else if (isMarioLevelClearing) {
+            Sprite* winSprite = Sprites::GetInstance()->Get(7001); // Sprite Level Clear
             if (winSprite) {
                 winSprite->Draw(0.0f, 200.0f);
+            }
+        }
+        else if (isMarioGameWinning) {
+            Sprite* winGameSprite = Sprites::GetInstance()->Get(7002); // Sprite You Win
+            if (winGameSprite) {
+                winGameSprite->Draw(0.0f, 200.0f);
             }
         }
     }
