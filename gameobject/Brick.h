@@ -9,7 +9,7 @@ private:
     int animationId;
 
 public:
-    Brick(float x, float y, float width, float height, int animationId);
+    Brick(float x, float y, int animationId);
 
     virtual void Update(DWORD dt);
     virtual void Render();

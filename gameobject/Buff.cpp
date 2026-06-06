@@ -1,11 +1,18 @@
 #include "Buff.h"
 #include "../animation/Animations.h"
 
-Buff::Buff(float x, float y)
+Buff::Buff(float x, float y, int animationId)
     : GameObject(x, y)
 {
-    width = BUFF_WIDTH;
-    height = BUFF_HEIGHT;
+    this->animationId = animationId;
+    Animation* anim = Animations::GetInstance()->Get(animationId);
+    if (anim != NULL) {
+        this->width = anim->GetWidth();
+        this->height = anim->GetHeight();
+    } else {
+        this->width = BUFF_WIDTH;
+        this->height = BUFF_HEIGHT;
+    }
 
     vx = 0.0f;
     vy = 0.0f;
@@ -28,7 +35,7 @@ void Buff::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 void Buff::Render()
 {
-    Animation* ani = Animations::GetInstance()->Get(300);
+    Animation* ani = Animations::GetInstance()->Get(animationId);
 
     if (ani != NULL)
     {

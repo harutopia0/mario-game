@@ -1,4 +1,4 @@
-﻿#pragma region ImportLibaries
+#pragma region ImportLibaries
 
 #include "core/Game.h"
 #include "render/Sprites.h"
@@ -236,7 +236,7 @@ void LoadMap(LPCWSTR filePath)
 
             if (tileID == 1 || tileID == 2)
             {
-                Brick* brick = new Brick(realX, realY, 16.0f, 16.0f, 201);
+                Brick* brick = new Brick(realX, realY, 201);
                 g_objectList.push_back(brick);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -248,7 +248,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 3)
             {
-                Platform* platform = new Platform(realX, realY, 16.0f, 16.0f, 202);
+                Platform* platform = new Platform(realX, realY, 202);
                 g_objectList.push_back(platform);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -260,7 +260,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 4)
             {
-                Platform* platform = new Platform(realX, realY, 32.0f, 32.0f, 203);
+                Platform* platform = new Platform(realX, realY, 203);
                 g_objectList.push_back(platform);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -272,7 +272,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 5)
             {
-                Breakable* breakableBlock = new Breakable(realX, realY, 16.0f, 16.0f, 205);
+                Breakable* breakableBlock = new Breakable(realX, realY, 205);
                 g_objectList.push_back(breakableBlock);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -284,7 +284,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 6)
             {
-                LuckyBlock* lucky = new LuckyBlock(realX, realY, 16.0f, 16.0f, 206, 201);
+                LuckyBlock* lucky = new LuckyBlock(realX, realY, 206, 201);
                 g_objectList.push_back(lucky);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -390,6 +390,27 @@ void LoadResources()
     sprites->Add(8, 166, 44, 179, 59, TEX_MARIO);
     sprites->Add(9, 17, 44, 30, 59, TEX_MARIO);
 
+    // ==========================================
+    // BIG MARIO SPRITES
+    // ==========================================
+    // Idle
+    sprites->Add(20, 112, 90, 125, 116, TEX_MARIO); // Phải
+    sprites->Add(21, 71, 90, 84, 116, TEX_MARIO); // Trái
+
+    // Run
+    sprites->Add(22, 129, 90, 144, 116, TEX_MARIO); // Phải 1
+    sprites->Add(23, 148, 91, 163, 116, TEX_MARIO); // Phải 2
+    sprites->Add(24, 52, 90, 67, 116, TEX_MARIO); // Trái 1
+    sprites->Add(25, 33, 91, 48, 116, TEX_MARIO); // Trái 2
+
+    // Jump
+    sprites->Add(26, 111, 62, 126, 87, TEX_MARIO); // Phải
+    sprites->Add(27, 70, 62, 85, 87, TEX_MARIO); // Trái
+
+    // Skid
+    sprites->Add(28, 166, 89, 181, 116, TEX_MARIO); // Phải sang trái (Skid Right)
+    sprites->Add(29, 15, 89, 30, 116, TEX_MARIO); // Trái sang phải (Skid Left)
+
     // Brick
     sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
 
@@ -446,7 +467,19 @@ void LoadResources()
     ani = new Animation(100); ani->Add(13, 1000); animations->Add(204, ani);
     ani = new Animation(100); ani->Add(14, 1000); animations->Add(205, ani);
     ani = new Animation(100); ani->Add(15, 1000); animations->Add(206, ani);
+
+    // Big Mario Animations
+    ani = new Animation(100); ani->Add(20, 1000); animations->Add(400, ani); // Idle Phải
+    ani = new Animation(100); ani->Add(21, 1000); animations->Add(401, ani); // Idle Trái
+    ani = new Animation(100); ani->Add(22); ani->Add(20); ani->Add(23); animations->Add(402, ani); // Run Phải
+    ani = new Animation(100); ani->Add(24); ani->Add(21); ani->Add(25); animations->Add(403, ani); // Run Trái
+    ani = new Animation(100); ani->Add(26, 1000); animations->Add(404, ani); // Jump Phải
+    ani = new Animation(100); ani->Add(27, 1000); animations->Add(405, ani); // Jump Trái
+    ani = new Animation(100); ani->Add(28, 1000); animations->Add(406, ani); // Skid Left
+    ani = new Animation(100); ani->Add(29, 1000); animations->Add(407, ani); // Skid Right
+
     ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
+    ani = new Animation(100); ani->Add(101, 1000); animations->Add(301, ani);
 
     // ==========================================
     // 4. KHỞI TẠO OBJECT
@@ -467,7 +500,7 @@ void LoadResources()
     // Khởi tạo các Scene và chuyển giao quyền cho SceneManager
     SceneManager::GetInstance()->Init();
 
-    Buff* potion = new Buff(150.0f, 200.0f);
+    Buff* potion = new Buff(150.0f, 200.0f, 301);
     g_objectList.push_back(potion);
     AddObjectToGrid(potion);
 
@@ -475,7 +508,7 @@ void LoadResources()
     g_objectList.push_back(flag);
     AddObjectToGrid(flag);
 
-    Pipe* pipe = new Pipe(15.0f, 80.0f, 32.0f, 48.0f, 204, true, 300.0f, 300.0f);
+    Pipe* pipe = new Pipe(15.0f, 80.0f, 204, true, 300.0f, 300.0f);
     g_objectList.push_back(pipe);
     AddObjectToGrid(pipe);
 
@@ -506,7 +539,7 @@ void Cleanup()
 
 void SpawnEnemy(float x, float y)
 {
-    Enemy* enemy = new Enemy(x, y, 16.0f, 16.0f);
+    Enemy* enemy = new Enemy(x, y, 300);
     g_objectList.push_back(enemy);
     AddObjectToGrid(enemy);
 }

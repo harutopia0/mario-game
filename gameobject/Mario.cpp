@@ -16,18 +16,7 @@
 #include <cmath>
 
 
-#define MARIO_JUMP_SPEED_Y      0.27f 
-#define MARIO_GRAVITY           -0.00067f
-#define MARIO_WALKING_SPEED		0.15f
-#define MARIO_ACCEL_WALK_X		0.0005f 
-#define MARIO_FRICTION			0.0004f
-
-// Thời gian bất tử
-#define MARIO_UNTOUCHABLE_TIME 5000
-
-// ĐỊNH NGHĨA STEP THỜI GIAN GIỮA CÁC MỨC PMETER (mili-giây)
-#define PMETER_STEP_UP_TIME     150
-#define PMETER_STEP_DOWN_TIME    80
+#include "../input/MarioInputHandler.h"
 
 Mario::Mario(float x, float y) : GameObject(x, y)
 {
@@ -49,6 +38,18 @@ Mario::Mario(float x, float y) : GameObject(x, y)
 	// Khởi tạo trạng thái P-Meter
 	pMeterLevel = 0;
 	pMeterTimer = 0;
+
+	isPressingDown = false;
+	inputHandler = new MarioInputHandler(this);
+}
+
+Mario::~Mario()
+{
+	if (inputHandler != NULL)
+	{
+		delete inputHandler;
+		inputHandler = NULL;
+	}
 }
 
 void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -112,6 +113,11 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 		return;
 	}
 
+	if (inputHandler != NULL)
+	{
+		inputHandler->KeyState(NULL); // Update continuous keyboard state
+    
+  } 
 	// KIỂM TRA TRẠNG THÁI KHÓA ĐIỀU KHIỂN KHI QUA MÀN / WIN GAME
 	bool isControlLocked = GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin();
 
@@ -135,6 +141,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 		ax = 0.0f; // Không tự gia tốc khi đã thắng, để quán tính và ma sát tự xử lý
 	}
 
+	// PHẦN VẬT LÝ DI CHUYỂN
 	// CHỈ ÁP DỤNG MA SÁT KHI ĐANG Ở TRÊN MẶT ĐẤT
 	if (ax == 0.0f && isOnGround) {
 		if (vx > 0) {
@@ -283,7 +290,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 					// XỬ LÝ CHUI ỐNG (Chỉ nhận phím khi không khóa)
 					if (Pipe* pipe = dynamic_cast<Pipe*>(e)) {
 						if (temp_ny == 1) {
-							if (pipe->CanEnter() && !isControlLocked && (GetAsyncKeyState(VK_DOWN) & 0x8000)) {
+							if (pipe->CanEnter() && isPressingDown) {
 								float pipeCenterX = pipe->GetX() + pipe->GetWidth() / 2;
 								float marioCenterX = x + width / 2;
 
@@ -396,16 +403,16 @@ void Mario::Render()
 	{
 		if (!isOnGround)
 		{
-			ani = (nx > 0) ? Animations::GetInstance()->Get(204) : Animations::GetInstance()->Get(205);
+			ani = (nx > 0) ? Animations::GetInstance()->Get(404) : Animations::GetInstance()->Get(405);
 		}
 		else
 		{
 			if (isSkidding)
-				ani = (nx > 0) ? Animations::GetInstance()->Get(207) : Animations::GetInstance()->Get(206);
+				ani = (nx > 0) ? Animations::GetInstance()->Get(407) : Animations::GetInstance()->Get(406);
 			else if (vx == 0.0f)
-				ani = (nx > 0) ? Animations::GetInstance()->Get(200) : Animations::GetInstance()->Get(201);
+				ani = (nx > 0) ? Animations::GetInstance()->Get(400) : Animations::GetInstance()->Get(401);
 			else
-				ani = (nx > 0) ? Animations::GetInstance()->Get(202) : Animations::GetInstance()->Get(203);
+				ani = (nx > 0) ? Animations::GetInstance()->Get(402) : Animations::GetInstance()->Get(403);
 		}
 	}
 	else
@@ -484,5 +491,38 @@ void Mario::TakeDamage()
 	{
 		lives = 0;
 		Die();
+	}
+}
+
+void Mario::SetAccelX(float ax)
+{
+	this->ax = ax;
+}
+
+void Mario::SetDirection(int nx)
+{
+	this->nx = nx;
+}
+
+void Mario::Jump()
+{
+	if (isOnGround)
+	{
+		vy = MARIO_JUMP_SPEED_Y;
+		isOnGround = false;
+	}
+}
+
+void Mario::SetPressingDown(bool pressing)
+{
+	this->isPressingDown = pressing;
+}
+
+// Nhả phím Space giữa chừng khi đang bay lên → cắt vy để nhảy thấp
+void Mario::SetHoldingJump(bool holding)
+{
+	if (!holding && vy > MARIO_JUMP_DEFLECT_SPEED)
+	{
+		vy = MARIO_JUMP_DEFLECT_SPEED;
 	}
 }

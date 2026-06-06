@@ -39,3 +39,17 @@ void Animation::Render(float x, float y)
 
     frames[currentFrame]->GetSprite()->Draw(x, y);
 }
+
+int Animation::GetWidth()
+{
+    if (frames.size() > 0)
+        return frames[0]->GetSprite()->GetWidth();
+    return 0;
+}
+
+int Animation::GetHeight()
+{
+    if (frames.size() > 0)
+        return frames[0]->GetSprite()->GetHeight();
+    return 0;
+}

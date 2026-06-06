@@ -1,13 +1,19 @@
 #include "LuckyBlock.h"
 #include "../animation/Animations.h"
 
-LuckyBlock::LuckyBlock(float x, float y, float width, float height, int activeAnimationId, int usedAnimationId)
+LuckyBlock::LuckyBlock(float x, float y, int activeAnimationId, int usedAnimationId)
     : GameObject(x, y)
 {
-    this->width = width;
-    this->height = height;
     this->activeAnimationId = activeAnimationId;
     this->usedAnimationId = usedAnimationId;
+    Animation* anim = Animations::GetInstance()->Get(activeAnimationId);
+    if (anim != NULL) {
+        this->width = anim->GetWidth();
+        this->height = anim->GetHeight();
+    } else {
+        this->width = 16;
+        this->height = 16;
+    }
     this->isHit = false;
     this->isStatic = true;
 }
