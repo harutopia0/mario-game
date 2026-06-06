@@ -65,6 +65,9 @@ void Mario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 
 void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 {
+	// Cập nhật số mạng sống lên HUD
+	HUD::GetInstance()->SetLives(lives);
+
 	// Thời gian bất tử
 	if (untouchable)
 	{
@@ -113,11 +116,33 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	if (inputHandler != NULL)
 	{
 		inputHandler->KeyState(NULL); // Update continuous keyboard state
+    
+  } 
+	// KIỂM TRA TRẠNG THÁI KHÓA ĐIỀU KHIỂN KHI QUA MÀN / WIN GAME
+	bool isControlLocked = GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin();
+
+	// PHẦN VẬT LÝ DI CHUYỂN (Chỉ nhận phím khi không bị khóa)
+	if (!isControlLocked)
+	{
+		if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
+			ax = MARIO_ACCEL_WALK_X;
+			nx = 1;
+		}
+		else if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
+			ax = -MARIO_ACCEL_WALK_X;
+			nx = -1;
+		}
+		else {
+			ax = 0.0f;
+		}
+	}
+	else
+	{
+		ax = 0.0f; // Không tự gia tốc khi đã thắng, để quán tính và ma sát tự xử lý
 	}
 
 	// PHẦN VẬT LÝ DI CHUYỂN
 	// CHỈ ÁP DỤNG MA SÁT KHI ĐANG Ở TRÊN MẶT ĐẤT
-	// Nhảy lên buông nút (ax == 0) thì vận tốc ngang vx được bảo toàn quán tính, không bị trừ bừa bãi.
 	if (ax == 0.0f && isOnGround) {
 		if (vx > 0) {
 			vx -= MARIO_FRICTION * dt;
@@ -133,7 +158,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	if (vx > MARIO_WALKING_SPEED) vx = MARIO_WALKING_SPEED;
 	if (vx < -MARIO_WALKING_SPEED) vx = -MARIO_WALKING_SPEED;
 
-	// XỬ LÝ PMETER THEO LOGIC VẬT LÝ (Dựa hoàn toàn vào giá trị vận tốc ngang vx)
+	// XỬ LÝ PMETER THEO LOGIC VẬT LÝ
 	if (std::abs(vx) >= MARIO_WALKING_SPEED * 0.95f)
 	{
 		if (pMeterLevel < 7)
@@ -165,6 +190,12 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	// Đồng bộ mức vận tốc lên HUD
 	HUD::GetInstance()->SetPMeter(pMeterLevel);
 
+	// CHỈ CHO PHÉP NHẢY KHI KHÔNG BỊ KHÓA ĐIỀU KHIỂN
+	if (!isControlLocked && (GetAsyncKeyState(VK_SPACE) & 0x8000) && isOnGround) {
+		vy = MARIO_JUMP_SPEED_Y;
+		isOnGround = false;
+	}
+
 	vy += MARIO_GRAVITY * dt;
 
 	float dx = vx * dt;
@@ -191,21 +222,18 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 			if (t < 1.0f && temp_nx != 0)
 			{
-				// 1. ĐỤNG BLOCK (Cản đường lại)
 				if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e)) {
 					if (t < min_tx) {
 						min_tx = t;
 						nx_col = temp_nx;
 					}
 				}
-				// 2. ĐỤNG QUÁI VẬT (Bị thương)
 				else if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
 					if (!enemy->IsDied())
 					{
 						TakeDamage();
 					}
 				}
-				// 3. ĐỤNG BUFF
 				else if (Buff* buff = dynamic_cast<Buff*>(e)) {
 					if (lives < 2)
 					{
@@ -215,9 +243,15 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 					}
 					buff->Delete();
 				}
-				// 4. CHẠM CỜ
+				// CHẠM CỜ THEO TRỤC X
 				else if (Flag* flag = dynamic_cast<Flag*>(e)) {
-					GameManager::GetInstance()->SetGameWin(true);
+					int currentLevel = GameManager::GetInstance()->GetLevel();
+					if (currentLevel == 3) {
+						SceneManager::GetInstance()->ProcessGameWin();
+					}
+					else {
+						SceneManager::GetInstance()->ProcessLevelClear();
+					}
 					OutputDebugStringA("Win level\n");
 				}
 			}
@@ -247,14 +281,13 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 			if (t < 1.0f && temp_ny != 0)
 			{
-				// 1. ĐỤNG BLOCK (Cản cả trên lẫn dưới)
 				if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e)) {
 					if (t < min_ty) {
 						min_ty = t;
 						ny_col = temp_ny;
 					}
 
-					// XỬ LÝ CHUI ỐNG
+					// XỬ LÝ CHUI ỐNG (Chỉ nhận phím khi không khóa)
 					if (Pipe* pipe = dynamic_cast<Pipe*>(e)) {
 						if (temp_ny == 1) {
 							if (pipe->CanEnter() && isPressingDown) {
@@ -291,7 +324,6 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 					}
 				}
 
-				// 2. ĐỤNG NỀN TẢNG 1 CHIỀU (Chỉ cản khi rơi từ trên xuống)
 				else if (dynamic_cast<Platform*>(e)) {
 					if (temp_ny == 1) {
 						if (t < min_ty) {
@@ -300,7 +332,6 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 						}
 					}
 				}
-				// 3. ĐỤNG QUÁI VẬT TRỤC DỌC
 				else if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
 					if (!enemy->IsDied()) {
 						if (temp_ny == 1) {
@@ -314,7 +345,6 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 						}
 					}
 				}
-				// 4. ĐỤNG BUFF
 				else if (Buff* buff = dynamic_cast<Buff*>(e)) {
 					if (lives < 2)
 					{
@@ -324,9 +354,15 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 					}
 					buff->Delete();
 				}
-				// 5. CHẠM CỜ
+				// CHẠM CỜ THEO TRỤC Y
 				else if (Flag* flag = dynamic_cast<Flag*>(e)) {
-					GameManager::GetInstance()->SetGameWin(true);
+					int currentLevel = GameManager::GetInstance()->GetLevel();
+					if (currentLevel == 3) {
+						SceneManager::GetInstance()->ProcessGameWin();
+					}
+					else {
+						SceneManager::GetInstance()->ProcessLevelClear();
+					}
 					OutputDebugStringA("Win level\n");
 				}
 			}
@@ -345,7 +381,6 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 		isOnGround = false;
 	}
 
-	// XỬ LÝ GAME OVER
 	if (IsDied())
 	{
 		OutputDebugStringA("Game over\n");
@@ -357,7 +392,6 @@ void Mario::Render()
 	Animation* ani = NULL;
 	bool isSkidding = (vx > 0 && nx < 0) || (vx < 0 && nx > 0);
 
-	// Mario chết
 	if (isDead)
 	{
 		ani = Animations::GetInstance()->Get(108);
@@ -365,7 +399,6 @@ void Mario::Render()
 		return;
 	}
 
-	// Mario lớn
 	if (isBig)
 	{
 		if (!isOnGround)
@@ -382,7 +415,6 @@ void Mario::Render()
 				ani = (nx > 0) ? Animations::GetInstance()->Get(402) : Animations::GetInstance()->Get(403);
 		}
 	}
-	// Mario nhỏ
 	else
 	{
 		if (!isOnGround)
@@ -400,7 +432,6 @@ void Mario::Render()
 		}
 	}
 
-	// Mario chớp chớp khi bất tử
 	if (untouchable && ((GetTickCount64() / 100) % 2 == 0))
 	{
 		return;
@@ -433,21 +464,20 @@ void Mario::SetBig(bool big)
 
 void Mario::Die()
 {
-	if (isDead) return;
+	if (isDead || GameManager::GetInstance()->IsGameWin() || GameManager::GetInstance()->IsLevelClear()) return;
 
 	isDead = true;
 	vx = 0;
 	vy = 0.2f;
 	deathStart = GetTickCount64();
 
-	// Đẩy gánh nặng tính toán thời gian 5s và tránh lặp âm thanh cho SceneManager lo
 	SceneManager::GetInstance()->ProcessMarioDeath();
 	OutputDebugStringA("Mario died\n");
 }
 
 void Mario::TakeDamage()
 {
-	if (untouchable || isDead) return;
+	if (untouchable || isDead || GameManager::GetInstance()->IsGameWin() || GameManager::GetInstance()->IsLevelClear()) return;
 
 	if (isBig)
 	{

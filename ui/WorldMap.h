@@ -17,5 +17,6 @@ public:
 
     bool IsDone() { return isDone; }
     int GetSelectedLevel() { return selectedLevel; }
-    void Reset() { isDone = false; } // Thêm hàm Reset để đặt lại cờ khi Mario chết
+    void SetSelectedLevel(int level); // Hàm cập nhật công khai level & vị trí icon Mario
+    void Reset() { isDone = false; }
 };

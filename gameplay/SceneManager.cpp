@@ -25,6 +25,10 @@ SceneManager::SceneManager() {
     worldMapScene = nullptr;
     isMarioDying = false;
     deathStartTime = 0;
+    isMarioLevelClearing = false;
+    levelClearStartTime = 0;
+    isMarioGameWinning = false;
+    gameWinStartTime = 0;
 }
 
 SceneManager* SceneManager::GetInstance() {
@@ -46,7 +50,25 @@ void SceneManager::Init() {
 
 void SceneManager::SwitchTo(GameState newState) {
     currentState = newState;
-    if (newState == STATE_WORLD_MAP) {
+    if (newState == STATE_INTRO) {
+        // Làm mới Intro scene để reset cờ trạng thái isDone cũ
+        if (introScene != nullptr) {
+            delete introScene;
+        }
+        introScene = new Intro();
+        introScene->LoadSprites();
+
+        // RESET TRẠNG THÁI: Hủy và khởi tạo lại World Map hoàn toàn mới để đưa Mario và lựa chọn về Màn 1
+        if (worldMapScene != nullptr) {
+            delete worldMapScene;
+        }
+        worldMapScene = new WorldMap();
+        worldMapScene->LoadSprites();
+
+        HUD::GetInstance()->SetWorld(1);
+        GameManager::GetInstance()->SetLevel(1);
+    }
+    else if (newState == STATE_WORLD_MAP) {
         if (worldMapScene != nullptr) {
             worldMapScene->Reset();
         }
@@ -67,15 +89,73 @@ void SceneManager::ProcessMarioDeath()
     GameManager::GetInstance()->SetGameOver(true);
 }
 
+void SceneManager::ProcessLevelClear()
+{
+    if (isMarioLevelClearing || isMarioGameWinning)
+        return;
+
+    isMarioLevelClearing = true;
+    levelClearStartTime = GetTickCount64();
+
+    AudioManager::GetInstance()->StopMusic();
+    AudioManager::GetInstance()->PlaySFX("win_level");
+
+    GameManager::GetInstance()->SetLevelClear(true);
+}
+
+void SceneManager::ProcessGameWin()
+{
+    if (isMarioGameWinning || isMarioLevelClearing)
+        return;
+
+    isMarioGameWinning = true;
+    gameWinStartTime = GetTickCount64();
+
+    AudioManager::GetInstance()->StopMusic();
+    AudioManager::GetInstance()->PlaySFX("win_level");
+
+    GameManager::GetInstance()->SetGameWin(true);
+}
+
 void SceneManager::Update(DWORD dt) {
     if (isMarioDying)
     {
         if (GetTickCount64() - deathStartTime >= 5000)
         {
             isMarioDying = false;
+            SwitchTo(STATE_WORLD_MAP);
+            return;
+        }
+    }
+
+    // Đếm ngược hiệu ứng qua màn nhỏ (6 giây)
+    if (isMarioLevelClearing)
+    {
+        if (GetTickCount64() - levelClearStartTime >= 6000)
+        {
+            isMarioLevelClearing = false;
+            GameManager::GetInstance()->SetLevelClear(false);
+
+            // Tự động dời điểm chọn level tiếp theo trên World Map
+            if (worldMapScene != nullptr) {
+                int nextLevel = worldMapScene->GetSelectedLevel() + 1;
+                worldMapScene->SetSelectedLevel(nextLevel);
+            }
 
             SwitchTo(STATE_WORLD_MAP);
+            return;
+        }
+    }
 
+    // Đếm ngược hiệu ứng thắng màn chơi cuối phá đảo game (6 giây)
+    if (isMarioGameWinning)
+    {
+        if (GetTickCount64() - gameWinStartTime >= 6000)
+        {
+            isMarioGameWinning = false;
+            GameManager::GetInstance()->SetGameWin(false);
+
+            SwitchTo(STATE_INTRO);
             return;
         }
     }
@@ -96,7 +176,11 @@ void SceneManager::Update(DWORD dt) {
                 HUD::GetInstance()->SetWorld(levelToLoad);
                 GameManager::GetInstance()->SetLevel(levelToLoad);
 
-                if (levelToLoad == 2) {
+                // PHÂN LOẠI LOAD ĐÚNG FILE MAP DỰA TRÊN LỰA CHỌN THỰC TẾ
+                if (levelToLoad == 3) {
+                    LoadMap(L"levels/testmaplevel3.txt");
+                }
+                else if (levelToLoad == 2) {
                     LoadMap(L"levels/testmaplevel2.txt");
                 }
                 else {
@@ -165,7 +249,7 @@ void SceneManager::Render() {
         if (introScene) introScene->Render();
     }
     else if (currentState == STATE_WORLD_MAP) {
-        D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f); // Render bình thường, không co giãn dồn dập
+        D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
         game->GetSpriteHandler()->SetViewTransform(&matZoom);
         if (worldMapScene) worldMapScene->Render();
     }
@@ -208,6 +292,26 @@ void SceneManager::Render() {
         game->GetSpriteHandler()->SetViewTransform(&matUI);
 
         HUD::GetInstance()->Render();
+
+        // HIỂN THỊ UI THÔNG BÁO THEO TỪNG TRẠNG THÁI ĐẾM NGƯỢC
+        if (isMarioDying) {
+            Sprite* gameOverSprite = Sprites::GetInstance()->Get(7003); // Sprite Game Over
+            if (gameOverSprite) {
+                gameOverSprite->Draw(0.0f, 200.0f);
+            }
+        }
+        else if (isMarioLevelClearing) {
+            Sprite* winSprite = Sprites::GetInstance()->Get(7001); // Sprite Level Clear
+            if (winSprite) {
+                winSprite->Draw(0.0f, 200.0f);
+            }
+        }
+        else if (isMarioGameWinning) {
+            Sprite* winGameSprite = Sprites::GetInstance()->Get(7002); // Sprite You Win
+            if (winGameSprite) {
+                winGameSprite->Draw(0.0f, 200.0f);
+            }
+        }
     }
 }
 
