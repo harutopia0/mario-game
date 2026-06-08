@@ -12,6 +12,18 @@
 #include <fstream>
 #include <sstream> 
 
+#include "Level.h"
+#include "Ground.h"
+#include "Brick.h"
+#include "GameObject.h"
+#include "Pipe.h"
+#include "Flower.h"
+#include "Enemy.h"
+#include "Mario.h"
+
+#include <fstream>
+#include <sstream> 
+
 CLevel:: CLevel(int level_id, int time_limit, std::string FilePath)
 {
 	this->level_id = level_id;
@@ -46,80 +58,99 @@ void CLevel::Update(DWORD dt)
 void CLevel::LoadLevel()
 {
 	ifstream f;
-    f.open(scene_file_path.c_str());
+	f.open(scene_file_path.c_str()); // Mở đúng file được truyền vào từ constructor
 
-    if (!f.is_open()) return;
+	if (!f.is_open()) return;
 
-    int rows, cols;
-    f >> rows >> cols; 
+	int section = SECTION_UNKNOWN;
+	char str[MAX_LINE_LENGTH];
 
-    // Định nghĩa kích thước 1 ô vuông (Tile Size). 
-    // Trong game Mario thường là 16x16 hoặc 32x32 pixel. Mình giả sử là 32.
-    int tile_size = 32; 
+	while (f.getline(str, MAX_LINE_LENGTH))
+	{
+		std::string line(str);
 
-    
-    this->map_width = cols * tile_size;
-    this->map_height = rows * tile_size;
+		if (line.empty() || line[0] == '#') continue; 
 
-    
-    for (int r = 0; r < rows; r++)
-    {
-        for (int c = 0; c < cols; c++)
-        {
-            int object_id;
-            f >> object_id; // Đọc từng con số
+		if (line == "[ASSETS]") { 
+			section = SECTION_ASSETS; 
+			continue; 
+		}
+		if (line == "[OBJECTS]") { 
+			section = SECTION_OBJECTS; 
+			continue; 
+		}
 
-            
-            if (object_id == 0) continue;
+		if (section == SECTION_ASSETS)
+		{
+			// Xử lý load file tài nguyên (mario.txt, brick.txt...)
+		}
+		else if (section == SECTION_OBJECTS)
+		{
+			stringstream ss(line);
+			int type;
+			float x, y;
 
-            
-            float x = (float)(c * tile_size);
-            float y = (float)(r * tile_size);
+			ss >> type >> x >> y;
 
-            CGameObject* obj = NULL;
+			CGameObject* obj = NULL;
 
-           
-            switch (object_id)
-            {
-                case 1: 
-                    obj = new CBrick(); 
-                    break;
+			switch (type)
+			{
+				case 0: 
+				   
+					break;
+				case 1: 
+					obj = new CBrick(x, y);
+					break;
+				case 2: 
+					obj = new CGoomba(x, y);
+				case 3:
+					obj = new CKoopas(x, y);
+					break;
 				case 4: 
-					obj = new CCoin(); 
+					obj = new CCoin(x, y);
 					break;
-				case 5: 
-					obj = new CGround(); 
+				case 5:
+					obj = new CGround(x, y);
 					break;
-                case 6: 
-                    obj = new CPipe();   // Ống nước
-                    break;
-				case 7:
-					obj = new CMushroom();
+				case 6:
+					obj = new CPipe(x, y);
+					break;
+				case 7:	
+					obj = new CMushroom(x, y);
 					break;
 				case 8:
-					obj = new CFlower();
+					obj = new CFlower(x, y);
 					break;
-				case 30:
-					obj = new CPlatform();
+				case 30: // PLATFORM 
+				{
+					float w, h, l;
+					int sprite1, sprite2, sprite3;
+					ss >> w >> h >> l >> sprite1 >> sprite2 >> sprite3;
+					
+					// obj = new CPlatform(w, h, l, sprite1, sprite2, sprite3);
 					break;
-				case 50:
-					obj = new CPortal();
+				}
+				case 50: // PORTAL 
+				{
+					float target_x, target_y;
+					int target_level;
+					ss >> target_x >> target_y >> target_level;
+					
+					// obj = new CPortal(target_x, target_y, target_level);
 					break;
+				}
+			}
 
-                
-                // Thêm các case khác ở đây (ví dụ Mario, Nấm...)
-            }
+			if (obj != NULL)
+			{
+				obj->SetPosition(x, y);
+				objects.push_back(obj);
+			}
+		}
+	}
 
-            // Nếu tạo thành công, set tọa độ và đẩy vào mảng quản lý
-            if (obj != NULL)
-            {
-                obj->SetPosition(x, y);
-                objects.push_back(obj);
-            }
-        }
-    }
-
-    f.close();
+	f.close();
 }
 void CLevel::Render()
 {
