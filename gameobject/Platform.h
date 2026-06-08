@@ -9,7 +9,7 @@ private:
     int animationId;
 
 public:
-    Platform(float x, float y, float width, float height, int animationId);
+    Platform(float x, float y, int animationId);
 
     void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
     void Render() override;

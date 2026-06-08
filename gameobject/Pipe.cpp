@@ -1,16 +1,21 @@
 #include "Pipe.h"
 #include "../animation/Animations.h"
 
-Pipe::Pipe(float x, float y, float width, float height, int animationId, bool canEnter, float destX, float destY)
+Pipe::Pipe(float x, float y, int animationId, bool canEnter, float destX, float destY)
     : GameObject(x, y)
 {
-    this->width = width;
-    this->height = height;
     this->animationId = animationId;
+    Animation* anim = Animations::GetInstance()->Get(animationId);
+    if (anim != NULL) {
+        this->width = anim->GetWidth();
+        this->height = anim->GetHeight();
+    } else {
+        this->width = 32;
+        this->height = 32;
+    }
     this->canEnter = canEnter;
     this->destX = destX;
     this->destY = destY;
-
     this->isStatic = true;
 }
 

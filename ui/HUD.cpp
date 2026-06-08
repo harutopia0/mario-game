@@ -244,6 +244,7 @@ void HUD::DrawPMeter(int powerLevel)
     float currentX = HUD_PMETER_X;
     float arrowWidth = 19.0f;
 
+    // Vẽ tối đa 6 mũi tên năng lượng trắng (mức từ 1 đến 6)
     for (int i = 0; i < 6; i++)
     {
         if (powerLevel > i)
@@ -255,6 +256,7 @@ void HUD::DrawPMeter(int powerLevel)
 
     currentX += 1.0f;
 
+    // Đạt mức 7 thì hiển thị chữ P nhấp nháy
     if (powerLevel >= 7)
     {
         if (isPMeterBlinkVisible)

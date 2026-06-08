@@ -33,4 +33,6 @@ public:
     }
     void Add(int spriteId, DWORD time = 0);
     void Render(float x, float y);
+    int GetWidth();
+    int GetHeight();
 };

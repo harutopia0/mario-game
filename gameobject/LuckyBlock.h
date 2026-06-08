@@ -11,7 +11,7 @@ private:
     bool isHit;
 
 public:
-    LuckyBlock(float x, float y, float width, float height, int activeAnimationId, int usedAnimationId);
+    LuckyBlock(float x, float y, int activeAnimationId, int usedAnimationId);
 
     void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
     void Render() override;

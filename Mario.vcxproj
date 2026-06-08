@@ -150,6 +150,8 @@
     <ClCompile Include="gameobject\Pipe.cpp" />
     <ClCompile Include="gameobject\Platform.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
+    <ClCompile Include="gameplay\SceneManager.cpp" />
+    <ClCompile Include="input\MarioInputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="physics\Collision.cpp" />
     <ClCompile Include="render\Sprite.cpp" />
@@ -180,7 +182,9 @@
     <ClInclude Include="gameobject\Pipe.h" />
     <ClInclude Include="gameobject\Platform.h" />
     <ClInclude Include="gameplay\GameManager.h" />
+    <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />
+    <ClInclude Include="input\MarioInputHandler.h" />
     <ClInclude Include="physics\Collision.h" />
     <ClInclude Include="render\Sprite.h" />
     <ClInclude Include="render\Sprites.h" />
@@ -191,6 +195,7 @@
     <ClInclude Include="ui\WorldMap.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="gameplay\.gitkeep" />
     <None Include="packages.config" />
     <None Include="ui\.gitkeep" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 #pragma once 
 #include <Windows.h>
 #include <vector>
+#include <string>
 
 
 #include "Animations.h"
@@ -21,11 +22,12 @@ protected:
 	int Map_Height;
 	int Map_Width;
 
+	std::string scene_file_path;  
 	std::vector<LPGAMEOBJECT> Objects; 
 public:
-	CLevel(int lv_id, int time);
+	CLevel(int lv_id, int time, std::string FilePath);
 	virtual ~CLevel(); 
-	virtual void LoadLevel() = 0; 
+	virtual void LoadLevel() ; 
 	virtual void UnLoadLevel() = 0;
 
 	virtual void Render() {};
@@ -42,5 +44,6 @@ public:
 	{
 		return this->Map_Width;
 	}
+	std::vector<LPGAMEOBJECT> GetObjects() const { return objects; }
 };
 
