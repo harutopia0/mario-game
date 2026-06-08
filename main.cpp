@@ -18,6 +18,7 @@
 #include "ui/WorldMap.h"
 #include "audio/AudioManager.h"
 #include "gameplay/GameManager.h"
+#include "render/Camera.h"
 
 #include <string.h>
 #include <vector>
@@ -36,6 +37,10 @@
 #define GRID_CELL_SIZE 64.0f
 #define MAX_CELL_ROW 50
 #define MAX_CELL_COL 200
+
+// Kích thước bản đồ (cần khớp với kích thước trong file map)
+#define MAP_WIDTH 3000.0f
+#define MAP_HEIGHT 408.f
 
 #pragma endregion
 
@@ -121,10 +126,18 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // 3. Initialize DirectX
     Game::GetInstance()->InitDirectX(hWnd);
 
-    // 4. Load Images
+	// 4. Initialize Camera
+    Camera::GetInstance()->Init(
+        WINDOW_WIDTH / 2.0f,
+        WINDOW_HEIGHT / 2.0f,
+        MAP_WIDTH,
+        MAP_HEIGHT,
+        5.0f
+    );
+    // 5. Load Images
     LoadResources();
 
-    // 5. Game Loop
+    // 6. Game Loop
     MSG msg;
     ZeroMemory(&msg, sizeof(msg));
     ULONGLONG frameStart = GetTickCount64();
@@ -217,6 +230,18 @@ void Update(DWORD dt)
     }
     else {
         HUD::GetInstance()->Update(dt);
+
+		//Cap nhat camera theo mario
+        if (!g_objectList.empty())
+        {
+            Mario* mario = dynamic_cast<Mario*>(g_objectList[0]);
+            if (mario != nullptr)
+            {
+                float deltaTimeSec = dt / 1000.0f;
+                Camera::GetInstance()->Update(mario->GetX(), mario->GetY(), deltaTimeSec);
+            }
+        }
+
         for (GameObject* obj : g_objectList)
         {
             if (obj->IsDeleted())
@@ -304,7 +329,10 @@ void Render()
         }
         else
         {
+            D3DMATRIX matCamera, matFinal;
             D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
+			matCamera = Camera::GetInstance()->GetViewMatrix();
+			matFinal = matZoom * matCamera;
             game->GetSpriteHandler()->SetViewTransform(&matZoom);
             GameObject* mario = g_objectList.empty() ? NULL : g_objectList[0];
 
@@ -319,6 +347,11 @@ void Render()
                 GameObject* obj = g_objectList[i];
                 if (obj->IsDeleted())
                     continue;
+
+				// Chi ve object trong tam nhin cua camera
+                if (!Camera::GetInstance()->IsVisible(obj->GetX(), obj->GetY(), 16.0f, 16.0f))
+                    continue;
+
                 obj->Render();
 
                 if (g_showBBox && mario != NULL)
