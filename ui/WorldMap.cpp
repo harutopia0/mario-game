@@ -72,15 +72,18 @@ void WorldMap::SetSelectedNode(int node)
 
 void WorldMap::SetLevelNode(int level)
 {
+    int tNode = 0;
     switch (level)
     {
-    case 1: SetSelectedNode(1); break;
-    case 2: SetSelectedNode(2); break;
-    case 3: SetSelectedNode(3); break;
-    case 4: SetSelectedNode(4); break;
-    case 5: SetSelectedNode(6); break;
-    default: SetSelectedNode(0); break;
+    case 1: tNode = 1; break;
+    case 2: tNode = 2; break;
+    case 3: tNode = 3; break;
+    case 4: tNode = 4; break;
+    case 5: tNode = 6; break;
+    default: tNode = 0; break;
     }
+
+    InitiateMove(currentNode, tNode);
 }
 
 void WorldMap::InitiateMove(int fromNode, int toNode)
@@ -96,7 +99,20 @@ void WorldMap::InitiateMove(int fromNode, int toNode)
     if (endX > startX) facingDir = 1;
     else if (endX < startX) facingDir = -1;
 
-    if (fromNode <= 5 && toNode <= 5)
+    // Lộ trình tự động khi thắng Màn 4 -> Chạy qua Ô tạm 2 -> Lên Màn 5
+    if (fromNode == 4 && toNode == 6)
+    {
+        float pathY = 73.0f;
+        float node5X = 541.0f;
+        float node5Y = 73.0f;
+
+        wpX[0] = startX;  wpY[0] = pathY;  // Chặng 0: Từ Level 4 xuống đường mòn
+        wpX[1] = node5X;  wpY[1] = node5Y;  // Chặng 1: Chạy bộ ngang qua Ô tạm 2
+        wpX[2] = endX;    wpY[2] = endY;    // Chặng 2: Từ Ô tạm 2 nhảy thẳng lên Level 5
+
+        numWaypoints = 3;
+    }
+    else if (fromNode <= 5 && toNode <= 5)
     {
         float pathY = 73.0f;
 
@@ -150,13 +166,26 @@ void WorldMap::Update(DWORD dt)
             marioY += (dy / dist) * step;
         }
 
-        if (targetNode == 6 || currentNode == 6)
+        // ĐÃ SỬA LOGIC ANIMATION: Tách biệt trạng thái chạy bộ và nhảy cao
+        currentAnimID = (facingDir > 0) ? 102 : 103; // Mặc định trên đường là Chạy bộ
+
+        if (targetNode == 6)
         {
-            currentAnimID = (facingDir > 0) ? 104 : 105;
+            // Nếu đi từ Màn 4 -> Màn 5 (3 chặng), chỉ chặng cuối cùng (index == 2) mới hóa Sprite Nhảy
+            if (numWaypoints == 3 && currentWpIndex == 2)
+            {
+                currentAnimID = (facingDir > 0) ? 104 : 105;
+            }
+            // Nếu người chơi chủ động bấm LÊN từ Ô tạm 2 -> Màn 5 (1 chặng) thì dùng Sprite Nhảy luôn
+            else if (numWaypoints == 1)
+            {
+                currentAnimID = (facingDir > 0) ? 104 : 105;
+            }
         }
-        else
+        else if (currentNode == 6 && targetNode == 5)
         {
-            currentAnimID = (facingDir > 0) ? 102 : 103;
+            // Người chơi chủ động bấm XUỐNG từ Màn 5 -> Ô tạm 2
+            currentAnimID = (facingDir > 0) ? 104 : 105;
         }
         return;
     }
@@ -231,22 +260,18 @@ void WorldMap::Render()
         D3DXMATRIX matScale;
         float scaleFactor = 2.0f;
 
-        // Tọa độ vẽ tạm thời để tính toán bù trừ sai lệch pixel
         float drawX = marioX;
         float drawY = marioY;
 
-        // XỬ LÝ BÙ TRỪ KHI QUAY TRÁI
         if (facingDir == -1)
         {
-            // Thay đổi các giá trị cộng/trừ dưới đây cho đến khi khớp mắt nhất
-            drawX += -3.0f;  // Dịch sang phải 3 pixel (hoặc đổi thành trừ nếu bị lệch ngược lại)
-            drawY += 0.0f;  // Tương tự cho trục đứng nếu cần sửa
+            drawX += -3.0f;
+            drawY += 0.0f;
         }
 
         D3DXMatrixScaling(&matScale, scaleFactor, scaleFactor, 1.0f);
         game->GetSpriteHandler()->SetViewTransform(&matScale);
 
-        // Sử dụng tọa độ vẽ đã qua tinh chỉnh
         ani->Render(drawX / scaleFactor, drawY / scaleFactor);
 
         D3DXMatrixScaling(&matScale, 1.0f, 1.0f, 1.0f);
