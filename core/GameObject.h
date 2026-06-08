@@ -10,6 +10,7 @@ protected:
     float x, y;
     float vx, vy;
     int nx;
+    bool isDeleted;
 
 public:
     //địa chỉ trong grid của object
@@ -23,5 +24,7 @@ public:
     virtual void Update(DWORD dt, vector<GameObject*>* coObjects);
     virtual void Render() = 0;
     virtual void RenderBoundingBox();
+    virtual void Delete();
+    bool IsDeleted() const;
     virtual ~GameObject() {}
 };

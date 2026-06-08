@@ -2,8 +2,17 @@
 #include "../animation/Animations.h"
 #include "../gameplay/GameManager.h"
 
-Flag::Flag(float x, float y, float width, float height, bool isVisited)
-	: GameObject(x, y), isVisited(isVisited), width(width), height(height) {
+Flag::Flag(float x, float y)
+	: GameObject(x, y){
+	width = BUFF_WIDTH;
+	height = BUFF_HEIGHT;
+
+	vx = 0.0f;
+	vy = 0.0f;
+
+	isStatic = true;
+	isDeleted = false;
+	isVisited = false;
 }
 
 void Flag::Render() {

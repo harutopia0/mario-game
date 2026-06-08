@@ -1,6 +1,12 @@
 #include "HUD.h"
 #include <stdlib.h>
 
+//Định nghĩa các giá trị của CardType
+#define CARD_NONE 0
+#define CARD_MUSHROOM 1
+#define CARD_FLOWER 2
+#define CARD_STAR 3
+
 // Định nghĩa ID texture và tọa độ của các phần tử trên HUD
 #define TEX_HUD 20
 #define HUD_COINS_X 353.0f
@@ -48,10 +54,10 @@ HUD::HUD()
     currentLives = 4;
     currentWorld = 1;
 
-    // Khởi tạo mảng thẻ bài với giá trị 0 (chưa có thẻ nào)
-    cards[0] = 0;
-    cards[1] = 0;
-    cards[2] = 0;
+    // Khởi tạo mảng thẻ bài với giá trị mặc định (chưa có thẻ nào)
+    cards[0] = CARD_NONE;
+    cards[1] = CARD_NONE;
+    cards[2] = CARD_NONE;
 }
 
 HUD* HUD::GetInstance()
@@ -143,7 +149,7 @@ void HUD::Update(DWORD dt)
 
         if (testCardCount <= 3)
         {
-            int randomItem = (rand() % 3) + 1;
+            int randomItem = (rand() % 3) + 1; // Tạo ngẫu nhiên 1 (Nấm), 2 (Hoa) hoặc 3 (Sao)
             AddCard(randomItem);
         }
         else
@@ -221,14 +227,13 @@ void HUD::DrawTime(int t)
 void HUD::DrawLives(int lives)
 {
     std::string str = std::to_string(lives);
-    while (str.length() < 2) str = "0" + str; // Đảm bảo luôn có 2 số (VD: 04)
+    while (str.length() < 2) str = "0" + str;
 
     DrawString(str, HUD_LIVES_X, HUD_LIVES_Y);
 }
 
 void HUD::DrawWorld(int world)
 {
-    // Chỉ cần 1 chữ số cho World
     std::string str = std::to_string(world);
     DrawString(str, HUD_WORLD_X, HUD_WORLD_Y);
 }
@@ -239,6 +244,7 @@ void HUD::DrawPMeter(int powerLevel)
     float currentX = HUD_PMETER_X;
     float arrowWidth = 19.0f;
 
+    // Vẽ tối đa 6 mũi tên năng lượng trắng (mức từ 1 đến 6)
     for (int i = 0; i < 6; i++)
     {
         if (powerLevel > i)
@@ -250,6 +256,7 @@ void HUD::DrawPMeter(int powerLevel)
 
     currentX += 1.0f;
 
+    // Đạt mức 7 thì hiển thị chữ P nhấp nháy
     if (powerLevel >= 7)
     {
         if (isPMeterBlinkVisible)
@@ -282,9 +289,9 @@ void HUD::DrawCards()
     {
         int spriteId = 0;
 
-        if (cards[i] == 1) spriteId = 3014;
-        else if (cards[i] == 2) spriteId = 3015;
-        else if (cards[i] == 3) spriteId = 3016;
+        if (cards[i] == CARD_MUSHROOM) spriteId = 3014;
+        else if (cards[i] == CARD_FLOWER) spriteId = 3015;
+        else if (cards[i] == CARD_STAR) spriteId = 3016;
 
         if (spriteId != 0 && sprites->Get(spriteId))
         {
@@ -297,7 +304,7 @@ void HUD::AddCard(int cardType)
 {
     for (int i = 0; i < 3; i++)
     {
-        if (cards[i] == 0)
+        if (cards[i] == CARD_NONE)
         {
             cards[i] = cardType;
             break;

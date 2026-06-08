@@ -1,16 +1,22 @@
-﻿#pragma region ImportLibaries
+#pragma region ImportLibaries
 
 #include "core/Game.h"
 #include "render/Sprites.h"
 #include "animation/Animations.h"
 #include "render/Textures.h"
 #include "gameobject/Mario.h"
+#include "gameobject/Breakable.h"
 #include "gameobject/Brick.h"
-#include "gameobject/Platform.h"
+#include "gameobject/Buff.h"
 #include "gameobject/Enemy.h"
+#include "gameobject/Flag.h"
+#include "gameobject/LuckyBlock.h"
+#include "gameobject/Pipe.h"
+#include "gameobject/Platform.h"
 #include "ui/HUD.h"
-#include "ui/Intro.h"
 #include "audio/AudioManager.h"
+#include "gameplay/GameManager.h"
+#include "gameplay/SceneManager.h"
 
 #include <string.h>
 #include <vector>
@@ -26,9 +32,6 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 #define FPS_LIMIT 100
-#define GRID_CELL_SIZE 64.0f
-#define MAX_CELL_ROW 50
-#define MAX_CELL_COL 200
 
 #pragma endregion
 
@@ -39,22 +42,20 @@ std::vector<GameObject*> grid[MAX_CELL_ROW][MAX_CELL_COL];
 
 bool g_showBBox = false;
 
-enum GameState {
-    STATE_INTRO,
-    STATE_PLAYING
-};
-
-GameState currentState = STATE_INTRO;
-
-Intro* introScene = NULL;
-
 enum TEXTURE_ID {
     TEX_MARIO = 0,
-    TEX_COMMON = 1,
+    TEX_COMMON1 = 1,
+    TEX_COMMON2 = 2,
     TEX_HUD = 20,
     TEX_INTRO = 30,
     TEX_BBOX = 99,
-	TEX_ENEMY_TEST = 100
+    TEX_ENEMY_TEST = 100,
+    TEX_POTION = 101,
+    TEX_FLAG = 102,
+    TEX_LEVEL_CLEAR = 701,
+    TEX_GAME_OVER = 702,
+    TEX_YOU_WIN = 703,
+	TEX_MAP_LEVEL = 800
 };
 
 #pragma endregion
@@ -73,7 +74,6 @@ void UpdateObjectGrid(GameObject* obj);
 void SpawnEnemy(float x, float y);
 
 #pragma endregion
-
 #pragma region MainFunction
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -171,48 +171,7 @@ void Update(DWORD dt)
         isF2Pressed = false;
     }
 
-    if (currentState == STATE_INTRO)
-    {
-        introScene->Update(dt);
-        if (introScene->IsDone()) {
-            currentState = STATE_PLAYING;
-            AudioManager::GetInstance()->StopMusic();
-        }
-    }
-    else {
-        HUD::GetInstance()->Update(dt);
-        for (GameObject* obj : g_objectList)
-        {
-            if (obj->isStatic == true) {
-                obj->Update(dt, NULL);
-                continue;
-            }
-            UpdateObjectGrid(obj);
-            int currentCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
-            int currentCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
-
-            std::vector<GameObject*> nearbyObjects;
-
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    int checkRow = currentCellY + i;
-                    int checkCol = currentCellX + j;
-
-                    if (checkRow >= 0 && checkRow < MAX_CELL_ROW && checkCol >= 0 && checkCol < MAX_CELL_COL) {
-                        for (GameObject* g : grid[checkRow][checkCol]) {
-                            if (std::find(nearbyObjects.begin(),
-                                nearbyObjects.end(),
-                                g) == nearbyObjects.end())
-                            {
-                                nearbyObjects.push_back(g);
-                            }
-                        }
-                    }
-                }
-            }
-            obj->Update(dt, &nearbyObjects);
-        }
-    }
+    SceneManager::GetInstance()->Update(dt);
 }
 
 // DRAWING (Show on screen)
@@ -224,7 +183,7 @@ void Render()
     if (dev)
     {
         float bgColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-        if (currentState == STATE_PLAYING) {
+        if (SceneManager::GetInstance()->GetState() == STATE_PLAYING) {
             bgColor[0] = 0.2f; bgColor[1] = 0.2f; bgColor[2] = 0.2f;
         }
         dev->ClearRenderTargetView(game->GetRenderTargetView(), bgColor);
@@ -234,49 +193,7 @@ void Render()
 
         game->GetSpriteHandler()->Begin(D3DX10_SPRITE_SORT_TEXTURE);
 
-        D3DXMATRIX matZoom;
-
-        if (currentState == STATE_INTRO)
-        {
-            D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
-            game->GetSpriteHandler()->SetViewTransform(&matZoom);
-
-            if (introScene) introScene->Render();
-        }
-        else
-        {
-            D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
-            game->GetSpriteHandler()->SetViewTransform(&matZoom);
-            GameObject* mario = g_objectList.empty() ? NULL : g_objectList[0];
-
-            for (size_t i = 1; i < g_objectList.size(); i++)
-            {
-                GameObject* obj = g_objectList[i];
-                obj->Render();
-
-                if (g_showBBox && mario != NULL)
-                {
-                    int marioCellX = (int)(mario->GetX() / GRID_CELL_SIZE);
-                    int marioCellY = (int)(mario->GetY() / GRID_CELL_SIZE);
-                    int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
-                    int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
-
-                    if (abs(marioCellX - objCellX) <= 1 && abs(marioCellY - objCellY) <= 1) {
-                        obj->RenderBoundingBox();
-                    }
-                }
-            }
-
-            if (mario != NULL) {
-                mario->Render();
-                if (g_showBBox) mario->RenderBoundingBox();
-            }
-            D3DXMATRIX matUI;
-            D3DXMatrixScaling(&matUI, 1.0f, 1.0f, 1.0f);
-            game->GetSpriteHandler()->SetViewTransform(&matUI);
-
-            HUD::GetInstance()->Render();
-        }
+        SceneManager::GetInstance()->Render();
 
         game->GetSpriteHandler()->End();
         game->GetSwapChain()->Present(0, 0);
@@ -316,13 +233,11 @@ void LoadMap(LPCWSTR filePath)
             f >> tileID;
 
             float realX = c * 15.0f;
-
             float realY = ((rows - r - 1) * 15.0f) + 50.0f;
-
 
             if (tileID == 1 || tileID == 2)
             {
-                Brick* brick = new Brick(realX, realY);
+                Brick* brick = new Brick(realX, realY, 201);
                 g_objectList.push_back(brick);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -334,7 +249,7 @@ void LoadMap(LPCWSTR filePath)
             }
             else if (tileID == 3)
             {
-                Platform* platform = new Platform(realX, realY, 15.0f, 15.0f, 201);
+                Platform* platform = new Platform(realX, realY, 202);
                 g_objectList.push_back(platform);
 
                 int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -344,11 +259,47 @@ void LoadMap(LPCWSTR filePath)
                     AddObjectToGrid(platform);
                 }
             }
+            else if (tileID == 4)
+            {
+                Platform* platform = new Platform(realX, realY, 203);
+                g_objectList.push_back(platform);
+
+                int cellX = (int)(realX / GRID_CELL_SIZE);
+                int cellY = (int)(realY / GRID_CELL_SIZE);
+
+                if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
+                    AddObjectToGrid(platform);
+                }
+            }
+            else if (tileID == 5)
+            {
+                Breakable* breakableBlock = new Breakable(realX, realY, 205);
+                g_objectList.push_back(breakableBlock);
+
+                int cellX = (int)(realX / GRID_CELL_SIZE);
+                int cellY = (int)(realY / GRID_CELL_SIZE);
+
+                if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
+                    AddObjectToGrid(breakableBlock);
+                }
+            }
+            else if (tileID == 6)
+            {
+                LuckyBlock* lucky = new LuckyBlock(realX, realY, 206, 201);
+                g_objectList.push_back(lucky);
+
+                int cellX = (int)(realX / GRID_CELL_SIZE);
+                int cellY = (int)(realY / GRID_CELL_SIZE);
+
+                if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
+                    AddObjectToGrid(lucky);
+                }
+            }
         }
     }
     f.close();
 }
-//thêm object vào grid ngay sau khi được khởi tạo
+
 void AddObjectToGrid(GameObject* obj)
 {
     int col = (int)(obj->GetX() / GRID_CELL_SIZE);
@@ -361,7 +312,7 @@ void AddObjectToGrid(GameObject* obj)
     obj->gridRow = row;
     obj->gridCol = col;
 }
-//xóa object khỏi grid khi nó bị hủy hoặc di chuyển ra khỏi cell cũ
+
 void RemoveObjectFromGrid(GameObject* obj)
 {
     if (obj->gridRow < 0 || obj->gridCol < 0)
@@ -372,7 +323,7 @@ void RemoveObjectFromGrid(GameObject* obj)
         cell.end()
     );
 }
-//cập nhật vị trí của object trong grid khi nó di chuyển
+
 void UpdateObjectGrid(GameObject* obj)
 {
     int newCol = (int)(obj->GetX() / GRID_CELL_SIZE);
@@ -390,6 +341,7 @@ void UpdateObjectGrid(GameObject* obj)
     obj->gridRow = newRow;
     obj->gridCol = newCol;
 }
+
 void LoadResources()
 {
     Textures* textures = Textures::GetInstance();
@@ -402,11 +354,21 @@ void LoadResources()
     // ==========================================
 
     textures->Add(TEX_MARIO, L"assets/mario-luigi.png");
-    textures->Add(TEX_COMMON, L"assets/CommonObjects&Pipes.png");
+    textures->Add(TEX_COMMON1, L"assets/CommonObjects1.png");
+    textures->Add(TEX_COMMON2, L"assets/CommonObjects2.png");
+
     textures->Add(TEX_HUD, L"assets/hud.png");
     textures->Add(TEX_INTRO, L"assets/intro_items.png");
     textures->Add(TEX_BBOX, L"assets/bbox.png");
     textures->Add(TEX_ENEMY_TEST, L"assets/enemy.png");
+    textures->Add(TEX_POTION, L"assets/potion.png");
+
+
+    textures->Add(TEX_LEVEL_CLEAR, L"assets/level-clear.png");
+    textures->Add(TEX_YOU_WIN, L"assets/you-win.png");
+    textures->Add(TEX_GAME_OVER, L"assets/game-over.png");
+
+    textures->Add(TEX_MAP_LEVEL, L"assets/map-level.png");
 
     // ==========================================
     // 2. CẮT SPRITES
@@ -415,7 +377,7 @@ void LoadResources()
     // Idle
     sprites->Add(0, 115, 45, 126, 59, TEX_MARIO); // Phải
     sprites->Add(1, 70, 45, 81, 59, TEX_MARIO); // Trái
-    
+
     // Run
     sprites->Add(2, 131, 44, 145, 59, TEX_MARIO);
     sprites->Add(3, 148, 44, 163, 59, TEX_MARIO);
@@ -423,7 +385,6 @@ void LoadResources()
     sprites->Add(4, 51, 44, 65, 59, TEX_MARIO);
     sprites->Add(5, 33, 44, 48, 59, TEX_MARIO);
 
-    
     // Jump
     sprites->Add(6, 131, 26, 146, 41, TEX_MARIO);
     sprites->Add(7, 50, 26, 65, 41, TEX_MARIO);
@@ -432,103 +393,159 @@ void LoadResources()
     sprites->Add(8, 166, 44, 179, 59, TEX_MARIO);
     sprites->Add(9, 17, 44, 30, 59, TEX_MARIO);
 
-    //  Brick
-    sprites->Add(10, 435, 152, 450, 167, TEX_COMMON);
+    // ==========================================
+    // BIG MARIO SPRITES
+    // ==========================================
+    // Idle
+    sprites->Add(20, 112, 90, 125, 116, TEX_MARIO); // Phải
+    sprites->Add(21, 71, 90, 84, 116, TEX_MARIO); // Trái
+
+    // Run
+    sprites->Add(22, 129, 90, 144, 116, TEX_MARIO); // Phải 1
+    sprites->Add(23, 148, 91, 163, 116, TEX_MARIO); // Phải 2
+    sprites->Add(24, 52, 90, 67, 116, TEX_MARIO); // Trái 1
+    sprites->Add(25, 33, 91, 48, 116, TEX_MARIO); // Trái 2
+
+    // Jump
+    sprites->Add(26, 111, 62, 126, 87, TEX_MARIO); // Phải
+    sprites->Add(27, 70, 62, 85, 87, TEX_MARIO); // Trái
+
+    // Skid
+    sprites->Add(28, 166, 89, 181, 116, TEX_MARIO); // Phải sang trái (Skid Right)
+    sprites->Add(29, 15, 89, 30, 116, TEX_MARIO); // Trái sang phải (Skid Left)
+
+    // Brick
+    sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
+
+    // Platform
+    sprites->Add(11, 481, 152, 496, 167, TEX_COMMON1);
+
+    // Big Block
+    sprites->Add(12, 469, 470, 500, 501, TEX_COMMON1);
+
+    // Pipe
+    sprites->Add(13, 5, 28, 36, 75, TEX_COMMON2);
+
+    // Breakable
+    sprites->Add(14, 453, 152, 468, 167, TEX_COMMON1);
+
+    // Lucky Block
+    sprites->Add(15, 185, 7, 200, 22, TEX_COMMON2);
 
     // Bounding Box
-    sprites->Add(99999, 0, 0, 9, 9, 99);
+    sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
 
-    //enemy
+    // Enemy
     sprites->Add(100, 0, 0, 16, 16, TEX_ENEMY_TEST);
-    
+
+    // Potion
+    sprites->Add(101, 0, 0, 16, 16, TEX_POTION);
+
+    //Level clear
+    sprites->Add(7001, 0, 0, 640, 405, TEX_LEVEL_CLEAR);
+    //You win
+    sprites->Add(7002, 0, 0, 640, 405, TEX_YOU_WIN);
+    //Game over
+    sprites->Add(7003, 0, 0, 640, 405, TEX_GAME_OVER);
+
+    //Map level
+	sprites->Add(8000, 0, 0, 640, 480, TEX_MAP_LEVEL);
+
     // ==========================================
     // 3. GOM SPRITES TẠO ANIMATION
     // ==========================================
 
-    // Tạo animation cho Mario
     ani = new Animation(100); ani->Add(0, 1000); animations->Add(100, ani);
     ani = new Animation(100); ani->Add(1, 1000); animations->Add(101, ani);
-    
+
     ani = new Animation(100); ani->Add(2); ani->Add(0); ani->Add(3); animations->Add(102, ani);
     ani = new Animation(100); ani->Add(4); ani->Add(1); ani->Add(5); animations->Add(103, ani);
-    
+
     ani = new Animation(100); ani->Add(6, 1000); animations->Add(104, ani);
     ani = new Animation(100); ani->Add(7, 1000); animations->Add(105, ani);
 
     ani = new Animation(100); ani->Add(8, 1000); animations->Add(106, ani);
     ani = new Animation(100); ani->Add(9, 1000); animations->Add(107, ani);
 
-    // Tạo animation cho Brick
     ani = new Animation(100); ani->Add(10, 1000); animations->Add(201, ani);
+    ani = new Animation(100); ani->Add(11, 1000); animations->Add(202, ani);
+    ani = new Animation(100); ani->Add(12, 1000); animations->Add(203, ani);
+    ani = new Animation(100); ani->Add(13, 1000); animations->Add(204, ani);
+    ani = new Animation(100); ani->Add(14, 1000); animations->Add(205, ani);
+    ani = new Animation(100); ani->Add(15, 1000); animations->Add(206, ani);
 
-    //Tạo animation cho Enemy
-	ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
+    // Big Mario Animations
+    ani = new Animation(100); ani->Add(20, 1000); animations->Add(400, ani); // Idle Phải
+    ani = new Animation(100); ani->Add(21, 1000); animations->Add(401, ani); // Idle Trái
+    ani = new Animation(100); ani->Add(22); ani->Add(20); ani->Add(23); animations->Add(402, ani); // Run Phải
+    ani = new Animation(100); ani->Add(24); ani->Add(21); ani->Add(25); animations->Add(403, ani); // Run Trái
+    ani = new Animation(100); ani->Add(26, 1000); animations->Add(404, ani); // Jump Phải
+    ani = new Animation(100); ani->Add(27, 1000); animations->Add(405, ani); // Jump Trái
+    ani = new Animation(100); ani->Add(28, 1000); animations->Add(406, ani); // Skid Left
+    ani = new Animation(100); ani->Add(29, 1000); animations->Add(407, ani); // Skid Right
+
+    ani = new Animation(100); ani->Add(100, 1000); animations->Add(300, ani);
+    ani = new Animation(100); ani->Add(101, 1000); animations->Add(301, ani);
 
     // ==========================================
     // 4. KHỞI TẠO OBJECT
     // ==========================================
 
-    // Khởi tạo Mario
-    Mario* mario = new Mario(100.0f, 200.0f, MARIO_WIDTH, MARIO_HEIGHT);
+    Mario* mario = new Mario(100.0f, 200.0f);
     g_objectList.push_back(mario);
 
-	//Khởi tạo Enemy
-	SpawnEnemy(200.0f, 200.0f);
+    SpawnEnemy(200.0f, 200.0f);
 
-    // Khởi tạp map
-    LoadMap(L"levels/testmap.txt");
-
-    // Cắt 10 số (0-9)
     for (int i = 0; i < 10; i++)
     {
         sprites->Add(1000 + i, 22 + i * 16, 136, 22 + (i + 1) * 16, 136 + 16, TEX_HUD);
     }
 
-    //HUD
     HUD::GetInstance()->LoadSprites();
 
-    //Intro
-    Intro* intro = new Intro();
-    intro->LoadSprites();
-    // Khởi tạo Intro
-    introScene = new Intro();
+    // Khởi tạo các Scene và chuyển giao quyền cho SceneManager
+    SceneManager::GetInstance()->Init();
+
+    Buff* potion = new Buff(150.0f, 200.0f, 301);
+    g_objectList.push_back(potion);
+    AddObjectToGrid(potion);
+
+    Flag* flag = new Flag(300.0f, 100.0f);
+    g_objectList.push_back(flag);
+    AddObjectToGrid(flag);
+
+    Pipe* pipe = new Pipe(15.0f, 80.0f, 204, true, 300.0f, 300.0f);
+    g_objectList.push_back(pipe);
+    AddObjectToGrid(pipe);
 
     // ==========================================
-    // 5. NẠP VÀ PHÁT ÂM THANH (Thêm toàn bộ đoạn này)
+    // 5. NẠP VÀ PHÁT ÂM THANH
     // ==========================================
+    AudioManager::GetInstance()->LoadSound("win_level", "assets/win-level-complete-mario.mp3");
+    AudioManager::GetInstance()->LoadSound("mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
+    AudioManager::GetInstance()->LoadSound("mario_jump", "assets/maro-jump-sound-effect.mp3");
     AudioManager::GetInstance()->LoadSound("intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
     AudioManager::GetInstance()->PlayMusic("intro_theme", true);
 }
 
 void Cleanup()
 {
-    // Dọn dẹp danh sách Object (Mario, Brick,...)
     for (GameObject* obj : g_objectList) delete obj;
     g_objectList.clear();
 
-    // Dọn dẹp Intro
-    if (introScene != NULL)
-    {
-        delete introScene;
-        introScene = NULL;
-    }
+    // Dọn dẹp Scene Manager
+    SceneManager::GetInstance()->Cleanup();
 
-    // Dọn dẹp HUD
     HUD::DestroyInstance();
-
-    // Dọn dẹp các Manager hệ thống
     Animations::GetInstance()->Clear();
     AudioManager::GetInstance()->CleanUp();
 
-    // Dọn dẹp Sprites và Textures (nếu các class này có hàm Clear)
-    // Sprites::GetInstance()->Clear();
-    // Textures::GetInstance()->Clear();
-
     Game::GetInstance()->ReleaseDirectX();
 }
+
 void SpawnEnemy(float x, float y)
 {
-    Enemy* enemy = new Enemy(x, y, 16.0f, 16.0f);
+    Enemy* enemy = new Enemy(x, y, 300);
     g_objectList.push_back(enemy);
     AddObjectToGrid(enemy);
 }

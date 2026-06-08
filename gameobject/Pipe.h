@@ -1,18 +1,23 @@
 #pragma once
+#include "../core/GameObject.h"
 
-#include "GameObject.h"
-#include "Animation.h"
-#include "Animations.h"
+class Pipe : public GameObject
+{
+private:
+    float width;
+    float height;
+    int animationId;
+    bool canEnter;
+    float destX, destY;
 
-#define ID_ANI_PIPE 11
-#define PIPE_WIDTH 20
-#define GROUND_BBOX_WIDTH 40
-#define GROUND_BBOX_HEIGHT 15
-
-class CPipe : public CGameObject {
 public:
-	CPipe(float x, float y) : CGameObject(x, y) {}
-	void Render();
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {}
-	void GetBoundingBox(float& l, float& t, float& r, float& b);
+    Pipe(float x, float y, int animationId, bool canEnter = false, float destX = 0, float destY = 0);
+
+    void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
+    void Render() override;
+
+    bool CanEnter() const { return canEnter; }
+    float GetDestX() const { return destX; }
+    float GetDestY() const { return destY; }
+    float GetWidth() const { return width; }
 };

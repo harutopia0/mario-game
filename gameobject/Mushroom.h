@@ -1,18 +1,16 @@
 #pragma once
 
-#include "GameObject.h"
-#include "Animation.h"
-#include "Animations.h"
+#include "../core/GameObject.h"
 
 #define ID_ANI_MUSHROOM 120
 #define MUSHROOM_WIDTH 16
 #define MUSHROOM_BBOX_WIDTH  25
 #define MUSHROOM_BBOX_HEIGHT 16
 
-class CMushroom : public CGameObject {
+class Mushroom : public GameObject {
 public:
-	CMushroom(float x, float y) : CGameObject(x, y) {}
+	Mushroom(float x, float y) : GameObject(x, y) {}
 	void Render();
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {}
+	void Update(DWORD dt, vector<GameObject*>* coObjects) {}
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 };

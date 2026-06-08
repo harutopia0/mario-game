@@ -11,6 +11,7 @@ GameObject::GameObject(float x, float y)
 
     gridRow = -1;
     gridCol = -1;
+    isDeleted = false;
 }
 
 void GameObject::Update(DWORD dt, vector<GameObject*>* coObjects)
@@ -32,4 +33,12 @@ void GameObject::RenderBoundingBox()
     {
         bbox->Draw(l, t, width, height, 0.4f);
     }
+}
+void GameObject::Delete()
+{
+    isDeleted = true;
+}
+bool GameObject::IsDeleted() const
+{
+    return isDeleted;
 }

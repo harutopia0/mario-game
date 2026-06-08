@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -65,6 +65,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="input\MarioInputHandler.cpp">
+      <Filter>Source Files\input</Filter>
+    </ClCompile>
     <ClCompile Include="ui\Intro.cpp">
       <Filter>Source Files\ui</Filter>
     </ClCompile>
@@ -101,6 +104,33 @@
     <ClCompile Include="gameobject\Platform.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
+    <ClCompile Include="gameobject\Flower.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Ground.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Mushroom.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Pipe.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Breakable.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\LuckyBlock.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameplay\SceneManager.cpp">
+      <Filter>Source Files\gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\WorldMap.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation\Animation.h">
@@ -128,6 +158,9 @@
       <Filter>Source Files\ui</Filter>
     </ClInclude>
     <ClInclude Include="input\KeyEventHandler.h">
+      <Filter>Source Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="input\MarioInputHandler.h">
       <Filter>Source Files\input</Filter>
     </ClInclude>
     <ClInclude Include="core\GameObject.h">
@@ -166,8 +199,63 @@
     <ClInclude Include="gameobject\Platform.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
+    <ClInclude Include="debug.h" />
+    <ClInclude Include="gameobject\Flower.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Ground.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Mushroom.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Pipe.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Breakable.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\LuckyBlock.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameplay\SceneManager.h">
+      <Filter>Source Files\gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\WorldMap.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="ui\.gitkeep" />
+    <None Include="gameplay\.gitkeep">
+      <Filter>Source Files\gameplay</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="gameobject\Flower.txt">
+      <Filter>Source Files\gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Ground.txt">
+      <Filter>Source Files\gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Brick.txt">
+      <Filter>Source Files\gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Mushroom.txt">
+      <Filter>Source Files\gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Pipe.txt">
+      <Filter>Source Files\gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Mario.txt">
+      <Filter>Source Files\gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Enemy.txt">
+      <Filter>Source Files\gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Note.txt">
+      <Filter>Source Files\gameobject</Filter>
+    </Text>
   </ItemGroup>
 </Project>

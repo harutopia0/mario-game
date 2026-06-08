@@ -1,7 +1,7 @@
 #pragma once
 #include "../core/GameObject.h"
 
-class Platform : public GameObject
+class Breakable : public GameObject
 {
 private:
     float width;
@@ -9,8 +9,10 @@ private:
     int animationId;
 
 public:
-    Platform(float x, float y, int animationId);
+    Breakable(float x, float y, int animationId);
 
     void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
     void Render() override;
+
+    void Break();
 };
