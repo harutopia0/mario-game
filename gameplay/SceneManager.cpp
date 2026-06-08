@@ -51,14 +51,12 @@ void SceneManager::Init() {
 void SceneManager::SwitchTo(GameState newState) {
     currentState = newState;
     if (newState == STATE_INTRO) {
-        // Làm mới Intro scene để reset cờ trạng thái isDone cũ
         if (introScene != nullptr) {
             delete introScene;
         }
         introScene = new Intro();
         introScene->LoadSprites();
 
-        // RESET TRẠNG THÁI: Hủy và khởi tạo lại World Map hoàn toàn mới để đưa Mario và lựa chọn về Màn 1
         if (worldMapScene != nullptr) {
             delete worldMapScene;
         }
@@ -128,7 +126,6 @@ void SceneManager::Update(DWORD dt) {
         }
     }
 
-    // Đếm ngược hiệu ứng qua màn nhỏ (6 giây)
     if (isMarioLevelClearing)
     {
         if (GetTickCount64() - levelClearStartTime >= 6000)
@@ -136,10 +133,10 @@ void SceneManager::Update(DWORD dt) {
             isMarioLevelClearing = false;
             GameManager::GetInstance()->SetLevelClear(false);
 
-            // Tự động dời điểm chọn level tiếp theo trên World Map
+            // Tự động chuyển dịch đến node của Level kế tiếp
             if (worldMapScene != nullptr) {
                 int nextLevel = worldMapScene->GetSelectedLevel() + 1;
-                worldMapScene->SetSelectedLevel(nextLevel);
+                worldMapScene->SetLevelNode(nextLevel);
             }
 
             SwitchTo(STATE_WORLD_MAP);
@@ -147,7 +144,6 @@ void SceneManager::Update(DWORD dt) {
         }
     }
 
-    // Đếm ngược hiệu ứng thắng màn chơi cuối phá đảo game (6 giây)
     if (isMarioGameWinning)
     {
         if (GetTickCount64() - gameWinStartTime >= 6000)
@@ -173,20 +169,30 @@ void SceneManager::Update(DWORD dt) {
             worldMapScene->Update(dt);
             if (worldMapScene->IsDone()) {
                 int levelToLoad = worldMapScene->GetSelectedLevel();
-                HUD::GetInstance()->SetWorld(levelToLoad);
-                GameManager::GetInstance()->SetLevel(levelToLoad);
 
-                // PHÂN LOẠI LOAD ĐÚNG FILE MAP DỰA TRÊN LỰA CHỌN THỰC TẾ
-                if (levelToLoad == 3) {
-                    LoadMap(L"levels/testmaplevel3.txt");
+                // Đảm bảo chỉ xử lý tải màn khi trả về một level hợp lệ (> 0)
+                if (levelToLoad > 0) {
+                    HUD::GetInstance()->SetWorld(levelToLoad);
+                    GameManager::GetInstance()->SetLevel(levelToLoad);
+
+                    // PHÂN LOẠI LOAD FILE MAP ĐẾN LEVEL 5
+                    if (levelToLoad == 5) {
+                        LoadMap(L"levels/Level_5.txt");
+                    }
+                    else if (levelToLoad == 4) {
+                        LoadMap(L"levels/Level_4.txt");
+                    }
+                    else if (levelToLoad == 3) {
+                        LoadMap(L"levels/Level_3.txt");
+                    }
+                    else if (levelToLoad == 2) {
+                        LoadMap(L"levels/Level_2.txt");
+                    }
+                    else {
+                        LoadMap(L"levels/Level_1.txt");
+                    }
+                    SwitchTo(STATE_PLAYING);
                 }
-                else if (levelToLoad == 2) {
-                    LoadMap(L"levels/testmaplevel2.txt");
-                }
-                else {
-                    LoadMap(L"levels/testmap.txt");
-                }
-                SwitchTo(STATE_PLAYING);
             }
         }
     }
@@ -293,21 +299,20 @@ void SceneManager::Render() {
 
         HUD::GetInstance()->Render();
 
-        // HIỂN THỊ UI THÔNG BÁO THEO TỪNG TRẠNG THÁI ĐẾM NGƯỢC
         if (isMarioDying) {
-            Sprite* gameOverSprite = Sprites::GetInstance()->Get(7003); // Sprite Game Over
+            Sprite* gameOverSprite = Sprites::GetInstance()->Get(7003);
             if (gameOverSprite) {
                 gameOverSprite->Draw(0.0f, 200.0f);
             }
         }
         else if (isMarioLevelClearing) {
-            Sprite* winSprite = Sprites::GetInstance()->Get(7001); // Sprite Level Clear
+            Sprite* winSprite = Sprites::GetInstance()->Get(7001);
             if (winSprite) {
                 winSprite->Draw(0.0f, 200.0f);
             }
         }
         else if (isMarioGameWinning) {
-            Sprite* winGameSprite = Sprites::GetInstance()->Get(7002); // Sprite You Win
+            Sprite* winGameSprite = Sprites::GetInstance()->Get(7002);
             if (winGameSprite) {
                 winGameSprite->Draw(0.0f, 200.0f);
             }

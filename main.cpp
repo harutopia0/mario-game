@@ -54,7 +54,8 @@ enum TEXTURE_ID {
     TEX_FLAG = 102,
     TEX_LEVEL_CLEAR = 701,
     TEX_GAME_OVER = 702,
-    TEX_YOU_WIN = 703
+    TEX_YOU_WIN = 703,
+	TEX_MAP_LEVEL = 800
 };
 
 #pragma endregion
@@ -367,6 +368,8 @@ void LoadResources()
     textures->Add(TEX_YOU_WIN, L"assets/you-win.png");
     textures->Add(TEX_GAME_OVER, L"assets/game-over.png");
 
+    textures->Add(TEX_MAP_LEVEL, L"assets/map-level.png");
+
     // ==========================================
     // 2. CẮT SPRITES
     // ==========================================
@@ -444,6 +447,9 @@ void LoadResources()
     sprites->Add(7002, 0, 0, 640, 405, TEX_YOU_WIN);
     //Game over
     sprites->Add(7003, 0, 0, 640, 405, TEX_GAME_OVER);
+
+    //Map level
+	sprites->Add(8000, 0, 0, 640, 480, TEX_MAP_LEVEL);
 
     // ==========================================
     // 3. GOM SPRITES TẠO ANIMATION
