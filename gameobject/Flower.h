@@ -4,12 +4,12 @@
 #include "../animation/Animation.h"
 #include "../animation/Animations.h"
 
-#define ID_ANI_FLOWER 110
-#define FLOWER_WIDTH 12
-#define FLOWER_BBOX_WIDTH  12
-#define FLOWER_BBOX_HEIGHT 20
+#define ID_ANI_TULIP 110
+#define TULIP_WIDTH 12
+#define TULIP_BBOX_WIDTH  12
+#define TULIP_BBOX_HEIGHT 20
 
-class CFlower : public CGameObject {
+class Tulip : public GameObject {
 public:
 	Tulip(float x, float y) : GameObject(x, y) {}
 	void Render();
