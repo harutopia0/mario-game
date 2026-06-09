@@ -171,6 +171,22 @@ void Update(DWORD dt)
         isF2Pressed = false;
     }
 
+    // F3: Toggle debug mode (bỏ qua khoá màn chơi trên World Map)
+    static bool isF3Pressed = false;
+    if (GetAsyncKeyState(VK_F3) & 0x8000)
+    {
+        if (!isF3Pressed)
+        {
+            bool current = GameManager::GetInstance()->IsDebugMode();
+            GameManager::GetInstance()->SetDebugMode(!current);
+            isF3Pressed = true;
+        }
+    }
+    else
+    {
+        isF3Pressed = false;
+    }
+
     SceneManager::GetInstance()->Update(dt);
 }
 
