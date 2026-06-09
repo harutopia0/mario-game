@@ -10,7 +10,7 @@ WorldMap::WorldMap()
     currentNode = 0;
     targetNode = 0;
     isMoving = false;
-    moveSpeed = 0.12f;
+    moveSpeed = 0.18f;
     facingDir = 1;
     currentAnimID = 100;
     numWaypoints = 0;
