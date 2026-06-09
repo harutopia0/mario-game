@@ -71,6 +71,7 @@ public:
 	void SetPressingDown(bool pressing);
 
 	DWORD untouchableStart;
+	DWORD untouchableDuration;
 	bool untouchable;
 	void TakeDamage();
 };
