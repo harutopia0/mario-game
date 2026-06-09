@@ -171,6 +171,22 @@ void Update(DWORD dt)
         isF2Pressed = false;
     }
 
+    // F3: Toggle debug mode (bỏ qua khoá màn chơi trên World Map)
+    static bool isF3Pressed = false;
+    if (GetAsyncKeyState(VK_F3) & 0x8000)
+    {
+        if (!isF3Pressed)
+        {
+            bool current = GameManager::GetInstance()->IsDebugMode();
+            GameManager::GetInstance()->SetDebugMode(!current);
+            isF3Pressed = true;
+        }
+    }
+    else
+    {
+        isF3Pressed = false;
+    }
+
     SceneManager::GetInstance()->Update(dt);
 }
 
@@ -521,11 +537,19 @@ void LoadResources()
     // ==========================================
     // 5. NẠP VÀ PHÁT ÂM THANH
     // ==========================================
+    AudioManager::GetInstance()->LoadSound("mario_theme", "assets/mario-theme.mp3");
+    AudioManager::GetInstance()->LoadSound("level_theme", "assets/level_theme.mp3");
+    AudioManager::GetInstance()->LoadSound("power_up", "assets/power-up-mario.mp3");
+    AudioManager::GetInstance()->LoadSound("mushroom_sound_effect", "assets/super_mario_bros_mushroom_sound_effect.mp3");
+    AudioManager::GetInstance()->LoadSound("super_mario_pipe", "assets/super-mario-pipe.mp3");
     AudioManager::GetInstance()->LoadSound("win_level", "assets/win-level-complete-mario.mp3");
     AudioManager::GetInstance()->LoadSound("mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
-    AudioManager::GetInstance()->LoadSound("mario_jump", "assets/maro-jump-sound-effect.mp3");
+    AudioManager::GetInstance()->LoadSound("mario_jump", "assets/mario-jump-sound-effect.mp3");
     AudioManager::GetInstance()->LoadSound("intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
+
+    // Phát nhạc intro sau khi tất cả âm thanh đã được nạp xong
     AudioManager::GetInstance()->PlayMusic("intro_theme", true);
+
 }
 
 void Cleanup()

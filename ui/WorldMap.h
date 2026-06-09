@@ -26,6 +26,7 @@ private:
     void GetNodePosition(int node, float& ox, float& oy);
     void UpdateMarioPosition();
     void InitiateMove(int fromNode, int toNode); // Hàm xử lý tính toán lộ trình đường đi
+    bool IsNodeLocked(int node);                 // Kiểm tra node có bị khoá không
 
 public:
     WorldMap();

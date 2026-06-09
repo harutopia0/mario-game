@@ -35,6 +35,7 @@ private:
     ma_engine m_Engine;
     ma_sound m_CurrentMusic; // Dùng riêng để điều khiển nhạc nền
     bool m_IsMusicPlaying;
+    std::string m_CurrentMusicId; // ID của bài nhạc nền đang phát
 
     // Danh sách lưu trữ cặp <ID, Đường dẫn file>
     std::map<std::string, std::string> m_SoundMap;

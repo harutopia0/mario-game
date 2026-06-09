@@ -65,11 +65,21 @@ void SceneManager::SwitchTo(GameState newState) {
 
         HUD::GetInstance()->SetWorld(1);
         GameManager::GetInstance()->SetLevel(1);
+
+        // Reset all cleared levels progress khi bắt đầu lại game
+        GameManager::GetInstance()->ResetClearedLevels();
+
+        AudioManager::GetInstance()->PlayMusic("intro_theme", true);
     }
     else if (newState == STATE_WORLD_MAP) {
         if (worldMapScene != nullptr) {
             worldMapScene->Reset();
         }
+
+        AudioManager::GetInstance()->PlayMusic("level_theme", true);
+    }
+    else if (newState == STATE_PLAYING) {
+        AudioManager::GetInstance()->PlayMusic("mario_theme", true);
     }
 }
 
@@ -98,6 +108,10 @@ void SceneManager::ProcessLevelClear()
     AudioManager::GetInstance()->StopMusic();
     AudioManager::GetInstance()->PlaySFX("win_level");
 
+    // Đánh dấu màn hiện tại đã được clear
+    int clearedLevel = GameManager::GetInstance()->GetLevel();
+    GameManager::GetInstance()->SetLevelCleared(clearedLevel, true);
+
     GameManager::GetInstance()->SetLevelClear(true);
 }
 
@@ -111,6 +125,10 @@ void SceneManager::ProcessGameWin()
 
     AudioManager::GetInstance()->StopMusic();
     AudioManager::GetInstance()->PlaySFX("win_level");
+
+    // Đánh dấu màn cuối (level 5) đã được clear
+    int clearedLevel = GameManager::GetInstance()->GetLevel();
+    GameManager::GetInstance()->SetLevelCleared(clearedLevel, true);
 
     GameManager::GetInstance()->SetGameWin(true);
 }
