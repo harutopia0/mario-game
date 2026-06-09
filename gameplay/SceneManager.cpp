@@ -65,11 +65,18 @@ void SceneManager::SwitchTo(GameState newState) {
 
         HUD::GetInstance()->SetWorld(1);
         GameManager::GetInstance()->SetLevel(1);
+
+        AudioManager::GetInstance()->PlayMusic("intro_theme", true);
     }
     else if (newState == STATE_WORLD_MAP) {
         if (worldMapScene != nullptr) {
             worldMapScene->Reset();
         }
+
+        AudioManager::GetInstance()->PlayMusic("level_theme", true);
+    }
+    else if (newState == STATE_PLAYING) {
+        AudioManager::GetInstance()->PlayMusic("mario_theme", true);
     }
 }
 
