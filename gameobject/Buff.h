@@ -7,9 +7,12 @@ class Buff : public GameObject
 private:
 		float width, height;
 public:
-	Buff(float x, float y);
+	Buff(float x, float y, int animationId);
 		void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 		void Update(DWORD dt, vector<GameObject*>* coObjects);
 		void Render() override;
+    int animationId;
+public:
+	int GetAnimationId() const { return animationId; }
 };
 

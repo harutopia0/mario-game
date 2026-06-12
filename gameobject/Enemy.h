@@ -6,9 +6,10 @@ class Enemy : public GameObject
 {
 private:
 	float width, height;
+	int animationId;
 	bool died;
 public:
-	Enemy(float x, float y, float width, float height);
+	Enemy(float x, float y, int animationId);
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 	void Update(DWORD dt, vector<GameObject*>* coObjects);
 	void Render() override;

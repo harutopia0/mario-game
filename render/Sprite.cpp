@@ -47,6 +47,25 @@ void Sprite::Draw(float x, float y)
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteInfo, 1, 0, 0);
 }
 
+void Sprite::Draw(float x, float y, D3DXCOLOR color)
+{
+    Game* game = Game::GetInstance();
+    D3DXMATRIX matTranslation;
+
+    float spriteWidth = (this->right - this->left + 1);
+    float spriteHeight = (this->bottom - this->top + 1);
+
+    float centerX = x + (spriteWidth / 2.0f);
+    float centerY = y + (spriteHeight / 2.0f);
+
+    D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+
+    D3DX10_SPRITE spriteToDraw = this->spriteInfo;
+    spriteToDraw.matWorld = (this->matScaling * matTranslation);
+    spriteToDraw.ColorModulate = color;
+    game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
+}
+
 void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, float alpha)
 {
     Game* game = Game::GetInstance();

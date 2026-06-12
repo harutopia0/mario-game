@@ -6,7 +6,6 @@
 class Intro
 {
 private:
-    int currentOption; // 1: 1 Player, 2: 2 Player
     bool isDone;
 
     float curtainY;
@@ -28,5 +27,5 @@ public:
     void Update(DWORD dt);
     void Render();
     bool IsDone() { return isDone; }
-    int GetSelectedOption() { return currentOption; }
+    int GetSelectedOption() { return 1; } // Mặc định trả về 1 (Game Start) cho các hệ thống khác nếu cần
 };

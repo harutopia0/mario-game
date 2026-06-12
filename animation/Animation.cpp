@@ -39,3 +39,39 @@ void Animation::Render(float x, float y)
 
     frames[currentFrame]->GetSprite()->Draw(x, y);
 }
+
+void Animation::Render(float x, float y, D3DXCOLOR color)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y, color);
+}
+
+int Animation::GetWidth()
+{
+    if (frames.size() > 0)
+        return frames[0]->GetSprite()->GetWidth();
+    return 0;
+}
+
+int Animation::GetHeight()
+{
+    if (frames.size() > 0)
+        return frames[0]->GetSprite()->GetHeight();
+    return 0;
+}

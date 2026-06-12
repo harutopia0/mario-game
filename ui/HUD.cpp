@@ -1,5 +1,12 @@
 #include "HUD.h"
+#include "../gameplay/GameManager.h"
 #include <stdlib.h>
+
+// Định nghĩa các giá trị của CardType
+#define CARD_NONE 0
+#define CARD_MUSHROOM 1
+#define CARD_FLOWER 2
+#define CARD_STAR 3
 
 // Định nghĩa ID texture và tọa độ của các phần tử trên HUD
 #define TEX_HUD 20
@@ -32,26 +39,13 @@ HUD* HUD::__instance = NULL;
 
 HUD::HUD()
 {
-    // Khởi tạo thời gian và bộ đếm thời gian
-    time = 300;
-    timeAccumulator = 0;
-
     // Khởi tạo trạng thái nhấp nháy của PMeter
     pMeterBlinkTime = 0;
     isPMeterBlinkVisible = true;
 
-    // Khởi tạo các giá trị mặc định cho HUD
+    // Khởi tạo các giá trị UI
     currentPMeter = 0;
     currentPlayer = 1;
-    currentScore = 0;
-    currentCoins = 0;
-    currentLives = 4;
-    currentWorld = 1;
-
-    // Khởi tạo mảng thẻ bài với giá trị 0 (chưa có thẻ nào)
-    cards[0] = 0;
-    cards[1] = 0;
-    cards[2] = 0;
 }
 
 HUD* HUD::GetInstance()
@@ -64,10 +58,10 @@ void HUD::LoadSprites()
 {
     Sprites* sprites = Sprites::GetInstance();
 
-    //Sprite nền HUD
+    // Sprite nền HUD
     sprites->Add(3000, 0, 0, 640, 75, TEX_HUD);
 
-    //Sprites số cho điểm, tiền, thời gian (1000-1009)
+    // Sprites số cho điểm, tiền, thời gian (1000-1009)
     sprites->Add(1000, 649, 75, 668, 91, TEX_HUD);
     sprites->Add(1001, 669, 75, 688, 91, TEX_HUD);
     sprites->Add(1002, 689, 75, 708, 91, TEX_HUD);
@@ -79,15 +73,14 @@ void HUD::LoadSprites()
     sprites->Add(1008, 809, 75, 828, 91, TEX_HUD);
     sprites->Add(1009, 829, 75, 848, 91, TEX_HUD);
 
-    //Sprites mũi tên PMeter
+    // Sprites mũi tên PMeter
     sprites->Add(3010, 932, 76, 951, 92, TEX_HUD);
     sprites->Add(3011, 953, 76, 988, 92, TEX_HUD);
 
-    //Sprites icon người chơi
+    // Sprites icon người chơi
     sprites->Add(3012, 601, 86, 639, 102, TEX_HUD);
-    sprites->Add(3013, 601, 103, 639, 119, TEX_HUD);
 
-    //Sprites thẻ bài
+    // Sprites thẻ bài
     sprites->Add(3014, 1025, 83, 1068, 130, TEX_HUD); // 3014: Nấm
     sprites->Add(3015, 1081, 83, 1124, 130, TEX_HUD); // 3015: Hoa
     sprites->Add(3016, 1137, 83, 1180, 130, TEX_HUD); // 3016: Sao
@@ -95,81 +88,30 @@ void HUD::LoadSprites()
 
 void HUD::Update(DWORD dt)
 {
-    if (time > 0)
-    {
-        timeAccumulator += dt;
-        if (timeAccumulator >= 1000)
-        {
-            time--;
-            timeAccumulator = 0;
-        }
-    }
-
-    // ==========================================
-    // CODE TEST: ẤN 'R' ĐỂ GIẢM SỐ MẠNG
-    // ==========================================
-    static bool isRPressed = false;
-    if (GetAsyncKeyState('R') & 0x8000)
-    {
-        if (!isRPressed)
-        {
-            currentLives--;
-            if (currentLives < 0) currentLives = 99; // Nếu dưới 0 thì quay lại 99
-            isRPressed = true;
-        }
-    }
-    else
-    {
-        isRPressed = false;
-    }
-
+    // Chỉ xử lý nhấp nháy PMeter (animation thuần UI)
     pMeterBlinkTime += dt;
     if (pMeterBlinkTime >= 150)
     {
         isPMeterBlinkVisible = !isPMeterBlinkVisible;
         pMeterBlinkTime = 0;
     }
-
-    // ==========================================
-    // CODE TEST: TỰ ĐỘNG THÊM THẺ BÀI RANDOM MỖI 1 GIÂY
-    // ==========================================
-    static DWORD testCardTimer = 0;
-    static int testCardCount = 0;
-
-    testCardTimer += dt;
-    if (testCardTimer >= 1000)
-    {
-        testCardCount++;
-
-        if (testCardCount <= 3)
-        {
-            int randomItem = (rand() % 3) + 1;
-            AddCard(randomItem);
-        }
-        else
-        {
-            ClearCards();
-            testCardCount = 0;
-        }
-
-        testCardTimer = 0;
-    }
 }
 
 void HUD::Render()
 {
     Sprites* sprites = Sprites::GetInstance();
+    GameManager* gm = GameManager::GetInstance();
 
     if (sprites->Get(3000)) sprites->Get(3000)->Draw(0.0f, 0.0f);
 
-    // Vẽ các phần tử HUD theo thứ tự
-    DrawScore(currentScore);
-    DrawCoins(currentCoins);
-    DrawTime(time);
+    // Đọc tất cả dữ liệu từ GameManager để vẽ
+    DrawScore(gm->GetScore());
+    DrawCoins(gm->GetCoins());
+    DrawTime(gm->GetTime());
     DrawPMeter(currentPMeter);
     DrawPlayerIcon(currentPlayer);
-    DrawLives(currentLives);
-    DrawWorld(currentWorld);
+    DrawLives(gm->GetLives());
+    DrawWorld(gm->GetLevel());
     DrawCards();
 }
 
@@ -221,14 +163,13 @@ void HUD::DrawTime(int t)
 void HUD::DrawLives(int lives)
 {
     std::string str = std::to_string(lives);
-    while (str.length() < 2) str = "0" + str; // Đảm bảo luôn có 2 số (VD: 04)
+    while (str.length() < 2) str = "0" + str;
 
     DrawString(str, HUD_LIVES_X, HUD_LIVES_Y);
 }
 
 void HUD::DrawWorld(int world)
 {
-    // Chỉ cần 1 chữ số cho World
     std::string str = std::to_string(world);
     DrawString(str, HUD_WORLD_X, HUD_WORLD_Y);
 }
@@ -239,6 +180,7 @@ void HUD::DrawPMeter(int powerLevel)
     float currentX = HUD_PMETER_X;
     float arrowWidth = 19.0f;
 
+    // Vẽ tối đa 6 mũi tên năng lượng trắng (mức từ 1 đến 6)
     for (int i = 0; i < 6; i++)
     {
         if (powerLevel > i)
@@ -250,6 +192,7 @@ void HUD::DrawPMeter(int powerLevel)
 
     currentX += 1.0f;
 
+    // Đạt mức 7 thì hiển thị chữ P nhấp nháy
     if (powerLevel >= 7)
     {
         if (isPMeterBlinkVisible)
@@ -267,10 +210,6 @@ void HUD::DrawPlayerIcon(int player)
     {
         if (sprites->Get(3012)) sprites->Get(3012)->Draw(HUD_ICON_X, HUD_ICON_Y);
     }
-    else if (player == 2)
-    {
-        if (sprites->Get(3013)) sprites->Get(3013)->Draw(HUD_ICON_X, HUD_ICON_Y);
-    }
 }
 
 void HUD::DrawCards()
@@ -278,29 +217,20 @@ void HUD::DrawCards()
     Sprites* sprites = Sprites::GetInstance();
     float cardX[3] = { HUD_CARD_1_X, HUD_CARD_2_X, HUD_CARD_3_X };
 
+    // Đọc trực tiếp từ GameManager
+    int* cards = GameManager::GetInstance()->GetHoldingCards();
+
     for (int i = 0; i < 3; i++)
     {
         int spriteId = 0;
 
-        if (cards[i] == 1) spriteId = 3014;
-        else if (cards[i] == 2) spriteId = 3015;
-        else if (cards[i] == 3) spriteId = 3016;
+        if (cards[i] == CARD_MUSHROOM) spriteId = 3014;
+        else if (cards[i] == CARD_FLOWER) spriteId = 3015;
+        else if (cards[i] == CARD_STAR) spriteId = 3016;
 
         if (spriteId != 0 && sprites->Get(spriteId))
         {
             sprites->Get(spriteId)->Draw(cardX[i], HUD_CARD_Y);
-        }
-    }
-}
-
-void HUD::AddCard(int cardType)
-{
-    for (int i = 0; i < 3; i++)
-    {
-        if (cards[i] == 0)
-        {
-            cards[i] = cardType;
-            break;
         }
     }
 }
