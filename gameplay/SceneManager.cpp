@@ -6,6 +6,10 @@
 #include "../audio/AudioManager.h"
 #include "../gameplay/GameManager.h"
 #include "../gameobject/Mario.h"
+#include "../gameobject/Buff.h"
+#include "../gameobject/Enemy.h"
+#include "../gameobject/Flag.h"
+#include "../gameobject/Pipe.h"
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -20,6 +24,8 @@ extern bool g_showBBox;
 extern void LoadMap(LPCWSTR filePath);
 extern void RemoveObjectFromGrid(GameObject* obj);
 extern void UpdateObjectGrid(GameObject* obj);
+extern void AddObjectToGrid(GameObject* obj);
+extern void SpawnEnemy(float x, float y);
 
 SceneManager::SceneManager() {
     currentState = STATE_INTRO;
@@ -56,9 +62,32 @@ void SceneManager::Init() {
     currentState = STATE_INTRO;
 }
 
+// Hàm dọn sạch toàn bộ game objects và grid
+static void ClearAllGameObjects() {
+    extern std::vector<GameObject*> g_objectList;
+    extern std::vector<GameObject*> grid[MAX_CELL_ROW][MAX_CELL_COL];
+
+    for (GameObject* obj : g_objectList) {
+        delete obj;
+    }
+    g_objectList.clear();
+
+    for (int r = 0; r < MAX_CELL_ROW; r++) {
+        for (int c = 0; c < MAX_CELL_COL; c++) {
+            grid[r][c].clear();
+        }
+    }
+}
+
 void SceneManager::SwitchTo(GameState newState) {
     currentState = newState;
     if (newState == STATE_INTRO) {
+        // Hủy HUD
+        HUD::DestroyInstance();
+
+        // Dọn game objects
+        ClearAllGameObjects();
+
         if (introScene != nullptr) {
             delete introScene;
         }
@@ -71,15 +100,18 @@ void SceneManager::SwitchTo(GameState newState) {
         worldMapScene = new WorldMap();
         worldMapScene->LoadSprites();
 
-        HUD::GetInstance()->SetWorld(1);
-        GameManager::GetInstance()->SetLevel(1);
-
-        GameManager::GetInstance()->ResetClearedLevels();
-        GameManager::GetInstance()->ClearHoldingCards();
+        // Hủy GameManager để reset hoàn toàn mọi dữ liệu cho game mới
+        GameManager::DestroyInstance();
 
         AudioManager::GetInstance()->PlayMusic("intro_theme", true);
     }
     else if (newState == STATE_WORLD_MAP) {
+        // Hủy HUD khi về World Map
+        HUD::DestroyInstance();
+
+        // Dọn game objects (Mario, enemies, bricks...)
+        ClearAllGameObjects();
+
         if (worldMapScene != nullptr) {
             worldMapScene->Reset();
         }
@@ -87,6 +119,40 @@ void SceneManager::SwitchTo(GameState newState) {
         AudioManager::GetInstance()->PlayMusic("level_theme", true);
     }
     else if (newState == STATE_PLAYING) {
+        GameManager* gm = GameManager::GetInstance();
+
+        // Reset các giá trị cho màn chơi mới
+        gm->ResetForNewLevel();
+
+        // Tạo lại HUD mới
+        HUD::GetInstance()->LoadSprites();
+
+        // Tạo Mario mới và khôi phục form từ GameManager
+        Mario* mario = new Mario(100.0f, 200.0f);
+        if (gm->IsMarioFire()) {
+            mario->SetFire(true);
+        } else if (gm->IsMarioBig()) {
+            mario->SetBig(true);
+        }
+        // Khôi phục lives từ GameManager
+        // (Mario constructor mặc định lives=1, nếu Big thì logic SetBig sẽ set lives=2 bên trong collision)
+        g_objectList.insert(g_objectList.begin(), mario);
+
+        // Spawn các objects cơ bản cho màn chơi
+        SpawnEnemy(200.0f, 200.0f);
+
+        Buff* potion = new Buff(150.0f, 200.0f, 301);
+        g_objectList.push_back(potion);
+        AddObjectToGrid(potion);
+
+        Flag* flag = new Flag(300.0f, 100.0f);
+        g_objectList.push_back(flag);
+        AddObjectToGrid(flag);
+
+        Pipe* pipe = new Pipe(15.0f, 80.0f, 204, true, 300.0f, 300.0f);
+        g_objectList.push_back(pipe);
+        AddObjectToGrid(pipe);
+
         AudioManager::GetInstance()->PlayMusic("mario_theme", true);
     }
 }
@@ -110,6 +176,13 @@ void SceneManager::ProcessLevelClear()
     if (isMarioLevelClearing || isMarioGameWinning)
         return;
 
+    // Lưu form Mario hiện tại vào GameManager trước khi chuyển màn
+    Mario* mario = g_objectList.empty() ? nullptr : dynamic_cast<Mario*>(g_objectList[0]);
+    if (mario != nullptr) {
+        GameManager::GetInstance()->SetMarioBig(mario->IsBig());
+        GameManager::GetInstance()->SetMarioFire(mario->IsFire());
+    }
+
     isMarioLevelClearing = true;
     levelClearStartTime = GetTickCount64();
 
@@ -130,6 +203,13 @@ void SceneManager::ProcessGameWin()
 {
     if (isMarioGameWinning || isMarioLevelClearing)
         return;
+
+    // Lưu form Mario hiện tại vào GameManager
+    Mario* mario = g_objectList.empty() ? nullptr : dynamic_cast<Mario*>(g_objectList[0]);
+    if (mario != nullptr) {
+        GameManager::GetInstance()->SetMarioBig(mario->IsBig());
+        GameManager::GetInstance()->SetMarioFire(mario->IsFire());
+    }
 
     isMarioGameWinning = true;
     gameWinStartTime = GetTickCount64();
@@ -158,7 +238,7 @@ void SceneManager::Update(DWORD dt) {
         if (GetTickCount64() - deathStartTime >= 5000)
         {
             isMarioDying = false;
-            SwitchTo(STATE_WORLD_MAP);
+            SwitchTo(STATE_INTRO);
             return;
         }
     }
@@ -180,8 +260,8 @@ void SceneManager::Update(DWORD dt) {
             rouletteCardType = (rand() % 3) + 1;
             isRouletteDone = true;
 
+            // Chỉ thêm card vào GameManager (HUD đọc trực tiếp từ đó)
             GameManager::GetInstance()->AddCard(rouletteCardType);
-            HUD::GetInstance()->AddCard(rouletteCardType);
         }
 
         if (holdingTime >= 6000)
@@ -220,7 +300,7 @@ void SceneManager::Update(DWORD dt) {
         }
         else
         {
-            // Chỉ cập nhật HUD (thời gian, nhấp nháy), không cập nhật game objects
+            // Chỉ cập nhật HUD (nhấp nháy PMeter), không cập nhật game objects
             HUD::GetInstance()->Update(dt);
             return;
         }
@@ -241,7 +321,6 @@ void SceneManager::Update(DWORD dt) {
                 int levelToLoad = worldMapScene->GetSelectedLevel();
 
                 if (levelToLoad > 0) {
-                    HUD::GetInstance()->SetWorld(levelToLoad);
                     GameManager::GetInstance()->SetLevel(levelToLoad);
 
                     if (levelToLoad == 5) {
@@ -265,53 +344,62 @@ void SceneManager::Update(DWORD dt) {
         }
     }
     else if (currentState == STATE_PLAYING) {
+        // Cập nhật thời gian đếm ngược trong GameManager
+        GameManager::GetInstance()->UpdateTime(dt);
+
+        // Cập nhật HUD (nhấp nháy PMeter)
         HUD::GetInstance()->Update(dt);
 
         // ==========================================
-        // ẤN Z ĐỂ SỬ DỤNG THẺ BÀI (từ phải sang trái)
+        // ẤN PHÍM 1/2/3 ĐỂ SỬ DỤNG THẺ BÀI TẠI VỊ TRÍ TƯƠNG ỨNG
         // ==========================================
-        static bool isZPressed = false;
-        if (GetAsyncKeyState('Z') & 0x8000)
+        for (int slot = 0; slot < 3; slot++)
         {
-            if (!isZPressed)
+            int key = '1' + slot; // '1', '2', '3'
+            static bool isSlotPressed[3] = { false, false, false };
+
+            if (GetAsyncKeyState(key) & 0x8000)
             {
-                int cardType = HUD::GetInstance()->UseCard();
-                if (cardType != 0) // CARD_NONE = 0
+                if (!isSlotPressed[slot])
                 {
-                    Mario* mario = g_objectList.empty() ? nullptr : dynamic_cast<Mario*>(g_objectList[0]);
-                    if (mario != nullptr && !mario->IsDied())
+                    int cardType = GameManager::GetInstance()->UseCard(slot);
+                    if (cardType != 0) // CARD_NONE = 0
                     {
-                        if (cardType == 3) // CARD_STAR: Bất tử 10 giây
+                        Mario* mario = g_objectList.empty() ? nullptr : dynamic_cast<Mario*>(g_objectList[0]);
+                        if (mario != nullptr && !mario->IsDied())
                         {
-                            mario->untouchable = true;
-                            mario->untouchableStart = GetTickCount64();
-                            mario->untouchableDuration = 10000;
-                            mario->isStarInvincible = true;
-                            AudioManager::GetInstance()->PauseMusic();
-                            AudioManager::GetInstance()->PlayEventMusic("star_theme", true);
-                        }
-                        else if (cardType == 1) // CARD_MUSHROOM: Biến lớn
-                        {
-                            if (!mario->IsBig())
+                            if (cardType == 3) // CARD_STAR: Bất tử 10 giây
                             {
-                                mario->SetBig(true);
+                                mario->untouchable = true;
+                                mario->untouchableStart = GetTickCount64();
+                                mario->untouchableDuration = 10000;
+                                mario->isStarInvincible = true;
+                                AudioManager::GetInstance()->PauseMusic();
+                                AudioManager::GetInstance()->PlayEventMusic("star_theme", true);
                             }
-                        }
-                        else if (cardType == 2) // CARD_FLOWER: Bắn lửa
-                        {
-                            if (!mario->IsFire())
+                            else if (cardType == 1) // CARD_MUSHROOM: Biến lớn
                             {
-                                mario->SetFire(true);
+                                if (!mario->IsBig())
+                                {
+                                    mario->SetBig(true);
+                                }
+                            }
+                            else if (cardType == 2) // CARD_FLOWER: Bắn lửa
+                            {
+                                if (!mario->IsFire())
+                                {
+                                    mario->SetFire(true);
+                                }
                             }
                         }
                     }
+                    isSlotPressed[slot] = true;
                 }
-                isZPressed = true;
             }
-        }
-        else
-        {
-            isZPressed = false;
+            else
+            {
+                isSlotPressed[slot] = false;
+            }
         }
 
         for (GameObject* obj : g_objectList) {

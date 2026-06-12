@@ -174,6 +174,21 @@ void Update(DWORD dt) {
     isF3Pressed = false;
   }
 
+  // F4: Debug - Thêm 3 thẻ bài (Nấm, Hoa, Sao) để test
+  static bool isF4Pressed = false;
+  if (GetAsyncKeyState(VK_F4) & 0x8000) {
+    if (!isF4Pressed) {
+      GameManager *gm = GameManager::GetInstance();
+      gm->ClearHoldingCards();
+      gm->AddCard(1); // Nấm
+      gm->AddCard(2); // Hoa
+      gm->AddCard(3); // Sao
+      isF4Pressed = true;
+    }
+  } else {
+    isF4Pressed = false;
+  }
+
   SceneManager::GetInstance()->Update(dt);
 }
 
@@ -599,35 +614,16 @@ void LoadResources() {
   animations->Add(301, ani);
 
   // ==========================================
-  // 4. KHỞI TẠO OBJECT
+  // 4. KHỞI TẠO
   // ==========================================
-
-  Mario *mario = new Mario(100.0f, 200.0f);
-  g_objectList.push_back(mario);
-
-  SpawnEnemy(200.0f, 200.0f);
 
   for (int i = 0; i < 10; i++) {
     sprites->Add(1000 + i, 22 + i * 16, 136, 22 + (i + 1) * 16, 136 + 16,
                  TEX_HUD);
   }
 
-  HUD::GetInstance()->LoadSprites();
-
   // Khởi tạo các Scene và chuyển giao quyền cho SceneManager
   SceneManager::GetInstance()->Init();
-
-  Buff *potion = new Buff(150.0f, 200.0f, 301);
-  g_objectList.push_back(potion);
-  AddObjectToGrid(potion);
-
-  Flag *flag = new Flag(300.0f, 100.0f);
-  g_objectList.push_back(flag);
-  AddObjectToGrid(flag);
-
-  Pipe *pipe = new Pipe(15.0f, 80.0f, 204, true, 300.0f, 300.0f);
-  g_objectList.push_back(pipe);
-  AddObjectToGrid(pipe);
 
   // ==========================================
   // 5. NẠP VÀ PHÁT ÂM THANH

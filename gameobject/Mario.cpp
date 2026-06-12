@@ -63,8 +63,8 @@ void Mario::GetBoundingBox(float &left, float &top, float &right,
 }
 
 void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
-  // Cập nhật số mạng sống lên HUD
-  HUD::GetInstance()->SetLives(lives);
+  // Cập nhật số mạng sống vào GameManager
+  GameManager::GetInstance()->SetLives(lives);
 
   // Thời gian bất tử
   if (untouchable) {
@@ -198,6 +198,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           if (lives < 2) {
             lives = 2;
             SetBig(true);
+            GameManager::GetInstance()->SetMarioBig(true);
             OutputDebugStringA("Mario became BIG\n");
           }
           buff->Delete();
@@ -305,6 +306,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           if (lives < 2) {
             lives = 2;
             SetBig(true);
+            GameManager::GetInstance()->SetMarioBig(true);
             OutputDebugStringA("Mario became BIG\n");
           }
           buff->Delete();
@@ -448,6 +450,7 @@ void Mario::SetBig(bool big) {
     SceneManager::GetInstance()->ProcessTransform();
   }
   isBig = big;
+  GameManager::GetInstance()->SetMarioBig(big);
   if (big) {
     width = MARIO_BIG_WIDTH;
     height = MARIO_BIG_HEIGHT;
@@ -455,6 +458,7 @@ void Mario::SetBig(bool big) {
     width = MARIO_SMALL_WIDTH;
     height = MARIO_SMALL_HEIGHT;
     isFire = false; // Thu nhỏ thì mất luôn lửa
+    GameManager::GetInstance()->SetMarioFire(false);
   }
 }
 
@@ -477,6 +481,7 @@ void Mario::SetFire(bool fire) {
     SceneManager::GetInstance()->ProcessTransform();
   }
   isFire = fire;
+  GameManager::GetInstance()->SetMarioFire(fire);
 }
 
 void Mario::Die() {

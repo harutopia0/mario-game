@@ -1,4 +1,5 @@
 #include "HUD.h"
+#include "../gameplay/GameManager.h"
 #include <stdlib.h>
 
 // Định nghĩa các giá trị của CardType
@@ -38,26 +39,13 @@ HUD* HUD::__instance = NULL;
 
 HUD::HUD()
 {
-    // Khởi tạo thời gian và bộ đếm thời gian
-    time = 300;
-    timeAccumulator = 0;
-
     // Khởi tạo trạng thái nhấp nháy của PMeter
     pMeterBlinkTime = 0;
     isPMeterBlinkVisible = true;
 
-    // Khởi tạo các giá trị mặc định cho HUD
+    // Khởi tạo các giá trị UI
     currentPMeter = 0;
     currentPlayer = 1;
-    currentScore = 0;
-    currentCoins = 0;
-    currentLives = 4;
-    currentWorld = 1;
-
-    // Khởi tạo mảng thẻ bài với giá trị mặc định (chưa có thẻ nào)
-    cards[0] = CARD_NONE;
-    cards[1] = CARD_NONE;
-    cards[2] = CARD_NONE;
 }
 
 HUD* HUD::GetInstance()
@@ -100,56 +88,30 @@ void HUD::LoadSprites()
 
 void HUD::Update(DWORD dt)
 {
-    if (time > 0)
-    {
-        timeAccumulator += dt;
-        if (timeAccumulator >= 1000)
-        {
-            time--;
-            timeAccumulator = 0;
-        }
-    }
-
-    // Code giảm số mạng khi nhấn nút R
-    static bool isRPressed = false;
-    if (GetAsyncKeyState('R') & 0x8000)
-    {
-        if (!isRPressed)
-        {
-            currentLives--;
-            if (currentLives < 0) currentLives = 99;
-            isRPressed = true;
-        }
-    }
-    else
-    {
-        isRPressed = false;
-    }
-
+    // Chỉ xử lý nhấp nháy PMeter (animation thuần UI)
     pMeterBlinkTime += dt;
     if (pMeterBlinkTime >= 150)
     {
         isPMeterBlinkVisible = !isPMeterBlinkVisible;
         pMeterBlinkTime = 0;
     }
-
-    // ĐÃ XÓA ĐOẠN CODE TEST RANDOM THẺ BÀI MỖI 1 GIÂY Ở ĐÂY
 }
 
 void HUD::Render()
 {
     Sprites* sprites = Sprites::GetInstance();
+    GameManager* gm = GameManager::GetInstance();
 
     if (sprites->Get(3000)) sprites->Get(3000)->Draw(0.0f, 0.0f);
 
-    // Vẽ các phần tử HUD theo thứ tự
-    DrawScore(currentScore);
-    DrawCoins(currentCoins);
-    DrawTime(time);
+    // Đọc tất cả dữ liệu từ GameManager để vẽ
+    DrawScore(gm->GetScore());
+    DrawCoins(gm->GetCoins());
+    DrawTime(gm->GetTime());
     DrawPMeter(currentPMeter);
     DrawPlayerIcon(currentPlayer);
-    DrawLives(currentLives);
-    DrawWorld(currentWorld);
+    DrawLives(gm->GetLives());
+    DrawWorld(gm->GetLevel());
     DrawCards();
 }
 
@@ -255,6 +217,9 @@ void HUD::DrawCards()
     Sprites* sprites = Sprites::GetInstance();
     float cardX[3] = { HUD_CARD_1_X, HUD_CARD_2_X, HUD_CARD_3_X };
 
+    // Đọc trực tiếp từ GameManager
+    int* cards = GameManager::GetInstance()->GetHoldingCards();
+
     for (int i = 0; i < 3; i++)
     {
         int spriteId = 0;
@@ -268,33 +233,6 @@ void HUD::DrawCards()
             sprites->Get(spriteId)->Draw(cardX[i], HUD_CARD_Y);
         }
     }
-}
-
-void HUD::AddCard(int cardType)
-{
-    for (int i = 0; i < 3; i++)
-    {
-        if (cards[i] == CARD_NONE)
-        {
-            cards[i] = cardType;
-            break;
-        }
-    }
-}
-
-int HUD::UseCard()
-{
-    // Duyệt từ phải sang trái, tìm thẻ cuối cùng có giá trị
-    for (int i = 2; i >= 0; i--)
-    {
-        if (cards[i] != CARD_NONE)
-        {
-            int usedCard = cards[i];
-            cards[i] = CARD_NONE;
-            return usedCard;
-        }
-    }
-    return CARD_NONE; // Không có thẻ nào
 }
 
 void HUD::DestroyInstance()
