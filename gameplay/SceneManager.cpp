@@ -9,6 +9,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 
 SceneManager* SceneManager::instance = nullptr;
 
@@ -29,6 +30,8 @@ SceneManager::SceneManager() {
     levelClearStartTime = 0;
     isMarioGameWinning = false;
     gameWinStartTime = 0;
+    isMarioTransforming = false;
+    transformStartTime = 0;
 }
 
 SceneManager* SceneManager::GetInstance() {
@@ -98,6 +101,10 @@ void SceneManager::ProcessLevelClear()
     AudioManager::GetInstance()->StopMusic();
     AudioManager::GetInstance()->PlaySFX("win_level");
 
+    // Thêm 1 thẻ bài ngẫu nhiên (Nấm/Hoa/Sao) khi qua màn
+    int randomCard = (rand() % 3) + 1;
+    HUD::GetInstance()->AddCard(randomCard);
+
     GameManager::GetInstance()->SetLevelClear(true);
 }
 
@@ -113,6 +120,15 @@ void SceneManager::ProcessGameWin()
     AudioManager::GetInstance()->PlaySFX("win_level");
 
     GameManager::GetInstance()->SetGameWin(true);
+}
+
+void SceneManager::ProcessTransform()
+{
+    if (isMarioTransforming)
+        return;
+
+    isMarioTransforming = true;
+    transformStartTime = GetTickCount64();
 }
 
 void SceneManager::Update(DWORD dt) {
@@ -152,6 +168,21 @@ void SceneManager::Update(DWORD dt) {
             GameManager::GetInstance()->SetGameWin(false);
 
             SwitchTo(STATE_INTRO);
+            return;
+        }
+    }
+
+    // Tạm dừng game khi Mario đang biến lớn
+    if (isMarioTransforming)
+    {
+        if (GetTickCount64() - transformStartTime >= MARIO_TRANSFORM_PAUSE_TIME)
+        {
+            isMarioTransforming = false;
+        }
+        else
+        {
+            // Chỉ cập nhật HUD (thời gian, nhấp nháy), không cập nhật game objects
+            HUD::GetInstance()->Update(dt);
             return;
         }
     }
@@ -198,6 +229,45 @@ void SceneManager::Update(DWORD dt) {
     }
     else if (currentState == STATE_PLAYING) {
         HUD::GetInstance()->Update(dt);
+
+        // ==========================================
+        // ẤN X ĐỂ SỬ DỤNG THẺ BÀI (từ phải sang trái)
+        // ==========================================
+        static bool isXPressed = false;
+        if (GetAsyncKeyState('X') & 0x8000)
+        {
+            if (!isXPressed)
+            {
+                int cardType = HUD::GetInstance()->UseCard();
+                if (cardType != 0) // CARD_NONE = 0
+                {
+                    Mario* mario = g_objectList.empty() ? nullptr : dynamic_cast<Mario*>(g_objectList[0]);
+                    if (mario != nullptr && !mario->IsDied())
+                    {
+                        if (cardType == 3) // CARD_STAR: Bất tử 5 giây
+                        {
+                            mario->untouchable = true;
+                            mario->untouchableStart = GetTickCount64();
+                            mario->untouchableDuration = 5000;
+                        }
+                        else if (cardType == 1) // CARD_MUSHROOM: Biến lớn
+                        {
+                            if (!mario->IsBig())
+                            {
+                                mario->SetBig(true);
+                            }
+                        }
+                        // cardType == 2 (CARD_FLOWER): Tạm thời chưa có hiệu ứng
+                    }
+                }
+                isXPressed = true;
+            }
+        }
+        else
+        {
+            isXPressed = false;
+        }
+
         for (GameObject* obj : g_objectList) {
             if (obj->IsDeleted())
                 continue;

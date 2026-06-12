@@ -137,28 +137,23 @@ void HUD::Update(DWORD dt)
     }
 
     // ==========================================
-    // CODE TEST: TỰ ĐỘNG THÊM THẺ BÀI RANDOM MỖI 1 GIÂY
+    // DEBUG: ẤN F4 ĐỂ THÊM 3 THẺ BÀI (Nấm + Hoa + Sao)
     // ==========================================
-    static DWORD testCardTimer = 0;
-    static int testCardCount = 0;
-
-    testCardTimer += dt;
-    if (testCardTimer >= 1000)
+    static bool isF4Pressed = false;
+    if (GetAsyncKeyState(VK_F4) & 0x8000)
     {
-        testCardCount++;
-
-        if (testCardCount <= 3)
-        {
-            int randomItem = (rand() % 3) + 1; // Tạo ngẫu nhiên 1 (Nấm), 2 (Hoa) hoặc 3 (Sao)
-            AddCard(randomItem);
-        }
-        else
+        if (!isF4Pressed)
         {
             ClearCards();
-            testCardCount = 0;
+            AddCard(CARD_MUSHROOM);
+            AddCard(CARD_FLOWER);
+            AddCard(CARD_STAR);
+            isF4Pressed = true;
         }
-
-        testCardTimer = 0;
+    }
+    else
+    {
+        isF4Pressed = false;
     }
 }
 
@@ -310,6 +305,21 @@ void HUD::AddCard(int cardType)
             break;
         }
     }
+}
+
+int HUD::UseCard()
+{
+    // Duyệt từ phải sang trái, tìm thẻ cuối cùng có giá trị
+    for (int i = 2; i >= 0; i--)
+    {
+        if (cards[i] != CARD_NONE)
+        {
+            int usedCard = cards[i];
+            cards[i] = CARD_NONE;
+            return usedCard;
+        }
+    }
+    return CARD_NONE; // Không có thẻ nào
 }
 
 void HUD::DestroyInstance()

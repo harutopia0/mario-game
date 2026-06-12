@@ -392,6 +392,9 @@ void Mario::SetBig(bool big) {
     untouchableStart = GetTickCount64();
     untouchableDuration = 1000; // 1 giây chớp cho nấm
     AudioManager::GetInstance()->PlaySFX("power_up");
+
+    // Tạm dừng game 1 giây khi biến lớn
+    SceneManager::GetInstance()->ProcessTransform();
   }
   isBig = big;
   if (big) {
