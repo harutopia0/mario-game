@@ -1,4 +1,6 @@
 #pragma once
+#include <Windows.h>
+
 class GameManager
 {
 private:
@@ -10,11 +12,28 @@ private:
 
 	bool isDebugMode;         // F3 debug mode: bypass level lock
 	bool clearedLevels[6];    // clearedLevels[1..5] = true nếu đã clear màn đó
-	int holdingCards[3];      // Lưu trữ tối đa 3 thẻ bài trong GameManager
+	int holdingCards[3];      // Lưu trữ tối đa 3 thẻ bài
+
+	// Dữ liệu gameplay (nguồn dữ liệu duy nhất)
+	int score;
+	int coins;
+	int lives;
+	int time;
+	DWORD timeAccumulator;
+
+	// Form Mario (giữ qua các màn)
+	bool isMarioBig;
+	bool isMarioFire;
+
 public:
 	static GameManager* GetInstance();
+	static void DestroyInstance();
+
+	// Level
 	void SetLevel(int level) { this->level = level; }
 	int GetLevel() { return level; }
+
+	// Game state flags
 	void SetGameOver(bool isGameOver) { this->isGameOver = isGameOver; }
 	bool IsGameOver() { return isGameOver; }
 	void SetGameWin(bool isGameWin) { this->isGameWin = isGameWin; }
@@ -31,8 +50,38 @@ public:
 	bool IsLevelCleared(int lvl) { if (lvl >= 1 && lvl <= 5) return clearedLevels[lvl]; return false; }
 	void ResetClearedLevels();
 
-	// Quản lý thẻ bài lưu trữ toàn cục
+	// Quản lý thẻ bài
 	void AddCard(int cardType);
 	int* GetHoldingCards() { return holdingCards; }
 	void ClearHoldingCards();
+	int UseCard(int slot);  // Sử dụng thẻ tại vị trí slot (0, 1, 2), trả về loại thẻ
+
+	// Score
+	void SetScore(int s) { score = s; }
+	int GetScore() { return score; }
+	void AddScore(int s) { score += s; }
+
+	// Coins
+	void SetCoins(int c) { coins = c; }
+	int GetCoins() { return coins; }
+	void AddCoins(int c) { coins += c; }
+
+	// Lives
+	void SetLives(int l) { lives = l; }
+	int GetLives() { return lives; }
+
+	// Time (đếm ngược)
+	void ResetTime();           // Reset về 300s
+	int GetTime() { return time; }
+	void UpdateTime(DWORD dt);  // Đếm ngược mỗi frame
+
+	// Mario Form (giữ qua các màn, reset khi về Intro)
+	void SetMarioBig(bool big) { isMarioBig = big; }
+	bool IsMarioBig() { return isMarioBig; }
+	void SetMarioFire(bool fire) { isMarioFire = fire; }
+	bool IsMarioFire() { return isMarioFire; }
+
+
+	// Reset một số giá trị khi vào màn chơi mới
+	void ResetForNewLevel();
 };

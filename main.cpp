@@ -48,6 +48,7 @@ enum TEXTURE_ID {
     TEX_MARIO = 0,
     TEX_COMMON1 = 1,
     TEX_COMMON2 = 2,
+    TEX_FIRE_MARIO = 3,
     TEX_HUD = 20,
     TEX_INTRO = 30,
     TEX_BBOX = 99,
@@ -57,7 +58,7 @@ enum TEXTURE_ID {
     TEX_LEVEL_CLEAR = 701,
     TEX_GAME_OVER = 702,
     TEX_YOU_WIN = 703,
-	  TEX_MAP_LEVEL = 800,
+    TEX_MAP_LEVEL = 800,
     TEX_OBTAIN_ITEM = 900
 };
 
@@ -150,6 +151,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 // CALCULATION (Physics, Movement)
 void Update(DWORD dt) {
+  // F2: Toggle bounding box display
   static bool isF2Pressed = false;
   if (GetAsyncKeyState(VK_F2) & 0x8000) {
     if (!isF2Pressed) {
@@ -160,24 +162,34 @@ void Update(DWORD dt) {
     isF2Pressed = false;
   }
 
-  SceneManager::GetInstance()->Update(dt);
-    // F3: Toggle debug mode (bỏ qua khoá màn chơi trên World Map)
-    static bool isF3Pressed = false;
-    if (GetAsyncKeyState(VK_F3) & 0x8000)
-    {
-        if (!isF3Pressed)
-        {
-            bool current = GameManager::GetInstance()->IsDebugMode();
-            GameManager::GetInstance()->SetDebugMode(!current);
-            isF3Pressed = true;
-        }
+  // F3: Toggle debug mode (bỏ qua khoá màn chơi trên World Map)
+  static bool isF3Pressed = false;
+  if (GetAsyncKeyState(VK_F3) & 0x8000) {
+    if (!isF3Pressed) {
+      bool current = GameManager::GetInstance()->IsDebugMode();
+      GameManager::GetInstance()->SetDebugMode(!current);
+      isF3Pressed = true;
     }
-    else
-    {
-        isF3Pressed = false;
-    }
+  } else {
+    isF3Pressed = false;
+  }
 
-    SceneManager::GetInstance()->Update(dt);
+  // F4: Debug - Thêm 3 thẻ bài (Nấm, Hoa, Sao) để test
+  static bool isF4Pressed = false;
+  if (GetAsyncKeyState(VK_F4) & 0x8000) {
+    if (!isF4Pressed) {
+      GameManager *gm = GameManager::GetInstance();
+      gm->ClearHoldingCards();
+      gm->AddCard(1); // Nấm
+      gm->AddCard(2); // Hoa
+      gm->AddCard(3); // Sao
+      isF4Pressed = true;
+    }
+  } else {
+    isF4Pressed = false;
+  }
+
+  SceneManager::GetInstance()->Update(dt);
 }
 
 // DRAWING (Show on screen)
@@ -223,65 +235,6 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam,
 void LoadMap(LPCWSTR filePath) {
   ifstream f;
   f.open(filePath);
-void LoadResources()
-{
-    Textures* textures = Textures::GetInstance();
-    Sprites* sprites = Sprites::GetInstance();
-    Animations* animations = Animations::GetInstance();
-    Animation* ani;
-
-    // ==========================================
-    // 1. NẠP TÀI NGUYÊN
-    // ==========================================
-
-    textures->Add(TEX_MARIO, L"assets/mario-luigi.png");
-    textures->Add(TEX_COMMON1, L"assets/CommonObjects1.png");
-    textures->Add(TEX_COMMON2, L"assets/CommonObjects2.png");
-
-    textures->Add(TEX_HUD, L"assets/hud.png");
-    textures->Add(TEX_INTRO, L"assets/intro_items.png");
-    textures->Add(TEX_BBOX, L"assets/bbox.png");
-    textures->Add(TEX_ENEMY_TEST, L"assets/enemy.png");
-    textures->Add(TEX_POTION, L"assets/potion.png");
-
-
-    textures->Add(TEX_LEVEL_CLEAR, L"assets/level-clear.png");
-    textures->Add(TEX_YOU_WIN, L"assets/you-win.png");
-    textures->Add(TEX_GAME_OVER, L"assets/game-over.png");
-
-    textures->Add(TEX_MAP_LEVEL, L"assets/map-level.png");
-
-    textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
-
-    // ==========================================
-    // 2. CẮT SPRITES
-    // ==========================================
-
-    // Idle
-    sprites->Add(0, 115, 45, 126, 59, TEX_MARIO); // Phải
-    sprites->Add(1, 70, 45, 81, 59, TEX_MARIO); // Trái
-
-    // Run
-    sprites->Add(2, 131, 44, 145, 59, TEX_MARIO);
-    sprites->Add(3, 148, 44, 163, 59, TEX_MARIO);
-
-    sprites->Add(4, 51, 44, 65, 59, TEX_MARIO);
-    sprites->Add(5, 33, 44, 48, 59, TEX_MARIO);
-
-    // Jump
-    sprites->Add(6, 131, 26, 146, 41, TEX_MARIO);
-    sprites->Add(7, 50, 26, 65, 41, TEX_MARIO);
-
-    // Skid
-    sprites->Add(8, 166, 44, 179, 59, TEX_MARIO);
-    sprites->Add(9, 17, 44, 30, 59, TEX_MARIO);
-
-    // ==========================================
-    // BIG MARIO SPRITES
-    // ==========================================
-    // Idle
-    sprites->Add(20, 112, 90, 125, 116, TEX_MARIO); // Phải
-    sprites->Add(21, 71, 90, 84, 116, TEX_MARIO); // Trái
 
   if (!f.is_open())
     return;
@@ -314,12 +267,6 @@ void LoadResources()
 
         int cellX = (int)(realX / GRID_CELL_SIZE);
         int cellY = (int)(realY / GRID_CELL_SIZE);
-    //Obtain item
-    sprites->Add(9000, 0, 0, 640, 480, TEX_OBTAIN_ITEM);
-
-    // ==========================================
-    // 3. GOM SPRITES TẠO ANIMATION
-    // ==========================================
 
         if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
             cellY < MAX_CELL_ROW) {
@@ -425,6 +372,8 @@ void LoadResources() {
 
   textures->Add(TEX_MAP_LEVEL, L"assets/map-level.png");
 
+  textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
+
   // ==========================================
   // 2. CẮT SPRITES
   // ==========================================
@@ -529,6 +478,9 @@ void LoadResources() {
 
   // Map level
   sprites->Add(8000, 0, 0, 640, 480, TEX_MAP_LEVEL);
+
+  // Obtain item
+  sprites->Add(9000, 0, 0, 640, 480, TEX_OBTAIN_ITEM);
 
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION
@@ -662,67 +614,33 @@ void LoadResources() {
   animations->Add(301, ani);
 
   // ==========================================
-  // 4. KHỞI TẠO OBJECT
+  // 4. KHỞI TẠO
   // ==========================================
-
-  Mario *mario = new Mario(100.0f, 200.0f);
-  g_objectList.push_back(mario);
-
-  SpawnEnemy(200.0f, 200.0f);
 
   for (int i = 0; i < 10; i++) {
     sprites->Add(1000 + i, 22 + i * 16, 136, 22 + (i + 1) * 16, 136 + 16,
                  TEX_HUD);
   }
 
-  HUD::GetInstance()->LoadSprites();
-
   // Khởi tạo các Scene và chuyển giao quyền cho SceneManager
   SceneManager::GetInstance()->Init();
-
-  Buff *potion = new Buff(150.0f, 200.0f, 301);
-  g_objectList.push_back(potion);
-  AddObjectToGrid(potion);
-
-  Flag *flag = new Flag(300.0f, 100.0f);
-  g_objectList.push_back(flag);
-  AddObjectToGrid(flag);
-
-  Pipe *pipe = new Pipe(15.0f, 80.0f, 204, true, 300.0f, 300.0f);
-  g_objectList.push_back(pipe);
-  AddObjectToGrid(pipe);
 
   // ==========================================
   // 5. NẠP VÀ PHÁT ÂM THANH
   // ==========================================
-  AudioManager::GetInstance()->LoadSound("win_level",
-                                         "assets/win-level-complete-mario.mp3");
+  AudioManager::GetInstance()->LoadSound("mario_theme", "assets/mario-theme.mp3");
+  AudioManager::GetInstance()->LoadSound("level_theme", "assets/level_theme.mp3");
   AudioManager::GetInstance()->LoadSound("power_up", "assets/power-up-mario.mp3");
-  AudioManager::GetInstance()->LoadSound(
-      "mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
-  AudioManager::GetInstance()->LoadSound("mario_jump",
-                                         "assets/maro-jump-sound-effect.mp3");
-  AudioManager::GetInstance()->LoadSound(
-      "intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
-  AudioManager::GetInstance()->LoadSound(
-      "star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
+  AudioManager::GetInstance()->LoadSound("mushroom_sound_effect", "assets/super_mario_bros_mushroom_sound_effect.mp3");
+  AudioManager::GetInstance()->LoadSound("super_mario_pipe", "assets/super-mario-pipe.mp3");
+  AudioManager::GetInstance()->LoadSound("win_level", "assets/win-level-complete-mario.mp3");
+  AudioManager::GetInstance()->LoadSound("mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
+  AudioManager::GetInstance()->LoadSound("mario_jump", "assets/mario-jump-sound-effect.mp3");
+  AudioManager::GetInstance()->LoadSound("intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
+  AudioManager::GetInstance()->LoadSound("star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
+
+  // Phát nhạc intro sau khi tất cả âm thanh đã được nạp xong
   AudioManager::GetInstance()->PlayMusic("intro_theme", true);
-    // ==========================================
-    // 5. NẠP VÀ PHÁT ÂM THANH
-    // ==========================================
-    AudioManager::GetInstance()->LoadSound("mario_theme", "assets/mario-theme.mp3");
-    AudioManager::GetInstance()->LoadSound("level_theme", "assets/level_theme.mp3");
-    AudioManager::GetInstance()->LoadSound("power_up", "assets/power-up-mario.mp3");
-    AudioManager::GetInstance()->LoadSound("mushroom_sound_effect", "assets/super_mario_bros_mushroom_sound_effect.mp3");
-    AudioManager::GetInstance()->LoadSound("super_mario_pipe", "assets/super-mario-pipe.mp3");
-    AudioManager::GetInstance()->LoadSound("win_level", "assets/win-level-complete-mario.mp3");
-    AudioManager::GetInstance()->LoadSound("mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
-    AudioManager::GetInstance()->LoadSound("mario_jump", "assets/mario-jump-sound-effect.mp3");
-    AudioManager::GetInstance()->LoadSound("intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
-
-    // Phát nhạc intro sau khi tất cả âm thanh đã được nạp xong
-    AudioManager::GetInstance()->PlayMusic("intro_theme", true);
-
 }
 
 void Cleanup() {
