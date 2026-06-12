@@ -27,8 +27,8 @@ class Mario : public GameObject
 {
 private:
 	float width, height;
-	int lives;
 	bool isBig;
+	bool isFire;
 	bool isDead;
 	float pMeterValue;
 	int pMeterLevel;
@@ -47,7 +47,7 @@ public:
 	float ax;
 	MarioInputHandler* inputHandler;
 
-	Mario(float x, float y);
+	Mario(float x, float y, bool isBig = false, bool isFire = false);
 	~Mario();
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 	void Update(DWORD dt, vector<GameObject*>* coObjects);
@@ -62,6 +62,12 @@ public:
 	}
 	void SetBig(bool big);
 	bool IsBig() const { return isBig; }
+	
+	void SetFire(bool fire);
+	bool IsFire() const { return isFire; }
+	void ShootFireball();
+	DWORD lastShootTime;
+
 	void Die();
 
 	void SetAccelX(float ax);
@@ -71,6 +77,8 @@ public:
 	void SetPressingDown(bool pressing);
 
 	DWORD untouchableStart;
+	DWORD untouchableDuration;
 	bool untouchable;
+	bool isStarInvincible;
 	void TakeDamage();
 };

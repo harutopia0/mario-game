@@ -11,7 +11,8 @@ public:
 		void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 		void Update(DWORD dt, vector<GameObject*>* coObjects);
 		void Render() override;
-private:
     int animationId;
+public:
+	int GetAnimationId() const { return animationId; }
 };
 
