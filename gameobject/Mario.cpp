@@ -32,6 +32,7 @@ Mario::Mario(float x, float y) : GameObject(x, y) {
   untouchable = false;
   untouchableStart = 0;
   untouchableDuration = 0;
+  isStarInvincible = false;
   isEnteringPipe = false;
 
   // Khởi tạo trạng thái P-Meter
@@ -75,6 +76,11 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     if (elapsed > untouchableDuration) {
       untouchable = false;
       OutputDebugStringA("Mario vulnerable again\n");
+      if (isStarInvincible) {
+        isStarInvincible = false;
+        AudioManager::GetInstance()->StopEventMusic();
+        AudioManager::GetInstance()->ResumeMusic();
+      }
     }
   }
 
@@ -374,7 +380,36 @@ void Mario::Render() {
     }
   }
 
-  if (untouchable && ((GetTickCount64() / 100) % 2 == 0)) {
+  // Nhấp nháy khi đang biến lớn (xen kẽ trắng/bình thường)
+  bool isTransforming = SceneManager::GetInstance()->IsTransforming();
+  if (isTransforming) {
+    if (ani != NULL) {
+      if ((GetTickCount64() / 100) % 2 == 0) {
+        ani->Render(x, y, D3DXCOLOR(10.0f, 10.0f, 10.0f, 1.0f)); // Trắng sáng
+      } else {
+        ani->Render(x, y);
+      }
+    }
+    return;
+  }
+
+  // Nhấp nháy đổi màu liên tục khi ăn Sao
+  if (isStarInvincible) {
+    if (ani != NULL) {
+      int cycle = (GetTickCount64() / 50) % 3;
+      if (cycle == 0) {
+        ani->Render(x, y, D3DXCOLOR(10.0f, 10.0f, 10.0f, 1.0f)); // Trắng sáng
+      } else if (cycle == 1) {
+        ani->Render(x, y, D3DXCOLOR(10.0f, 1.0f, 1.0f, 1.0f)); // Đỏ sáng
+      } else {
+        ani->Render(x, y, D3DXCOLOR(10.0f, 10.0f, 1.0f, 1.0f)); // Vàng sáng
+      }
+    }
+    return;
+  }
+
+  // Nhấp nháy khi bất tử do bị thương (ẩn/hiện)
+  if (untouchable && !isStarInvincible && ((GetTickCount64() / 100) % 2 == 0)) {
     return;
   }
 

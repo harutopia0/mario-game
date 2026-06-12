@@ -557,6 +557,8 @@ void LoadResources() {
                                          "assets/maro-jump-sound-effect.mp3");
   AudioManager::GetInstance()->LoadSound(
       "intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
+  AudioManager::GetInstance()->LoadSound(
+      "star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
   AudioManager::GetInstance()->PlayMusic("intro_theme", true);
 }
 

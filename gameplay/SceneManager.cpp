@@ -249,6 +249,9 @@ void SceneManager::Update(DWORD dt) {
                             mario->untouchable = true;
                             mario->untouchableStart = GetTickCount64();
                             mario->untouchableDuration = 5000;
+                            mario->isStarInvincible = true;
+                            AudioManager::GetInstance()->PauseMusic();
+                            AudioManager::GetInstance()->PlayEventMusic("star_theme", true);
                         }
                         else if (cardType == 1) // CARD_MUSHROOM: Biến lớn
                         {

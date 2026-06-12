@@ -73,5 +73,6 @@ public:
 	DWORD untouchableStart;
 	DWORD untouchableDuration;
 	bool untouchable;
+	bool isStarInvincible;
 	void TakeDamage();
 };
