@@ -8,6 +8,7 @@
 #include "../gameobject/Flag.h"
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
+#include "../gameobject/Fireball.h"
 #include "../gameplay/GameManager.h"
 #include "../gameplay/SceneManager.h"
 #include "../physics/Collision.h"
@@ -44,6 +45,7 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   untouchableDuration = 0;
   isStarInvincible = false;
   isEnteringPipe = false;
+  lastShootTime = 0;
 
   // Khởi tạo trạng thái P-Meter
   pMeterLevel = 0;
@@ -492,7 +494,7 @@ void Mario::SetFire(bool fire) {
       height = MARIO_BIG_HEIGHT;
     }
     
-    // Bật trạng thái chớp và phát âm thanh
+    // Bật trạng thái chớp (tàng hình) và phát âm thanh
     untouchable = true;
     untouchableStart = GetTickCount64();
     untouchableDuration = 1000;
@@ -503,6 +505,24 @@ void Mario::SetFire(bool fire) {
   }
   isFire = fire;
   GameManager::GetInstance()->SetMarioFire(fire);
+}
+
+void Mario::ShootFireball() {
+  if (!isFire) return;
+  if (GetTickCount64() - lastShootTime < 500) return; // Cooldown 0.5s
+
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  // Vị trí xuất phát của fireball (dời vào giữa người Mario để tránh lún tường)
+  float spawnX = x + width / 2.0f - FIREBALL_WIDTH / 2.0f;
+  float spawnY = y + height / 2.0f;
+
+  Fireball* fb = new Fireball(spawnX, spawnY, nx > 0 ? 1 : -1);
+  g_objectList.push_back(fb);
+  AddObjectToGrid(fb);
+
+  lastShootTime = GetTickCount64();
 }
 
 void Mario::Die() {

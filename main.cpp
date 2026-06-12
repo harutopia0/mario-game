@@ -437,6 +437,17 @@ void LoadResources() {
   sprites->Add(48, 215, 42, 230, 69, TEX_FIRE_MARIO); // Mặt trái (Skid Right)
   sprites->Add(49, 175, 42, 190, 69, TEX_FIRE_MARIO); // Mặt phải (Skid Left)
 
+  // Fireball
+  sprites->Add(601, 178, 124, 185, 131, TEX_FIRE_MARIO);
+  sprites->Add(602, 188, 124, 195, 131, TEX_FIRE_MARIO);
+  sprites->Add(603, 198, 124, 205, 131, TEX_FIRE_MARIO);
+  sprites->Add(604, 208, 124, 215, 131, TEX_FIRE_MARIO);
+
+  // Fireball Explosion
+  sprites->Add(605, 182, 138, 189, 145, TEX_FIRE_MARIO);
+  sprites->Add(606, 198, 135, 209, 148, TEX_FIRE_MARIO);
+  sprites->Add(607, 214, 134, 229, 149, TEX_FIRE_MARIO);
+
   // Death
   sprites->Add(30, 90, 53, 105, 68, TEX_MARIO);
 
@@ -469,8 +480,10 @@ void LoadResources() {
 
   // Level clear
   sprites->Add(7001, 0, 0, 640, 405, TEX_LEVEL_CLEAR);
+
   // You win
   sprites->Add(7002, 0, 0, 640, 405, TEX_YOU_WIN);
+
   // Game over
   sprites->Add(7003, 0, 0, 640, 405, TEX_GAME_OVER);
 
@@ -603,6 +616,19 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(49, 1000);
   animations->Add(507, ani); // Skid Left
+
+  ani = new Animation(50);
+  ani->Add(601);
+  ani->Add(602);
+  ani->Add(603);
+  ani->Add(604);
+  animations->Add(600, ani); // Fireball
+
+  ani = new Animation(50);
+  ani->Add(605);
+  ani->Add(606);
+  ani->Add(607);
+  animations->Add(605, ani); // Fireball Explosion
 
   // Items & Enemies Animations
   ani = new Animation(100);
