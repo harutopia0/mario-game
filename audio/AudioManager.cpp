@@ -45,6 +45,9 @@ void AudioManager::PlaySFX(std::string id) {
 void AudioManager::PlayMusic(std::string id, bool loop) {
     if (m_SoundMap.find(id) == m_SoundMap.end()) return;
 
+    // Nếu đang phát đúng bài này rồi thì không phát lại từ đầu
+    if (m_IsMusicPlaying && m_CurrentMusicId == id) return;
+
     StopMusic(); // Tắt nhạc cũ trước khi phát nhạc mới
 
     ma_result result = ma_sound_init_from_file(&m_Engine, m_SoundMap[id].c_str(), 0, NULL, NULL, &m_CurrentMusic);
@@ -52,6 +55,7 @@ void AudioManager::PlayMusic(std::string id, bool loop) {
         ma_sound_set_looping(&m_CurrentMusic, loop);
         ma_sound_start(&m_CurrentMusic);
         m_IsMusicPlaying = true;
+        m_CurrentMusicId = id;
     }
 }
 
@@ -93,5 +97,6 @@ void AudioManager::StopMusic() {
         ma_sound_stop(&m_CurrentMusic);
         ma_sound_uninit(&m_CurrentMusic); // Giải phóng bộ nhớ nhạc nền
         m_IsMusicPlaying = false;
+        m_CurrentMusicId = "";
     }
 }

@@ -47,6 +47,7 @@ private:
     ma_engine m_Engine;
     ma_sound m_CurrentMusic; // Dùng riêng để điều khiển nhạc nền
     bool m_IsMusicPlaying;
+    std::string m_CurrentMusicId; // ID của bài nhạc nền đang phát
 
     ma_sound m_EventMusic; // Nhạc sự kiện (Star)
     bool m_IsEventMusicPlaying;

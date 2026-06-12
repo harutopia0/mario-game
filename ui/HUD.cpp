@@ -1,7 +1,7 @@
 #include "HUD.h"
 #include <stdlib.h>
 
-//Định nghĩa các giá trị của CardType
+// Định nghĩa các giá trị của CardType
 #define CARD_NONE 0
 #define CARD_MUSHROOM 1
 #define CARD_FLOWER 2
@@ -70,10 +70,10 @@ void HUD::LoadSprites()
 {
     Sprites* sprites = Sprites::GetInstance();
 
-    //Sprite nền HUD
+    // Sprite nền HUD
     sprites->Add(3000, 0, 0, 640, 75, TEX_HUD);
 
-    //Sprites số cho điểm, tiền, thời gian (1000-1009)
+    // Sprites số cho điểm, tiền, thời gian (1000-1009)
     sprites->Add(1000, 649, 75, 668, 91, TEX_HUD);
     sprites->Add(1001, 669, 75, 688, 91, TEX_HUD);
     sprites->Add(1002, 689, 75, 708, 91, TEX_HUD);
@@ -85,15 +85,14 @@ void HUD::LoadSprites()
     sprites->Add(1008, 809, 75, 828, 91, TEX_HUD);
     sprites->Add(1009, 829, 75, 848, 91, TEX_HUD);
 
-    //Sprites mũi tên PMeter
+    // Sprites mũi tên PMeter
     sprites->Add(3010, 932, 76, 951, 92, TEX_HUD);
     sprites->Add(3011, 953, 76, 988, 92, TEX_HUD);
 
-    //Sprites icon người chơi
+    // Sprites icon người chơi
     sprites->Add(3012, 601, 86, 639, 102, TEX_HUD);
-    sprites->Add(3013, 601, 103, 639, 119, TEX_HUD);
 
-    //Sprites thẻ bài
+    // Sprites thẻ bài
     sprites->Add(3014, 1025, 83, 1068, 130, TEX_HUD); // 3014: Nấm
     sprites->Add(3015, 1081, 83, 1124, 130, TEX_HUD); // 3015: Hoa
     sprites->Add(3016, 1137, 83, 1180, 130, TEX_HUD); // 3016: Sao
@@ -111,16 +110,14 @@ void HUD::Update(DWORD dt)
         }
     }
 
-    // ==========================================
-    // CODE TEST: ẤN 'R' ĐỂ GIẢM SỐ MẠNG
-    // ==========================================
+    // Code giảm số mạng khi nhấn nút R
     static bool isRPressed = false;
     if (GetAsyncKeyState('R') & 0x8000)
     {
         if (!isRPressed)
         {
             currentLives--;
-            if (currentLives < 0) currentLives = 99; // Nếu dưới 0 thì quay lại 99
+            if (currentLives < 0) currentLives = 99;
             isRPressed = true;
         }
     }
@@ -136,25 +133,7 @@ void HUD::Update(DWORD dt)
         pMeterBlinkTime = 0;
     }
 
-    // ==========================================
-    // DEBUG: ẤN F4 ĐỂ THÊM 3 THẺ BÀI (Nấm + Hoa + Sao)
-    // ==========================================
-    static bool isF4Pressed = false;
-    if (GetAsyncKeyState(VK_F4) & 0x8000)
-    {
-        if (!isF4Pressed)
-        {
-            ClearCards();
-            AddCard(CARD_MUSHROOM);
-            AddCard(CARD_FLOWER);
-            AddCard(CARD_STAR);
-            isF4Pressed = true;
-        }
-    }
-    else
-    {
-        isF4Pressed = false;
-    }
+    // ĐÃ XÓA ĐOẠN CODE TEST RANDOM THẺ BÀI MỖI 1 GIÂY Ở ĐÂY
 }
 
 void HUD::Render()
@@ -268,10 +247,6 @@ void HUD::DrawPlayerIcon(int player)
     if (player == 1)
     {
         if (sprites->Get(3012)) sprites->Get(3012)->Draw(HUD_ICON_X, HUD_ICON_Y);
-    }
-    else if (player == 2)
-    {
-        if (sprites->Get(3013)) sprites->Get(3013)->Draw(HUD_ICON_X, HUD_ICON_Y);
     }
 }
 

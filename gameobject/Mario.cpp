@@ -312,7 +312,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
         // CHẠM CỜ THEO TRỤC Y
         else if (Flag *flag = dynamic_cast<Flag *>(e)) {
           int currentLevel = GameManager::GetInstance()->GetLevel();
-          if (currentLevel == 3) {
+          if (currentLevel == 5) {
             SceneManager::GetInstance()->ProcessGameWin();
           } else {
             SceneManager::GetInstance()->ProcessLevelClear();

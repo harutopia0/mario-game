@@ -2,6 +2,7 @@
 #include "../render/Sprites.h"
 #include "../animation/Animations.h"
 #include "../core/Game.h"
+#include "../gameplay/GameManager.h"
 #include <cmath>
 
 WorldMap::WorldMap()
@@ -10,7 +11,7 @@ WorldMap::WorldMap()
     currentNode = 0;
     targetNode = 0;
     isMoving = false;
-    moveSpeed = 0.12f;
+    moveSpeed = 0.18f;
     facingDir = 1;
     currentAnimID = 100;
     numWaypoints = 0;
@@ -134,6 +135,31 @@ void WorldMap::InitiateMove(int fromNode, int toNode)
     isMoving = true;
 }
 
+// Kiểm tra xem node đích có bị khoá không
+// Node bị khoá nếu người chơi chưa clear màn trước đó (trừ khi debug mode bật)
+bool WorldMap::IsNodeLocked(int node)
+{
+    // Debug mode: tất cả node đều mở
+    if (GameManager::GetInstance()->IsDebugMode()) return false;
+
+    // Node 0 (ô đứng ban đầu) và Node 1 (Level 1) luôn mở
+    if (node <= 1) return false;
+
+    // Node 2 (Level 2): cần clear Level 1
+    if (node == 2) return !GameManager::GetInstance()->IsLevelCleared(1);
+
+    // Node 3 (Level 3): cần clear Level 2
+    if (node == 3) return !GameManager::GetInstance()->IsLevelCleared(2);
+
+    // Node 4 (Level 4): cần clear Level 3
+    if (node == 4) return !GameManager::GetInstance()->IsLevelCleared(3);
+
+    // Node 5 (Ô tạm 2) và Node 6 (Level 5): cần clear Level 4
+    if (node == 5 || node == 6) return !GameManager::GetInstance()->IsLevelCleared(4);
+
+    return false;
+}
+
 void WorldMap::Update(DWORD dt)
 {
     if (isMoving)
@@ -207,7 +233,10 @@ void WorldMap::Update(DWORD dt)
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
     {
         if (!isRightPressed && currentNode >= 0 && currentNode <= 4) {
-            InitiateMove(currentNode, currentNode + 1);
+            int nextNode = currentNode + 1;
+            if (!IsNodeLocked(nextNode)) {
+                InitiateMove(currentNode, nextNode);
+            }
             isRightPressed = true;
         }
     }
@@ -227,7 +256,9 @@ void WorldMap::Update(DWORD dt)
     if (GetAsyncKeyState(VK_UP) & 0x8000)
     {
         if (!isUpPressed && currentNode == 5) {
-            InitiateMove(currentNode, 6);
+            if (!IsNodeLocked(6)) {
+                InitiateMove(currentNode, 6);
+            }
             isUpPressed = true;
         }
     }

@@ -40,6 +40,11 @@ private:
     DWORD gameWinStartTime;
     DWORD transformStartTime;
 
+    // Cơ chế Roulette Thẻ bài khi thắng màn
+    int rouletteCardType;
+    DWORD lastRouletteTick;
+    bool isRouletteDone;
+
     SceneManager();
 public:
     static SceneManager* GetInstance();
