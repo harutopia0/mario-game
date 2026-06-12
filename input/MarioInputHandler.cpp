@@ -35,5 +35,16 @@ void MarioInputHandler::KeyState(BYTE *state) {
   } else {
     mario->SetHoldingJump(false);
   }
+
+  // Bắn lửa: phím Z
+  static bool isZPressed = false;
+  if (GetAsyncKeyState('Z') & 0x8000) {
+    if (!isZPressed) {
+      mario->ShootFireball();
+      isZPressed = true;
+    }
+  } else {
+    isZPressed = false;
+  }
 }
 

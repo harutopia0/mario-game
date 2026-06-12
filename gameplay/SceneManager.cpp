@@ -128,14 +128,8 @@ void SceneManager::SwitchTo(GameState newState) {
         HUD::GetInstance()->LoadSprites();
 
         // Tạo Mario mới và khôi phục form từ GameManager
-        Mario* mario = new Mario(100.0f, 200.0f);
-        if (gm->IsMarioFire()) {
-            mario->SetFire(true);
-        } else if (gm->IsMarioBig()) {
-            mario->SetBig(true);
-        }
-        // Khôi phục lives từ GameManager
-        // (Mario constructor mặc định lives=1, nếu Big thì logic SetBig sẽ set lives=2 bên trong collision)
+        Mario* mario = new Mario(100.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire());
+
         g_objectList.insert(g_objectList.begin(), mario);
 
         // Spawn các objects cơ bản cho màn chơi
@@ -191,6 +185,7 @@ void SceneManager::ProcessLevelClear()
     isRouletteDone = false;
 
     AudioManager::GetInstance()->StopMusic();
+    AudioManager::GetInstance()->StopEventMusic();
     AudioManager::GetInstance()->PlaySFX("win_level");
 
     int clearedLevel = GameManager::GetInstance()->GetLevel();
@@ -215,6 +210,7 @@ void SceneManager::ProcessGameWin()
     gameWinStartTime = GetTickCount64();
 
     AudioManager::GetInstance()->StopMusic();
+    AudioManager::GetInstance()->StopEventMusic();
     AudioManager::GetInstance()->PlaySFX("win_level");
 
     int clearedLevel = GameManager::GetInstance()->GetLevel();
@@ -379,8 +375,9 @@ void SceneManager::Update(DWORD dt) {
                             }
                             else if (cardType == 1) // CARD_MUSHROOM: Biến lớn
                             {
-                                if (!mario->IsBig())
+                                if (!mario->IsBig() && !mario->IsFire())
                                 {
+                                    GameManager::GetInstance()->SetLives(2);
                                     mario->SetBig(true);
                                 }
                             }
@@ -388,6 +385,7 @@ void SceneManager::Update(DWORD dt) {
                             {
                                 if (!mario->IsFire())
                                 {
+                                    GameManager::GetInstance()->SetLives(3);
                                     mario->SetFire(true);
                                 }
                             }

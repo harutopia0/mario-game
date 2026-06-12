@@ -18,13 +18,11 @@
 #include "render/Textures.h"
 #include "ui/HUD.h"
 
-
 #include <fstream>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <vector>
-
 
 #pragma endregion
 
@@ -45,21 +43,21 @@ std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
 bool g_showBBox = false;
 
 enum TEXTURE_ID {
-    TEX_MARIO = 0,
-    TEX_COMMON1 = 1,
-    TEX_COMMON2 = 2,
-    TEX_FIRE_MARIO = 3,
-    TEX_HUD = 20,
-    TEX_INTRO = 30,
-    TEX_BBOX = 99,
-    TEX_ENEMY_TEST = 100,
-    TEX_POTION = 101,
-    TEX_FLAG = 102,
-    TEX_LEVEL_CLEAR = 701,
-    TEX_GAME_OVER = 702,
-    TEX_YOU_WIN = 703,
-    TEX_MAP_LEVEL = 800,
-    TEX_OBTAIN_ITEM = 900
+  TEX_MARIO = 0,
+  TEX_COMMON1 = 1,
+  TEX_COMMON2 = 2,
+  TEX_FIRE_MARIO = 3,
+  TEX_HUD = 20,
+  TEX_INTRO = 30,
+  TEX_BBOX = 99,
+  TEX_ENEMY_TEST = 100,
+  TEX_POTION = 101,
+  TEX_FLAG = 102,
+  TEX_LEVEL_CLEAR = 701,
+  TEX_GAME_OVER = 702,
+  TEX_YOU_WIN = 703,
+  TEX_MAP_LEVEL = 800,
+  TEX_OBTAIN_ITEM = 900
 };
 
 #pragma endregion
@@ -439,6 +437,17 @@ void LoadResources() {
   sprites->Add(48, 215, 42, 230, 69, TEX_FIRE_MARIO); // Mặt trái (Skid Right)
   sprites->Add(49, 175, 42, 190, 69, TEX_FIRE_MARIO); // Mặt phải (Skid Left)
 
+  // Fireball
+  sprites->Add(601, 178, 124, 185, 131, TEX_FIRE_MARIO);
+  sprites->Add(602, 188, 124, 195, 131, TEX_FIRE_MARIO);
+  sprites->Add(603, 198, 124, 205, 131, TEX_FIRE_MARIO);
+  sprites->Add(604, 208, 124, 215, 131, TEX_FIRE_MARIO);
+
+  // Fireball Explosion
+  sprites->Add(605, 182, 138, 189, 145, TEX_FIRE_MARIO);
+  sprites->Add(606, 198, 135, 209, 148, TEX_FIRE_MARIO);
+  sprites->Add(607, 214, 134, 229, 149, TEX_FIRE_MARIO);
+
   // Death
   sprites->Add(30, 90, 53, 105, 68, TEX_MARIO);
 
@@ -471,8 +480,10 @@ void LoadResources() {
 
   // Level clear
   sprites->Add(7001, 0, 0, 640, 405, TEX_LEVEL_CLEAR);
+
   // You win
   sprites->Add(7002, 0, 0, 640, 405, TEX_YOU_WIN);
+
   // Game over
   sprites->Add(7003, 0, 0, 640, 405, TEX_GAME_OVER);
 
@@ -486,60 +497,62 @@ void LoadResources() {
   // 3. GOM SPRITES TẠO ANIMATION
   // ==========================================
 
+  // Small Mario Animations
   ani = new Animation(100);
   ani->Add(0, 1000);
-  animations->Add(100, ani);
+  animations->Add(100, ani); // Idle Phải
   ani = new Animation(100);
   ani->Add(1, 1000);
-  animations->Add(101, ani);
+  animations->Add(101, ani); // Idle Trái
 
   ani = new Animation(100);
   ani->Add(2);
   ani->Add(0);
   ani->Add(3);
-  animations->Add(102, ani);
+  animations->Add(102, ani); // Run Phải
   ani = new Animation(100);
   ani->Add(4);
   ani->Add(1);
   ani->Add(5);
-  animations->Add(103, ani);
+  animations->Add(103, ani); // Run Trái
 
   ani = new Animation(100);
   ani->Add(6, 1000);
-  animations->Add(104, ani);
+  animations->Add(104, ani); // Jump Phải
   ani = new Animation(100);
   ani->Add(7, 1000);
-  animations->Add(105, ani);
+  animations->Add(105, ani); // Jump Trái
 
   ani = new Animation(100);
   ani->Add(8, 1000);
-  animations->Add(106, ani);
+  animations->Add(106, ani); // Skid Right
   ani = new Animation(100);
   ani->Add(9, 1000);
-  animations->Add(107, ani);
+  animations->Add(107, ani); // Skid Left
 
   ani = new Animation(100);
   ani->Add(30, 1000);
-  animations->Add(108, ani);
+  animations->Add(108, ani); // Death
 
+  // Common Objects Animations
   ani = new Animation(100);
   ani->Add(10, 1000);
-  animations->Add(201, ani);
+  animations->Add(201, ani); // Brick
   ani = new Animation(100);
   ani->Add(11, 1000);
-  animations->Add(202, ani);
+  animations->Add(202, ani); // Platform
   ani = new Animation(100);
   ani->Add(12, 1000);
-  animations->Add(203, ani);
+  animations->Add(203, ani); // Big Block
   ani = new Animation(100);
   ani->Add(13, 1000);
-  animations->Add(204, ani);
+  animations->Add(204, ani); // Pipe
   ani = new Animation(100);
   ani->Add(14, 1000);
-  animations->Add(205, ani);
+  animations->Add(205, ani); // Breakable
   ani = new Animation(100);
   ani->Add(15, 1000);
-  animations->Add(206, ani);
+  animations->Add(206, ani); // Lucky Block
 
   // Big Mario Animations
   ani = new Animation(100);
@@ -571,9 +584,7 @@ void LoadResources() {
   ani->Add(29, 1000);
   animations->Add(407, ani); // Skid Left
 
-  // ==========================================
-  // FIRE MARIO ANIMATIONS
-  // ==========================================
+  // Fire Mario Animations
   ani = new Animation(100);
   ani->Add(40, 1000);
   animations->Add(500, ani); // Idle Phải
@@ -598,7 +609,7 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(47, 1000);
   animations->Add(505, ani); // Jump Trái
-  
+
   ani = new Animation(100);
   ani->Add(48, 1000);
   animations->Add(506, ani); // Skid Right
@@ -606,12 +617,26 @@ void LoadResources() {
   ani->Add(49, 1000);
   animations->Add(507, ani); // Skid Left
 
+  ani = new Animation(50);
+  ani->Add(601);
+  ani->Add(602);
+  ani->Add(603);
+  ani->Add(604);
+  animations->Add(600, ani); // Fireball
+
+  ani = new Animation(50);
+  ani->Add(605);
+  ani->Add(606);
+  ani->Add(607);
+  animations->Add(605, ani); // Fireball Explosion
+
+  // Items & Enemies Animations
   ani = new Animation(100);
   ani->Add(100, 1000);
-  animations->Add(300, ani);
+  animations->Add(300, ani); // Enemy
   ani = new Animation(100);
   ani->Add(101, 1000);
-  animations->Add(301, ani);
+  animations->Add(301, ani); // Potion
 
   // ==========================================
   // 4. KHỞI TẠO
@@ -628,16 +653,27 @@ void LoadResources() {
   // ==========================================
   // 5. NẠP VÀ PHÁT ÂM THANH
   // ==========================================
-  AudioManager::GetInstance()->LoadSound("mario_theme", "assets/mario-theme.mp3");
-  AudioManager::GetInstance()->LoadSound("level_theme", "assets/level_theme.mp3");
-  AudioManager::GetInstance()->LoadSound("power_up", "assets/power-up-mario.mp3");
-  AudioManager::GetInstance()->LoadSound("mushroom_sound_effect", "assets/super_mario_bros_mushroom_sound_effect.mp3");
-  AudioManager::GetInstance()->LoadSound("super_mario_pipe", "assets/super-mario-pipe.mp3");
-  AudioManager::GetInstance()->LoadSound("win_level", "assets/win-level-complete-mario.mp3");
-  AudioManager::GetInstance()->LoadSound("mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
-  AudioManager::GetInstance()->LoadSound("mario_jump", "assets/mario-jump-sound-effect.mp3");
-  AudioManager::GetInstance()->LoadSound("intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
-  AudioManager::GetInstance()->LoadSound("star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
+  AudioManager::GetInstance()->LoadSound("mario_theme",
+                                         "assets/mario-theme.mp3");
+  AudioManager::GetInstance()->LoadSound("level_theme",
+                                         "assets/level_theme.mp3");
+  AudioManager::GetInstance()->LoadSound("power_up",
+                                         "assets/power-up-mario.mp3");
+  AudioManager::GetInstance()->LoadSound(
+      "mushroom_sound_effect",
+      "assets/super_mario_bros_mushroom_sound_effect.mp3");
+  AudioManager::GetInstance()->LoadSound("super_mario_pipe",
+                                         "assets/super-mario-pipe.mp3");
+  AudioManager::GetInstance()->LoadSound("win_level",
+                                         "assets/win-level-complete-mario.mp3");
+  AudioManager::GetInstance()->LoadSound(
+      "mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
+  AudioManager::GetInstance()->LoadSound("mario_jump",
+                                         "assets/mario-jump-sound-effect.mp3");
+  AudioManager::GetInstance()->LoadSound(
+      "intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
+  AudioManager::GetInstance()->LoadSound(
+      "star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
 
   // Phát nhạc intro sau khi tất cả âm thanh đã được nạp xong
   AudioManager::GetInstance()->PlayMusic("intro_theme", true);

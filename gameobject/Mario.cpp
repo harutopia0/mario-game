@@ -8,6 +8,7 @@
 #include "../gameobject/Flag.h"
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
+#include "../gameobject/Fireball.h"
 #include "../gameplay/GameManager.h"
 #include "../gameplay/SceneManager.h"
 #include "../physics/Collision.h"
@@ -17,15 +18,25 @@
 
 #include "../input/MarioInputHandler.h"
 
-Mario::Mario(float x, float y) : GameObject(x, y) {
+Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   isOnGround = false;
   ax = 0.0f;
 
-  width = MARIO_SMALL_WIDTH;
-  height = MARIO_SMALL_HEIGHT;
+  this->isBig = isBig;
+  this->isFire = isFire;
 
-  lives = 1;
-  isBig = false;
+  if (isBig || isFire) {
+    width = MARIO_BIG_WIDTH;
+    height = MARIO_BIG_HEIGHT;
+  } else {
+    width = MARIO_SMALL_WIDTH;
+    height = MARIO_SMALL_HEIGHT;
+  }
+
+  if (isFire) GameManager::GetInstance()->SetLives(3);
+  else if (isBig) GameManager::GetInstance()->SetLives(2);
+  else GameManager::GetInstance()->SetLives(1);
+
   isDead = false;
   deathStart = 0;
 
@@ -33,8 +44,8 @@ Mario::Mario(float x, float y) : GameObject(x, y) {
   untouchableStart = 0;
   untouchableDuration = 0;
   isStarInvincible = false;
-  isFire = false;
   isEnteringPipe = false;
+  lastShootTime = 0;
 
   // Khởi tạo trạng thái P-Meter
   pMeterLevel = 0;
@@ -63,8 +74,6 @@ void Mario::GetBoundingBox(float &left, float &top, float &right,
 }
 
 void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
-  // Cập nhật số mạng sống vào GameManager
-  GameManager::GetInstance()->SetLives(lives);
 
   // Thời gian bất tử
   if (untouchable) {
@@ -195,11 +204,19 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             TakeDamage();
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
-          if (lives < 2) {
-            lives = 2;
-            SetBig(true);
-            GameManager::GetInstance()->SetMarioBig(true);
-            OutputDebugStringA("Mario became BIG\n");
+          int buffType = buff->GetAnimationId();
+          if (buffType == 301) {
+            if (!isBig && !isFire) {
+              GameManager::GetInstance()->SetLives(2);
+              SetBig(true);
+              OutputDebugStringA("Mario became BIG\n");
+            }
+          } else {
+            if (!isFire) {
+              GameManager::GetInstance()->SetLives(3);
+              SetFire(true);
+              OutputDebugStringA("Mario became FIRE\n");
+            }
           }
           buff->Delete();
         }
@@ -303,11 +320,19 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             }
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
-          if (lives < 2) {
-            lives = 2;
-            SetBig(true);
-            GameManager::GetInstance()->SetMarioBig(true);
-            OutputDebugStringA("Mario became BIG\n");
+          int buffType = buff->GetAnimationId();
+          if (buffType == 301) {
+            if (!isBig && !isFire) {
+              GameManager::GetInstance()->SetLives(2);
+              SetBig(true);
+              OutputDebugStringA("Mario became BIG\n");
+            }
+          } else {
+            if (!isFire) {
+              GameManager::GetInstance()->SetLives(3);
+              SetFire(true);
+              OutputDebugStringA("Mario became FIRE\n");
+            }
           }
           buff->Delete();
         }
@@ -438,7 +463,6 @@ void Mario::Render() {
 
 void Mario::SetBig(bool big) {
   if (big && !isBig) {
-    y -= (MARIO_BIG_HEIGHT - MARIO_SMALL_HEIGHT);
     
     // Bật trạng thái chớp (tàng hình) và phát âm thanh
     untouchable = true;
@@ -465,13 +489,12 @@ void Mario::SetBig(bool big) {
 void Mario::SetFire(bool fire) {
   if (fire && !isFire) {
     if (!isBig) {
-      y -= (MARIO_BIG_HEIGHT - MARIO_SMALL_HEIGHT);
       isBig = true;
       width = MARIO_BIG_WIDTH;
       height = MARIO_BIG_HEIGHT;
     }
     
-    // Bật trạng thái chớp và phát âm thanh
+    // Bật trạng thái chớp (tàng hình) và phát âm thanh
     untouchable = true;
     untouchableStart = GetTickCount64();
     untouchableDuration = 1000;
@@ -482,6 +505,24 @@ void Mario::SetFire(bool fire) {
   }
   isFire = fire;
   GameManager::GetInstance()->SetMarioFire(fire);
+}
+
+void Mario::ShootFireball() {
+  if (!isFire) return;
+  if (GetTickCount64() - lastShootTime < 500) return; // Cooldown 0.5s
+
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  // Vị trí xuất phát của fireball (dời vào giữa người Mario để tránh lún tường)
+  float spawnX = x + width / 2.0f - FIREBALL_WIDTH / 2.0f;
+  float spawnY = y + height / 2.0f;
+
+  Fireball* fb = new Fireball(spawnX, spawnY, nx > 0 ? 1 : -1);
+  g_objectList.push_back(fb);
+  AddObjectToGrid(fb);
+
+  lastShootTime = GetTickCount64();
 }
 
 void Mario::Die() {
@@ -505,19 +546,20 @@ void Mario::TakeDamage() {
 
   if (isFire) {
     SetFire(false);
+    GameManager::GetInstance()->SetLives(2);
     untouchable = true;
     untouchableStart = GetTickCount64();
     untouchableDuration = MARIO_UNTOUCHABLE_TIME;
     OutputDebugStringA("Mario lost fire -> Big Mario + invincible\n");
   } else if (isBig) {
-    lives = 1;
+    GameManager::GetInstance()->SetLives(1);
     SetBig(false);
     untouchable = true;
     untouchableStart = GetTickCount64();
     untouchableDuration = MARIO_UNTOUCHABLE_TIME; // 5 giây khi bị thương
     OutputDebugStringA("Mario shrinked + invincible\n");
   } else {
-    lives = 0;
+    GameManager::GetInstance()->SetLives(0);
     Die();
   }
 }
