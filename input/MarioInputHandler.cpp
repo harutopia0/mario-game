@@ -46,5 +46,15 @@ void MarioInputHandler::KeyState(BYTE *state) {
   } else {
     isZPressed = false;
   }
+  // Xử lý tự sát / nhận sát thương: phím R
+  static bool isRPressed = false;
+  if (GetAsyncKeyState('R') & 0x8000) {
+    if (!isRPressed) {
+      mario->TakeDamage();
+      isRPressed = true;
+    }
+  } else {
+    isRPressed = false;
+  }
 }
 
