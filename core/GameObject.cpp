@@ -12,6 +12,7 @@ GameObject::GameObject(float x, float y)
     gridRow = -1;
     gridCol = -1;
     isDeleted = false;
+    this->layer = LAYER_BLOCKS;
 }
 
 void GameObject::Update(DWORD dt, vector<GameObject*>* coObjects)

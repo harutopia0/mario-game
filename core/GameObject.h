@@ -1,8 +1,15 @@
-﻿#pragma once
+#pragma once
 #include <Windows.h>
 #include <algorithm>
 #include <vector>
 using namespace std;
+
+#define LAYER_BACKGROUND 0
+#define LAYER_BLOCKS     1
+#define LAYER_ITEMS      2
+#define LAYER_ENEMIES    3
+#define LAYER_PLAYER     4
+#define LAYER_FOREGROUND 5
 
 class GameObject
 {
@@ -11,8 +18,12 @@ protected:
     float vx, vy;
     int nx;
     bool isDeleted;
+    int layer;
 
 public:
+    int GetLayer() const { return layer; }
+    void SetLayer(int l) { layer = l; }
+
     //địa chỉ trong grid của object
     int gridRow;
     int gridCol;

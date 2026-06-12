@@ -37,7 +37,6 @@ public:
 	DWORD deathStart;
 	bool isOnGround;
 
-	bool isEnteringPipe;
 	float pipeDestX;
 	float pipeDestY;
 	float pipeEnterStartY;

@@ -44,7 +44,6 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   untouchableStart = 0;
   untouchableDuration = 0;
   isStarInvincible = false;
-  isEnteringPipe = false;
   lastShootTime = 0;
 
   // Khởi tạo trạng thái P-Meter
@@ -53,6 +52,7 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
 
   isPressingDown = false;
   inputHandler = new MarioInputHandler(this);
+  layer = LAYER_PLAYER;
 }
 
 Mario::~Mario() {
@@ -106,18 +106,21 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     return;
   }
 
-  // Xử lý chui ống
-  if (isEnteringPipe) {
-    vy = -0.05f;
-    y += vy * dt;
+  // LOGIC HOẠT ẢNH CHUI ỐNG NƯỚC
+  if (layer == LAYER_BACKGROUND) {
+      bool done = false;
+      vy = -0.05f;
+      y += vy * dt;
 
-    if (pipeEnterStartY - y > height) {
-      x = pipeDestX;
-      y = pipeDestY;
-      isEnteringPipe = false;
-      vy = 0;
-    }
-    return;
+      if (pipeEnterStartY - y > height) {
+          done = true;
+      }
+      if (done) {
+          layer = LAYER_PLAYER;
+          x = pipeDestX;
+          y = pipeDestY;
+      }
+      return;
   }
 
   if (inputHandler != NULL) {
@@ -272,7 +275,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                 float marioCenterX = x + width / 2;
 
                 if (abs(pipeCenterX - marioCenterX) < 10.0f) {
-                  isEnteringPipe = true;
+                  layer = LAYER_BACKGROUND;
                   pipeDestX = pipe->GetDestX();
                   pipeDestY = pipe->GetDestY();
                   pipeEnterStartY = y;
