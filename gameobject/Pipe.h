@@ -11,7 +11,7 @@ private:
     float destX, destY;
 
 public:
-    Pipe(float x, float y, float width, float height, int animationId, bool canEnter = false, float destX = 0, float destY = 0);
+    Pipe(float x, float y, int animationId, bool canEnter = false, float destX = 0, float destY = 0);
 
     void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
     void Render() override;

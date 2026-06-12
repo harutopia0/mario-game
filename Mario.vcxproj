@@ -141,6 +141,7 @@
     <ClCompile Include="gameobject\Brick.cpp" />
     <ClCompile Include="gameobject\Buff.cpp" />
     <ClCompile Include="gameobject\Enemy.cpp" />
+    <ClCompile Include="gameobject\Fireball.cpp" />
     <ClCompile Include="gameobject\Flag.cpp" />
     <ClCompile Include="gameobject\Flower.cpp" />
     <ClCompile Include="gameobject\Ground.cpp" />
@@ -149,7 +150,10 @@
     <ClCompile Include="gameobject\Mushroom.cpp" />
     <ClCompile Include="gameobject\Pipe.cpp" />
     <ClCompile Include="gameobject\Platform.cpp" />
+    <ClCompile Include="gameobject\Projectile.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
+    <ClCompile Include="gameplay\SceneManager.cpp" />
+    <ClCompile Include="input\MarioInputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="physics\Collision.cpp" />
     <ClCompile Include="render\Camera.cpp" />
@@ -172,6 +176,7 @@
     <ClInclude Include="gameobject\Brick.h" />
     <ClInclude Include="gameobject\Buff.h" />
     <ClInclude Include="gameobject\Enemy.h" />
+    <ClInclude Include="gameobject\Fireball.h" />
     <ClInclude Include="gameobject\Flag.h" />
     <ClInclude Include="gameobject\Flower.h" />
     <ClInclude Include="gameobject\Ground.h" />
@@ -180,8 +185,11 @@
     <ClInclude Include="gameobject\Mushroom.h" />
     <ClInclude Include="gameobject\Pipe.h" />
     <ClInclude Include="gameobject\Platform.h" />
+    <ClInclude Include="gameobject\Projectile.h" />
     <ClInclude Include="gameplay\GameManager.h" />
+    <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />
+    <ClInclude Include="input\MarioInputHandler.h" />
     <ClInclude Include="physics\Collision.h" />
     <ClInclude Include="render\Camera.h" />
     <ClInclude Include="render\Sprite.h" />
@@ -193,6 +201,7 @@
     <ClInclude Include="ui\WorldMap.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="gameplay\.gitkeep" />
     <None Include="packages.config" />
     <None Include="ui\.gitkeep" />
   </ItemGroup>

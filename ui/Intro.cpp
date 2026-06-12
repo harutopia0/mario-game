@@ -3,9 +3,6 @@
 
 #define TEX_INTRO 30
 
-
-
-
 void Intro::LoadSprites()
 {
     Sprites* sprites = Sprites::GetInstance();
@@ -13,11 +10,11 @@ void Intro::LoadSprites()
     sprites->Add(2000, 8, 19, 648, 434, TEX_INTRO);    // 2000: Nền màn nhung đỏ
     sprites->Add(2004, 8, 434, 648, 499, TEX_INTRO);   // 2004: Sàn caro
     sprites->Add(2001, 653, 19, 1293, 312, TEX_INTRO); // 2001: Logo Super Mario
-    sprites->Add(2002, 411, 601, 611, 651, TEX_INTRO); // 2002: Chữ 1 Player / 2 Player
+    sprites->Add(2002, 411, 601, 611, 651, TEX_INTRO); // 2002: Chữ Game Start
     sprites->Add(2003, 388, 601, 409, 620, TEX_INTRO); // 2003: Con trỏ (Nấm)
     sprites->Add(2005, 1300, 19, 1940, 434, TEX_INTRO); // 2005: Nền màu mới
 
-    // THÊM: 4 Frame màu của số 3 (Sửa lại toạ độ cắt ảnh cho đúng)
+    // 4 Frame màu của số 3
     sprites->Add(2006, 771, 330, 876, 421, TEX_INTRO); // Số 3 - Màu 1
     sprites->Add(2007, 771, 422, 876, 513, TEX_INTRO); // Số 3 - Màu 2
     sprites->Add(2008, 877, 330, 982, 421, TEX_INTRO); // Số 3 - Màu 3
@@ -28,7 +25,6 @@ void Intro::LoadSprites()
 
 Intro::Intro()
 {
-    currentOption = 1;
     isDone = false;
 
     curtainY = 60.0f;
@@ -64,31 +60,21 @@ void Intro::Update(DWORD dt)
         {
             logoY = 175.0f;
             isLogoDown = true;
+            HUD::GetInstance()->SetPlayer(1); // Mặc định cấu hình Player 1 cho HUD khi vào màn hình chính
         }
     }
     else
     {
         // 1. Cập nhật hiệu ứng đổi màu số 3 (mỗi 300ms)
         timerNum3 += dt;
-        if (timerNum3 > 300) // Bạn có thể tăng/giảm 100 để đổi tốc độ nhấp nháy
+        if (timerNum3 > 300)
         {
             stateNum3++;
-            if (stateNum3 > 5) stateNum3 = 0; // Trở về màu đầu tiên (có 6 màu: 0, 1, 2, 3, 4, 5)
+            if (stateNum3 > 5) stateNum3 = 0;
             timerNum3 = 0;
         }
 
-        // 2. Xử lý thao tác menu
-        if (GetAsyncKeyState(VK_UP) & 0x8000)
-        {
-            currentOption = 1;
-			HUD::GetInstance()->SetPlayer(1); // Cập nhật lựa chọn Player 1 cho HUD
-        }
-        else if (GetAsyncKeyState(VK_DOWN) & 0x8000)
-        {
-            currentOption = 2;
-			HUD::GetInstance()->SetPlayer(2); // Cập nhật lựa chọn Player 2 cho HUD
-        }
-
+        // 2. Xử lý kích hoạt Game Start (Bỏ phần chọn UP/DOWN)
         if ((GetAsyncKeyState(VK_RETURN) & 0x8000) || (GetAsyncKeyState(VK_SPACE) & 0x8000))
         {
             isDone = true;
@@ -111,10 +97,12 @@ void Intro::Render()
         int currentNum3SpriteID = 2006 + stateNum3;
         if (sprites->Get(currentNum3SpriteID)) sprites->Get(currentNum3SpriteID)->Draw(280.0f, 172.0f);
 
-        // Hiện Text và Con trỏ
-        if (sprites->Get(2002)) sprites->Get(2002)->Draw(220.0f, 100.0f);
-        float cursorX = 185.0f;
-        float cursorY = (currentOption == 1) ? 132.0f : 98.0f;
+        // Hiện Text Game Start
+        if (sprites->Get(2002)) sprites->Get(2002)->Draw(250.0f, 100.0f);
+
+        // Đặt con trỏ cố định ở giữa text Game Start (Y = 115.0f)
+        float cursorX = 215.0f;
+        float cursorY = 115.0f;
         if (sprites->Get(2003)) sprites->Get(2003)->Draw(cursorX, cursorY);
     }
     // NẾU LOGO CHƯA XUỐNG XONG HOẶC MÀN NHUNG ĐANG KÉO

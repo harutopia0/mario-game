@@ -8,22 +8,14 @@ class HUD
 private:
     static HUD* __instance;
 
-    int time;
-    DWORD timeAccumulator;
-
+    // PMeter blink animation (chỉ thuộc về UI)
     DWORD pMeterBlinkTime;
     bool isPMeterBlinkVisible;
 
     int currentPMeter;
     int currentPlayer;
-    int currentScore;
-    int currentCoins;
-    int currentLives;
-    int currentWorld;
 
-    int cards[3];
-
-    // Vẽ một chuỗi số (text) tại tọa độ x, y chỉ định (Không cần quan tâm hàm này, chỉ là hàm tiện ích để vẽ các số trên HUD)
+    // Vẽ một chuỗi số (text) tại tọa độ x, y chỉ định
     void DrawString(std::string text, float x, float y);
 
 public:
@@ -39,7 +31,7 @@ public:
     // Tải toàn bộ sprite dùng cho HUD từ hệ thống
     void LoadSprites();
 
-    // Cập nhật các trạng thái của HUD theo thời gian (đếm ngược, nhấp nháy PMeter, v.v.)
+    // Cập nhật trạng thái UI (nhấp nháy PMeter)
     void Update(DWORD dt);
 
     // Gọi các hàm vẽ để hiển thị toàn bộ HUD lên màn hình
@@ -60,7 +52,7 @@ public:
     // Vẽ biểu tượng người chơi (VD: Mario hoặc Luigi)
     void DrawPlayerIcon(int player);
 
-    // Vẽ tối đa 3 thẻ bài ở cuối màn
+    // Vẽ tối đa 3 thẻ bài (đọc từ GameManager)
     void DrawCards();
 
     // Vẽ số mạng sống còn lại
@@ -72,21 +64,4 @@ public:
     // Các hàm cập nhật giá trị hiển thị cho HUD từ bên ngoài
     void SetPMeter(int level) { currentPMeter = level; }
     void SetPlayer(int player) { currentPlayer = player; }
-    void SetScore(int score) { currentScore = score; }
-    void SetCoins(int coins) { currentCoins = coins; }
-    void SetLives(int lives) { currentLives = lives; }
-    void SetWorld(int world) { currentWorld = world; }
-
-    // Thêm một thẻ bài mới (Nấm, Hoa, hoặc Sao) vào khe trống tính từ trái qua phải
-    void AddCard(int cardType);
-
-    // Xóa sạch toàn bộ 3 thẻ bài
-    void ClearCards() {
-        cards[0] = 0; cards[1] = 0; cards[2] = 0;
-    }
-
-    // Kiểm tra xem đã thu thập đủ 3 thẻ bài chưa
-    bool IsFullCards() const {
-        return cards[0] != 0 && cards[1] != 0 && cards[2] != 0;
-    }
 };
