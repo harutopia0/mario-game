@@ -51,7 +51,7 @@ public:
 	void ResetClearedLevels();
 
 	// Quản lý thẻ bài
-	void AddCard(int cardType);
+	bool AddCard(int cardType);
 	int* GetHoldingCards() { return holdingCards; }
 	void ClearHoldingCards();
 	int UseCard(int slot);  // Sử dụng thẻ tại vị trí slot (0, 1, 2), trả về loại thẻ

@@ -41,16 +41,17 @@ void GameManager::ResetClearedLevels()
     for (int i = 0; i < 6; i++) clearedLevels[i] = false;
 }
 
-void GameManager::AddCard(int cardType)
+bool GameManager::AddCard(int cardType)
 {
     for (int i = 0; i < 3; i++)
     {
         if (holdingCards[i] == 0)
         {
             holdingCards[i] = cardType;
-            break;
+            return true;
         }
     }
+    return false;
 }
 
 void GameManager::ClearHoldingCards()
