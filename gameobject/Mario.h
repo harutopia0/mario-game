@@ -29,6 +29,7 @@ private:
 	float width, height;
 	int lives;
 	bool isBig;
+	bool isFire;
 	bool isDead;
 	float pMeterValue;
 	int pMeterLevel;
@@ -62,6 +63,9 @@ public:
 	}
 	void SetBig(bool big);
 	bool IsBig() const { return isBig; }
+	
+	void SetFire(bool fire);
+	bool IsFire() const { return isFire; }
 	void Die();
 
 	void SetAccelX(float ax);

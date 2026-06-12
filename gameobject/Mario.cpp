@@ -33,6 +33,7 @@ Mario::Mario(float x, float y) : GameObject(x, y) {
   untouchableStart = 0;
   untouchableDuration = 0;
   isStarInvincible = false;
+  isFire = false;
   isEnteringPipe = false;
 
   // Khởi tạo trạng thái P-Meter
@@ -348,7 +349,22 @@ void Mario::Render() {
     return;
   }
 
-  if (isBig) {
+  if (isFire) {
+    if (!isOnGround) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(504)
+                     : Animations::GetInstance()->Get(505);
+    } else {
+      if (isSkidding)
+        ani = (nx > 0) ? Animations::GetInstance()->Get(507)
+                       : Animations::GetInstance()->Get(506);
+      else if (vx == 0.0f)
+        ani = (nx > 0) ? Animations::GetInstance()->Get(500)
+                       : Animations::GetInstance()->Get(501);
+      else
+        ani = (nx > 0) ? Animations::GetInstance()->Get(502)
+                       : Animations::GetInstance()->Get(503);
+    }
+  } else if (isBig) {
     if (!isOnGround) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(404)
                      : Animations::GetInstance()->Get(405);
@@ -398,11 +414,11 @@ void Mario::Render() {
     if (ani != NULL) {
       int cycle = (GetTickCount64() / 50) % 3;
       if (cycle == 0) {
-        ani->Render(x, y, D3DXCOLOR(10.0f, 10.0f, 10.0f, 1.0f)); // Trắng sáng
+        ani->Render(x, y, D3DXCOLOR(1.2f, 1.2f, 1.2f, 1.0f)); // Trắng hơi sáng
       } else if (cycle == 1) {
-        ani->Render(x, y, D3DXCOLOR(10.0f, 1.0f, 1.0f, 1.0f)); // Đỏ sáng
+        ani->Render(x, y, D3DXCOLOR(1.0f, 0.4f, 0.4f, 1.0f)); // Đỏ sẫm
       } else {
-        ani->Render(x, y, D3DXCOLOR(10.0f, 10.0f, 1.0f, 1.0f)); // Vàng sáng
+        ani->Render(x, y, D3DXCOLOR(0.5f, 1.0f, 0.5f, 1.0f)); // Xanh lá nhạt
       }
     }
     return;
@@ -438,7 +454,29 @@ void Mario::SetBig(bool big) {
   } else {
     width = MARIO_SMALL_WIDTH;
     height = MARIO_SMALL_HEIGHT;
+    isFire = false; // Thu nhỏ thì mất luôn lửa
   }
+}
+
+void Mario::SetFire(bool fire) {
+  if (fire && !isFire) {
+    if (!isBig) {
+      y -= (MARIO_BIG_HEIGHT - MARIO_SMALL_HEIGHT);
+      isBig = true;
+      width = MARIO_BIG_WIDTH;
+      height = MARIO_BIG_HEIGHT;
+    }
+    
+    // Bật trạng thái chớp và phát âm thanh
+    untouchable = true;
+    untouchableStart = GetTickCount64();
+    untouchableDuration = 1000;
+    AudioManager::GetInstance()->PlaySFX("power_up");
+
+    // Tạm dừng game 1 giây khi biến hóa
+    SceneManager::GetInstance()->ProcessTransform();
+  }
+  isFire = fire;
 }
 
 void Mario::Die() {
@@ -460,7 +498,13 @@ void Mario::TakeDamage() {
       GameManager::GetInstance()->IsLevelClear())
     return;
 
-  if (isBig) {
+  if (isFire) {
+    SetFire(false);
+    untouchable = true;
+    untouchableStart = GetTickCount64();
+    untouchableDuration = MARIO_UNTOUCHABLE_TIME;
+    OutputDebugStringA("Mario lost fire -> Big Mario + invincible\n");
+  } else if (isBig) {
     lives = 1;
     SetBig(false);
     untouchable = true;

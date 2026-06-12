@@ -48,6 +48,7 @@ enum TEXTURE_ID {
   TEX_MARIO = 0,
   TEX_COMMON1 = 1,
   TEX_COMMON2 = 2,
+  TEX_FIRE_MARIO = 3,
   TEX_HUD = 20,
   TEX_INTRO = 30,
   TEX_BBOX = 99,
@@ -328,6 +329,7 @@ void LoadResources() {
   textures->Add(TEX_MARIO, L"assets/mario-luigi.png");
   textures->Add(TEX_COMMON1, L"assets/CommonObjects1.png");
   textures->Add(TEX_COMMON2, L"assets/CommonObjects2.png");
+  textures->Add(TEX_FIRE_MARIO, L"assets/fireMario.png");
 
   textures->Add(TEX_HUD, L"assets/hud.png");
   textures->Add(TEX_INTRO, L"assets/intro_items.png");
@@ -384,6 +386,30 @@ void LoadResources() {
   // Skid
   sprites->Add(28, 166, 89, 181, 116, TEX_MARIO); // Phải sang trái (Skid Right)
   sprites->Add(29, 15, 89, 30, 116, TEX_MARIO);   // Trái sang phải (Skid Left)
+
+  // ==========================================
+  // FIRE MARIO SPRITES
+  // ==========================================
+  // Idle
+  sprites->Add(40, 216, 2, 229, 28, TEX_FIRE_MARIO); // Phải
+  sprites->Add(41, 176, 2, 189, 28, TEX_FIRE_MARIO); // Trái
+
+  // Run
+  sprites->Add(42, 255, 2, 270, 28, TEX_FIRE_MARIO); // Phải 1
+  sprites->Add(43, 295, 3, 310, 28, TEX_FIRE_MARIO); // Phải 2
+  sprites->Add(44, 135, 2, 150, 28, TEX_FIRE_MARIO); // Trái 1
+  sprites->Add(45, 95, 3, 110, 28, TEX_FIRE_MARIO);  // Trái 2
+
+  // Jump
+  sprites->Add(46, 335, 3, 350, 28, TEX_FIRE_MARIO); // Phải
+  sprites->Add(47, 55, 3, 70, 28, TEX_FIRE_MARIO);   // Trái
+
+  // Skid
+  sprites->Add(48, 215, 42, 230, 69, TEX_FIRE_MARIO); // Mặt trái (Skid Right)
+  sprites->Add(49, 175, 42, 190, 69, TEX_FIRE_MARIO); // Mặt phải (Skid Left)
+
+  // Death
+  sprites->Add(30, 90, 53, 105, 68, TEX_MARIO);
 
   // Brick
   sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
@@ -459,6 +485,10 @@ void LoadResources() {
   animations->Add(107, ani);
 
   ani = new Animation(100);
+  ani->Add(30, 1000);
+  animations->Add(108, ani);
+
+  ani = new Animation(100);
   ani->Add(10, 1000);
   animations->Add(201, ani);
   ani = new Animation(100);
@@ -502,10 +532,45 @@ void LoadResources() {
   animations->Add(405, ani); // Jump Trái
   ani = new Animation(100);
   ani->Add(28, 1000);
-  animations->Add(406, ani); // Skid Left
+  animations->Add(406, ani); // Skid Right
   ani = new Animation(100);
   ani->Add(29, 1000);
-  animations->Add(407, ani); // Skid Right
+  animations->Add(407, ani); // Skid Left
+
+  // ==========================================
+  // FIRE MARIO ANIMATIONS
+  // ==========================================
+  ani = new Animation(100);
+  ani->Add(40, 1000);
+  animations->Add(500, ani); // Idle Phải
+  ani = new Animation(100);
+  ani->Add(41, 1000);
+  animations->Add(501, ani); // Idle Trái
+
+  ani = new Animation(100);
+  ani->Add(42);
+  ani->Add(40);
+  ani->Add(43);
+  animations->Add(502, ani); // Run Phải
+  ani = new Animation(100);
+  ani->Add(44);
+  ani->Add(41);
+  ani->Add(45);
+  animations->Add(503, ani); // Run Trái
+
+  ani = new Animation(100);
+  ani->Add(46, 1000);
+  animations->Add(504, ani); // Jump Phải
+  ani = new Animation(100);
+  ani->Add(47, 1000);
+  animations->Add(505, ani); // Jump Trái
+  
+  ani = new Animation(100);
+  ani->Add(48, 1000);
+  animations->Add(506, ani); // Skid Right
+  ani = new Animation(100);
+  ani->Add(49, 1000);
+  animations->Add(507, ani); // Skid Left
 
   ani = new Animation(100);
   ani->Add(100, 1000);

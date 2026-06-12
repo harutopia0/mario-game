@@ -231,12 +231,12 @@ void SceneManager::Update(DWORD dt) {
         HUD::GetInstance()->Update(dt);
 
         // ==========================================
-        // ẤN X ĐỂ SỬ DỤNG THẺ BÀI (từ phải sang trái)
+        // ẤN Z ĐỂ SỬ DỤNG THẺ BÀI (từ phải sang trái)
         // ==========================================
-        static bool isXPressed = false;
-        if (GetAsyncKeyState('X') & 0x8000)
+        static bool isZPressed = false;
+        if (GetAsyncKeyState('Z') & 0x8000)
         {
-            if (!isXPressed)
+            if (!isZPressed)
             {
                 int cardType = HUD::GetInstance()->UseCard();
                 if (cardType != 0) // CARD_NONE = 0
@@ -244,11 +244,11 @@ void SceneManager::Update(DWORD dt) {
                     Mario* mario = g_objectList.empty() ? nullptr : dynamic_cast<Mario*>(g_objectList[0]);
                     if (mario != nullptr && !mario->IsDied())
                     {
-                        if (cardType == 3) // CARD_STAR: Bất tử 5 giây
+                        if (cardType == 3) // CARD_STAR: Bất tử 10 giây
                         {
                             mario->untouchable = true;
                             mario->untouchableStart = GetTickCount64();
-                            mario->untouchableDuration = 5000;
+                            mario->untouchableDuration = 10000;
                             mario->isStarInvincible = true;
                             AudioManager::GetInstance()->PauseMusic();
                             AudioManager::GetInstance()->PlayEventMusic("star_theme", true);
@@ -260,15 +260,21 @@ void SceneManager::Update(DWORD dt) {
                                 mario->SetBig(true);
                             }
                         }
-                        // cardType == 2 (CARD_FLOWER): Tạm thời chưa có hiệu ứng
+                        else if (cardType == 2) // CARD_FLOWER: Bắn lửa
+                        {
+                            if (!mario->IsFire())
+                            {
+                                mario->SetFire(true);
+                            }
+                        }
                     }
                 }
-                isXPressed = true;
+                isZPressed = true;
             }
         }
         else
         {
-            isXPressed = false;
+            isZPressed = false;
         }
 
         for (GameObject* obj : g_objectList) {
