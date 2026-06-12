@@ -9,6 +9,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <stdlib.h>
 
 SceneManager* SceneManager::instance = nullptr;
 
@@ -29,6 +30,10 @@ SceneManager::SceneManager() {
     levelClearStartTime = 0;
     isMarioGameWinning = false;
     gameWinStartTime = 0;
+
+    rouletteCardType = 1;
+    lastRouletteTick = 0;
+    isRouletteDone = false;
 }
 
 SceneManager* SceneManager::GetInstance() {
@@ -66,8 +71,8 @@ void SceneManager::SwitchTo(GameState newState) {
         HUD::GetInstance()->SetWorld(1);
         GameManager::GetInstance()->SetLevel(1);
 
-        // Reset all cleared levels progress khi bắt đầu lại game
         GameManager::GetInstance()->ResetClearedLevels();
+        GameManager::GetInstance()->ClearHoldingCards();
 
         AudioManager::GetInstance()->PlayMusic("intro_theme", true);
     }
@@ -105,10 +110,13 @@ void SceneManager::ProcessLevelClear()
     isMarioLevelClearing = true;
     levelClearStartTime = GetTickCount64();
 
+    rouletteCardType = 1;
+    lastRouletteTick = GetTickCount64();
+    isRouletteDone = false;
+
     AudioManager::GetInstance()->StopMusic();
     AudioManager::GetInstance()->PlaySFX("win_level");
 
-    // Đánh dấu màn hiện tại đã được clear
     int clearedLevel = GameManager::GetInstance()->GetLevel();
     GameManager::GetInstance()->SetLevelCleared(clearedLevel, true);
 
@@ -126,7 +134,6 @@ void SceneManager::ProcessGameWin()
     AudioManager::GetInstance()->StopMusic();
     AudioManager::GetInstance()->PlaySFX("win_level");
 
-    // Đánh dấu màn cuối (level 5) đã được clear
     int clearedLevel = GameManager::GetInstance()->GetLevel();
     GameManager::GetInstance()->SetLevelCleared(clearedLevel, true);
 
@@ -146,12 +153,30 @@ void SceneManager::Update(DWORD dt) {
 
     if (isMarioLevelClearing)
     {
-        if (GetTickCount64() - levelClearStartTime >= 6000)
+        DWORD holdingTime = GetTickCount64() - levelClearStartTime;
+
+        if (holdingTime < 4000)
+        {
+            if (GetTickCount64() - lastRouletteTick >= 30)
+            {
+                rouletteCardType = (rand() % 3) + 1;
+                lastRouletteTick = GetTickCount64();
+            }
+        }
+        else if (!isRouletteDone)
+        {
+            rouletteCardType = (rand() % 3) + 1;
+            isRouletteDone = true;
+
+            GameManager::GetInstance()->AddCard(rouletteCardType);
+            HUD::GetInstance()->AddCard(rouletteCardType);
+        }
+
+        if (holdingTime >= 6000)
         {
             isMarioLevelClearing = false;
             GameManager::GetInstance()->SetLevelClear(false);
 
-            // Tự động chuyển dịch đến node của Level kế tiếp
             if (worldMapScene != nullptr) {
                 int nextLevel = worldMapScene->GetSelectedLevel() + 1;
                 worldMapScene->SetLevelNode(nextLevel);
@@ -188,12 +213,10 @@ void SceneManager::Update(DWORD dt) {
             if (worldMapScene->IsDone()) {
                 int levelToLoad = worldMapScene->GetSelectedLevel();
 
-                // Đảm bảo chỉ xử lý tải màn khi trả về một level hợp lệ (> 0)
                 if (levelToLoad > 0) {
                     HUD::GetInstance()->SetWorld(levelToLoad);
                     GameManager::GetInstance()->SetLevel(levelToLoad);
 
-                    // PHÂN LOẠI LOAD FILE MAP ĐẾN LEVEL 5
                     if (levelToLoad == 5) {
                         LoadMap(L"levels/Level_5.txt");
                     }
@@ -324,9 +347,23 @@ void SceneManager::Render() {
             }
         }
         else if (isMarioLevelClearing) {
+            // 1. Vẽ màn hình nền "You Got An Item" trước
+            Sprite* obtainItemSprite = Sprites::GetInstance()->Get(9000);
+            if (obtainItemSprite) {
+                obtainItemSprite->Draw(0.0f, 100.0f);
+            }
+
+            // 2. Vẽ đè chữ LEVEL CLEAR lên trên ảnh nền
             Sprite* winSprite = Sprites::GetInstance()->Get(7001);
             if (winSprite) {
                 winSprite->Draw(0.0f, 200.0f);
+            }
+
+            // 3. Vẽ thẻ bài roulette
+            int cardSpriteId = 3013 + rouletteCardType;
+            Sprite* cardSprite = Sprites::GetInstance()->Get(cardSpriteId);
+            if (cardSprite) {
+                cardSprite->Draw(480.0f, 320.0f);
             }
         }
         else if (isMarioGameWinning) {

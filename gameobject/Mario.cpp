@@ -116,8 +116,8 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 	if (inputHandler != NULL)
 	{
 		inputHandler->KeyState(NULL); // Update continuous keyboard state
-    
-  } 
+	}
+
 	// KIỂM TRA TRẠNG THÁI KHÓA ĐIỀU KHIỂN KHI QUA MÀN / WIN GAME
 	bool isControlLocked = GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin();
 
@@ -357,7 +357,7 @@ void Mario::Update(DWORD dt, vector<GameObject*>* coObjects)
 				// CHẠM CỜ THEO TRỤC Y
 				else if (Flag* flag = dynamic_cast<Flag*>(e)) {
 					int currentLevel = GameManager::GetInstance()->GetLevel();
-					if (currentLevel == 3) {
+					if (currentLevel == 5) { // Đã sửa từ 3 thành 5 để đồng bộ màn cuối
 						SceneManager::GetInstance()->ProcessGameWin();
 					}
 					else {
@@ -518,7 +518,6 @@ void Mario::SetPressingDown(bool pressing)
 	this->isPressingDown = pressing;
 }
 
-// Nhả phím Space giữa chừng khi đang bay lên → cắt vy để nhảy thấp
 void Mario::SetHoldingJump(bool holding)
 {
 	if (!holding && vy > MARIO_JUMP_DEFLECT_SPEED)

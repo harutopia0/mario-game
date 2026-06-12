@@ -55,7 +55,8 @@ enum TEXTURE_ID {
     TEX_LEVEL_CLEAR = 701,
     TEX_GAME_OVER = 702,
     TEX_YOU_WIN = 703,
-	TEX_MAP_LEVEL = 800
+	TEX_MAP_LEVEL = 800,
+    TEX_OBTAIN_ITEM = 900
 };
 
 #pragma endregion
@@ -386,6 +387,8 @@ void LoadResources()
 
     textures->Add(TEX_MAP_LEVEL, L"assets/map-level.png");
 
+    textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
+
     // ==========================================
     // 2. CẮT SPRITES
     // ==========================================
@@ -466,6 +469,9 @@ void LoadResources()
 
     //Map level
 	sprites->Add(8000, 0, 0, 640, 480, TEX_MAP_LEVEL);
+
+    //Obtain item
+    sprites->Add(9000, 0, 0, 640, 480, TEX_OBTAIN_ITEM);
 
     // ==========================================
     // 3. GOM SPRITES TẠO ANIMATION

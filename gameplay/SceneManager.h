@@ -33,6 +33,11 @@ private:
     bool isMarioGameWinning;
     DWORD gameWinStartTime;
 
+    // Cơ chế Roulette Thẻ bài khi thắng màn
+    int rouletteCardType;
+    DWORD lastRouletteTick;
+    bool isRouletteDone;
+
     SceneManager();
 public:
     static SceneManager* GetInstance();
@@ -43,7 +48,7 @@ public:
 
     GameState GetState() const { return currentState; }
     void SwitchTo(GameState newState);
-    void ProcessMarioDeath(); // Hàm đếm ngược 5s khi Mario chết
-    void ProcessLevelClear(); // Hàm xử lý qua màn thường 6s
-    void ProcessGameWin();    // Hàm xử lý thắng game màn cuối 6s
+    void ProcessMarioDeath();
+    void ProcessLevelClear();
+    void ProcessGameWin();
 };
