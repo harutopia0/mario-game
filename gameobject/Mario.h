@@ -27,7 +27,6 @@ class Mario : public GameObject
 {
 private:
 	float width, height;
-	int lives;
 	bool isBig;
 	bool isFire;
 	bool isDead;
@@ -48,7 +47,7 @@ public:
 	float ax;
 	MarioInputHandler* inputHandler;
 
-	Mario(float x, float y);
+	Mario(float x, float y, bool isBig = false, bool isFire = false);
 	~Mario();
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 	void Update(DWORD dt, vector<GameObject*>* coObjects);
