@@ -11,6 +11,4 @@ private:
 public:
     MarioInputHandler(Mario* mario);
     void KeyState(BYTE* state) override;
-    void OnKeyDown(int KeyCode) override;
-    void OnKeyUp(int KeyCode) override;
 };

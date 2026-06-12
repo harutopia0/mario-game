@@ -80,6 +80,9 @@ public:
     // Thêm một thẻ bài mới (Nấm, Hoa, hoặc Sao) vào khe trống tính từ trái qua phải
     void AddCard(int cardType);
 
+    // Sử dụng thẻ bài cuối cùng (phải sang trái), trả về loại thẻ đã dùng (0 nếu không có)
+    int UseCard();
+
     // Xóa sạch toàn bộ 3 thẻ bài
     void ClearCards() {
         cards[0] = 0; cards[1] = 0; cards[2] = 0;

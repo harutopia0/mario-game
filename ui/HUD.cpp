@@ -282,6 +282,21 @@ void HUD::AddCard(int cardType)
     }
 }
 
+int HUD::UseCard()
+{
+    // Duyệt từ phải sang trái, tìm thẻ cuối cùng có giá trị
+    for (int i = 2; i >= 0; i--)
+    {
+        if (cards[i] != CARD_NONE)
+        {
+            int usedCard = cards[i];
+            cards[i] = CARD_NONE;
+            return usedCard;
+        }
+    }
+    return CARD_NONE; // Không có thẻ nào
+}
+
 void HUD::DestroyInstance()
 {
     if (__instance != NULL)

@@ -1,6 +1,9 @@
 #pragma once
 #include <Windows.h>
 
+// Thời gian tạm dừng khi Mario biến lớn (mili-giây)
+#define MARIO_TRANSFORM_PAUSE_TIME 1000
+
 #define GRID_CELL_SIZE 64.0f
 #define MAX_CELL_ROW 50
 #define MAX_CELL_COL 200
@@ -31,7 +34,11 @@ private:
 
     // Quản lý đếm ngược thời gian thắng màn cuối (Phá đảo)
     bool isMarioGameWinning;
+
+    // Quản lý tạm dừng khi Mario biến lớn
+    bool isMarioTransforming;
     DWORD gameWinStartTime;
+    DWORD transformStartTime;
 
     // Cơ chế Roulette Thẻ bài khi thắng màn
     int rouletteCardType;
@@ -48,7 +55,9 @@ public:
 
     GameState GetState() const { return currentState; }
     void SwitchTo(GameState newState);
-    void ProcessMarioDeath();
-    void ProcessLevelClear();
-    void ProcessGameWin();
+    void ProcessMarioDeath(); // Hàm đếm ngược 5s khi Mario chết
+    void ProcessLevelClear(); // Hàm xử lý qua màn thường 6s
+    void ProcessGameWin();    // Hàm xử lý thắng game màn cuối 6s
+    void ProcessTransform();  // Hàm tạm dừng khi Mario biến lớn
+    bool IsTransforming() const { return isMarioTransforming; }
 };
