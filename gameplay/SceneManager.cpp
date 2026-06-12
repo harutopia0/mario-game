@@ -400,7 +400,9 @@ void SceneManager::Update(DWORD dt) {
             }
         }
 
-        for (GameObject* obj : g_objectList) {
+        size_t numObjects = g_objectList.size();
+        for (size_t objIndex = 0; objIndex < numObjects; objIndex++) {
+            GameObject* obj = g_objectList[objIndex];
             if (obj->IsDeleted())
                 continue;
             if (obj->isStatic == true) {
