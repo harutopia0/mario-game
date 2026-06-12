@@ -34,15 +34,11 @@ public:
         smoothSpeed = smooth;
     }
 
-    void Update(float targetX, float targetY, float deltaTime) {
-        float goalX = targetX - screenWidth / 2.0f;
-        float goalY = targetY - screenHeight / 2.0f;
-
-        x += (goalX - x) * smoothSpeed * deltaTime;
-        y += (goalY - y) * smoothSpeed * deltaTime;
+    void Update(float targetX, float targetY, float deltaTime)
+    {
+        x = targetX - 100.0f;
 
         x = max(0.0f, min(x, mapWidth - screenWidth));
-        y = max(0.0f, min(y, mapHeight - screenHeight));
     }
 
     // Trả về ma trận dịch chuyển theo camera

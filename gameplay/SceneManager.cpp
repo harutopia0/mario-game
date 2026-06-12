@@ -10,11 +10,13 @@
 #include "../gameobject/Enemy.h"
 #include "../gameobject/Flag.h"
 #include "../gameobject/Pipe.h"
+#include "../render/Camera.h"
 #include <vector>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <stdlib.h>
+
 
 SceneManager* SceneManager::instance = nullptr;
 
@@ -346,6 +348,21 @@ void SceneManager::Update(DWORD dt) {
         // Cập nhật HUD (nhấp nháy PMeter)
         HUD::GetInstance()->Update(dt);
 
+        GameObject* marioObj =
+            g_objectList.empty() ? nullptr : g_objectList[0];
+
+        Mario* mario =
+            dynamic_cast<Mario*>(marioObj);
+
+        if (mario)
+        {
+            Camera::GetInstance()->Update(
+                mario->GetX(),
+                mario->GetY(),
+                dt / 1000.0f
+            );
+        }
+
         // ==========================================
         // ẤN PHÍM 1/2/3 ĐỂ SỬ DỤNG THẺ BÀI TẠI VỊ TRÍ TƯƠNG ỨNG
         // ==========================================
@@ -462,8 +479,18 @@ void SceneManager::Render() {
         if (worldMapScene) worldMapScene->Render();
     }
     else if (currentState == STATE_PLAYING) {
+        D3DXMATRIX matCamera;
+        D3DXMATRIX matFinal;
+
         D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
-        game->GetSpriteHandler()->SetViewTransform(&matZoom);
+
+        matCamera = Camera::GetInstance()->GetViewMatrix();
+
+        matFinal = matCamera * matZoom;
+
+        game->GetSpriteHandler()->SetViewTransform(
+            &matFinal
+        );
         GameObject* mario = g_objectList.empty() ? NULL : g_objectList[0];
 
         Mario* realMario = dynamic_cast<Mario*>(mario);
