@@ -466,22 +466,23 @@ void SceneManager::Render() {
     else if (currentState == STATE_PLAYING) {
         D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
         game->GetSpriteHandler()->SetViewTransform(&matZoom);
-        GameObject* mario = g_objectList.empty() ? NULL : g_objectList[0];
+        GameObject* firstObj = g_objectList.empty() ? NULL : g_objectList[0];
 
-        Mario* realMario = dynamic_cast<Mario*>(mario);
+        Mario* realMario = dynamic_cast<Mario*>(firstObj);
         if (realMario != NULL && realMario->isEnteringPipe == true) {
             realMario->Render();
         }
 
-        for (size_t i = 1; i < g_objectList.size(); i++) {
+        for (size_t i = 0; i < g_objectList.size(); i++) {
             GameObject* obj = g_objectList[i];
+            if (obj == realMario) continue; // Skip rendering mario here since we render him separately
             if (obj->IsDeleted())
                 continue;
             obj->Render();
 
-            if (g_showBBox && mario != NULL) {
-                int marioCellX = (int)(mario->GetX() / GRID_CELL_SIZE);
-                int marioCellY = (int)(mario->GetY() / GRID_CELL_SIZE);
+            if (g_showBBox && realMario != NULL) {
+                int marioCellX = (int)(realMario->GetX() / GRID_CELL_SIZE);
+                int marioCellY = (int)(realMario->GetY() / GRID_CELL_SIZE);
                 int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
                 int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
 
@@ -495,7 +496,7 @@ void SceneManager::Render() {
             realMario->Render();
         }
 
-        if (g_showBBox && mario != NULL) mario->RenderBoundingBox();
+        if (g_showBBox && realMario != NULL) realMario->RenderBoundingBox();
 
         D3DXMATRIX matUI;
         D3DXMatrixScaling(&matUI, 1.0f, 1.0f, 1.0f);
