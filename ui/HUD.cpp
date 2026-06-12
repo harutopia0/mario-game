@@ -91,7 +91,6 @@ void HUD::LoadSprites()
 
     // Sprites icon người chơi
     sprites->Add(3012, 601, 86, 639, 102, TEX_HUD);
-    sprites->Add(3013, 601, 103, 639, 119, TEX_HUD);
 
     // Sprites thẻ bài
     sprites->Add(3014, 1025, 83, 1068, 130, TEX_HUD); // 3014: Nấm
@@ -248,10 +247,6 @@ void HUD::DrawPlayerIcon(int player)
     if (player == 1)
     {
         if (sprites->Get(3012)) sprites->Get(3012)->Draw(HUD_ICON_X, HUD_ICON_Y);
-    }
-    else if (player == 2)
-    {
-        if (sprites->Get(3013)) sprites->Get(3013)->Draw(HUD_ICON_X, HUD_ICON_Y);
     }
 }
 
