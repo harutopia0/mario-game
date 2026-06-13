@@ -22,6 +22,7 @@ Enemy::Enemy(float x, float y, int animationId)
     vy = 0.0f;
 
     died = false;
+    layer = LAYER_ENEMIES;
 }
 
 void Enemy::GetBoundingBox(float& left, float& top, float& right, float& bottom)

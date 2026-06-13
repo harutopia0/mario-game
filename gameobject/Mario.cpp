@@ -44,8 +44,11 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   untouchableStart = 0;
   untouchableDuration = 0;
   isStarInvincible = false;
-  isEnteringPipe = false;
+  isPipeAnimating = false;
   lastShootTime = 0;
+
+  // Gán layer cho Mario
+  layer = LAYER_PLAYER;
 
   // Khởi tạo trạng thái P-Meter
   pMeterLevel = 0;
@@ -107,14 +110,15 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
   }
 
   // Xử lý chui ống
-  if (isEnteringPipe) {
+  if (isPipeAnimating) {
     vy = -0.05f;
     y += vy * dt;
 
     if (pipeEnterStartY - y > height) {
       x = pipeDestX;
       y = pipeDestY;
-      isEnteringPipe = false;
+      isPipeAnimating = false;
+      layer = LAYER_PLAYER; // Trả Mario về layer bình thường
       vy = 0;
     }
     return;
@@ -266,7 +270,8 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                 float marioCenterX = x + width / 2;
 
                 if (abs(pipeCenterX - marioCenterX) < 10.0f) {
-                  isEnteringPipe = true;
+                  isPipeAnimating = true;
+                  layer = LAYER_BACKGROUND; // Chìm ra sau ống
                   pipeDestX = pipe->GetDestX();
                   pipeDestY = pipe->GetDestY();
                   pipeEnterStartY = y;
