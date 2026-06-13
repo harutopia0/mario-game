@@ -381,12 +381,8 @@ void SceneManager::Update(DWORD dt) {
                                     GameManager::GetInstance()->SetLives(2);
                                     mario->SetBig(true);
                                 }
-                                else if (mario->IsFire()) 
-                                {
-                                    mario->ShootFireBlast();
-                                }
                             }
-                            else if (cardType == 2) // CARD_FLOWER: Bắn lửa
+                            else if (cardType == 2) // CARD_JOGO: Bắn lửa
                             {
                                 if (!mario->IsFire())
                                 {
@@ -471,26 +467,30 @@ void SceneManager::Render() {
     else if (currentState == STATE_PLAYING) {
         D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
         game->GetSpriteHandler()->SetViewTransform(&matZoom);
-        GameObject* mario = g_objectList.empty() ? NULL : g_objectList[0];
+        // === VÒNG LẶP RENDER THEO LAYER ===
+        // Quét từ Layer thấp nhất → cao nhất
+        Mario* realMario = nullptr;
+        if (!g_objectList.empty()) {
+            realMario = dynamic_cast<Mario*>(g_objectList[0]);
+        }
 
-        for (int l = LAYER_BACKGROUND; l <= LAYER_FOREGROUND; l++) {
+        for (int l = LAYER_BACKGROUND; l <= LAYER_PLAYER; l++) {
             for (size_t i = 0; i < g_objectList.size(); i++) {
                 GameObject* obj = g_objectList[i];
-                if (obj->IsDeleted())
-                    continue;
+                if (obj->IsDeleted()) continue;
+                if (obj->GetLayer() != l) continue;
 
-                if (obj->GetLayer() == l) {
-                    obj->Render();
+                obj->Render();
 
-                    if (g_showBBox && mario != NULL) {
-                        int marioCellX = (int)(mario->GetX() / GRID_CELL_SIZE);
-                        int marioCellY = (int)(mario->GetY() / GRID_CELL_SIZE);
-                        int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
-                        int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
+                // Debug BoundingBox
+                if (g_showBBox && realMario != nullptr) {
+                    int marioCellX = (int)(realMario->GetX() / GRID_CELL_SIZE);
+                    int marioCellY = (int)(realMario->GetY() / GRID_CELL_SIZE);
+                    int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
+                    int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
 
-                        if (dynamic_cast<Projectile*>(obj) != NULL || (std::abs(marioCellX - objCellX) <= 1 && std::abs(marioCellY - objCellY) <= 1)) {
-                            obj->RenderBoundingBox();
-                        }
+                    if (std::abs(marioCellX - objCellX) <= 1 && std::abs(marioCellY - objCellY) <= 1) {
+                        obj->RenderBoundingBox();
                     }
                 }
             }

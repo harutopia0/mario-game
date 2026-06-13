@@ -3,7 +3,7 @@
 
 Projectile::Projectile(float x, float y, int direction) : GameObject(x, y) {
     this->nx = direction;
-    this->layer = LAYER_ITEMS;
+    layer = LAYER_ENEMIES;
 }
 
 void Projectile::GetBoundingBox(float& left, float& top, float& right, float& bottom) {

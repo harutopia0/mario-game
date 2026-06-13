@@ -44,7 +44,11 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   untouchableStart = 0;
   untouchableDuration = 0;
   isStarInvincible = false;
+  isPipeAnimating = false;
   lastShootTime = 0;
+
+  // Gán layer cho Mario
+  layer = LAYER_PLAYER;
 
   // Khởi tạo trạng thái P-Meter
   pMeterLevel = 0;
@@ -106,21 +110,19 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     return;
   }
 
-  // LOGIC HOẠT ẢNH CHUI ỐNG NƯỚC
-  if (layer == LAYER_BACKGROUND) {
-      bool done = false;
-      vy = -0.05f;
-      y += vy * dt;
+  // Xử lý chui ống
+  if (isPipeAnimating) {
+    vy = -0.05f;
+    y += vy * dt;
 
-      if (pipeEnterStartY - y > height) {
-          done = true;
-      }
-      if (done) {
-          layer = LAYER_PLAYER;
-          x = pipeDestX;
-          y = pipeDestY;
-      }
-      return;
+    if (pipeEnterStartY - y > height) {
+      x = pipeDestX;
+      y = pipeDestY;
+      isPipeAnimating = false;
+      layer = LAYER_PLAYER; // Trả Mario về layer bình thường
+      vy = 0;
+    }
+    return;
   }
 
   if (inputHandler != NULL) {
@@ -208,20 +210,14 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
-          if (buffType == 301) {
-            if (!isBig && !isFire) {
-              GameManager::GetInstance()->SetLives(2);
-              SetBig(true);
-              OutputDebugStringA("Mario became BIG\n");
-            }
-          } else {
-            if (!isFire) {
-              GameManager::GetInstance()->SetLives(3);
-              SetFire(true);
-              OutputDebugStringA("Mario became FIRE\n");
-            }
+          int cardType = 2; // Default to Flower
+          if (buffType == 301) cardType = 1; // Mushroom
+          else if (buffType == 303) cardType = 3; // Star
+
+          if (GameManager::GetInstance()->AddCard(cardType)) {
+            buff->Delete();
+            OutputDebugStringA("Buff added to inventory\n");
           }
-          buff->Delete();
         }
         // CHẠM CỜ THEO TRỤC X
         else if (Flag *flag = dynamic_cast<Flag *>(e)) {
@@ -275,7 +271,8 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                 float marioCenterX = x + width / 2;
 
                 if (abs(pipeCenterX - marioCenterX) < 10.0f) {
-                  layer = LAYER_BACKGROUND;
+                  isPipeAnimating = true;
+                  layer = LAYER_BACKGROUND; // Chìm ra sau ống
                   pipeDestX = pipe->GetDestX();
                   pipeDestY = pipe->GetDestY();
                   pipeEnterStartY = y;
@@ -324,20 +321,14 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
-          if (buffType == 301) {
-            if (!isBig && !isFire) {
-              GameManager::GetInstance()->SetLives(2);
-              SetBig(true);
-              OutputDebugStringA("Mario became BIG\n");
-            }
-          } else {
-            if (!isFire) {
-              GameManager::GetInstance()->SetLives(3);
-              SetFire(true);
-              OutputDebugStringA("Mario became FIRE\n");
-            }
+          int cardType = 2; // Default to Flower
+          if (buffType == 301) cardType = 1; // Mushroom
+          else if (buffType == 303) cardType = 3; // Star
+
+          if (GameManager::GetInstance()->AddCard(cardType)) {
+            buff->Delete();
+            OutputDebugStringA("Buff added to inventory\n");
           }
-          buff->Delete();
         }
         // CHẠM CỜ THEO TRỤC Y
         else if (Flag *flag = dynamic_cast<Flag *>(e)) {

@@ -172,19 +172,41 @@ void Update(DWORD dt) {
     isF3Pressed = false;
   }
 
-  // F4: Debug - Thêm 3 thẻ bài (Nấm, Hoa, Sao) để test
+  // F4: Debug - Chế độ thêm thẻ bài
   static bool isF4Pressed = false;
+  static bool cardDebugMode = false;
   if (GetAsyncKeyState(VK_F4) & 0x8000) {
     if (!isF4Pressed) {
-      GameManager *gm = GameManager::GetInstance();
-      gm->ClearHoldingCards();
-      gm->AddCard(1); // Nấm
-      gm->AddCard(2); // Hoa
-      gm->AddCard(3); // Sao
+      cardDebugMode = !cardDebugMode;
       isF4Pressed = true;
     }
   } else {
     isF4Pressed = false;
+  }
+
+  // Xử lý thêm thẻ bài trong chế độ debug
+  if (cardDebugMode) {
+    GameManager *gm = GameManager::GetInstance();
+    static bool isAPressed = false;
+    static bool isSPressed = false;
+    static bool isDPressed = false;
+    static bool isFPressed = false;
+
+    if (GetAsyncKeyState('A') & 0x8000) {
+      if (!isAPressed) { gm->AddCard(1); isAPressed = true; }
+    } else isAPressed = false;
+
+    if (GetAsyncKeyState('S') & 0x8000) {
+      if (!isSPressed) { gm->AddCard(2); isSPressed = true; }
+    } else isSPressed = false;
+
+    if (GetAsyncKeyState('D') & 0x8000) {
+      if (!isDPressed) { gm->AddCard(3); isDPressed = true; }
+    } else isDPressed = false;
+
+    if (GetAsyncKeyState('F') & 0x8000) {
+      if (!isFPressed) { gm->AddCard(4); isFPressed = true; }
+    } else isFPressed = false;
   }
 
   SceneManager::GetInstance()->Update(dt);

@@ -17,6 +17,7 @@ Pipe::Pipe(float x, float y, int animationId, bool canEnter, float destX, float 
     this->destX = destX;
     this->destY = destY;
     this->isStatic = true;
+    this->layer = LAYER_BACKGROUND;
 }
 
 void Pipe::GetBoundingBox(float& left, float& top, float& right, float& bottom)

@@ -4,12 +4,13 @@
 #include <vector>
 using namespace std;
 
-#define LAYER_BACKGROUND 0
-#define LAYER_BLOCKS     1
-#define LAYER_ITEMS      2
-#define LAYER_ENEMIES    3
-#define LAYER_PLAYER     4
-#define LAYER_FOREGROUND 5
+// Hệ thống phân lớp hiển thị (Z-Index)
+// Số nhỏ vẽ trước (chìm dưới), số lớn vẽ sau (đè lên trên)
+#define LAYER_BACKGROUND  0   // Mario lúc chui ống nước
+#define LAYER_BLOCKS      1   // Gạch, Ống, Đất, Platform, Flag, LuckyBlock, Breakable
+#define LAYER_ITEMS       2   // Nấm, Hoa, Buff
+#define LAYER_ENEMIES     3   // Quái vật (Goomba, Koopa...)
+#define LAYER_PLAYER      4   // Mario, Fireball
 
 class GameObject
 {
@@ -29,6 +30,8 @@ public:
     int gridCol;
     float GetX() { return x; }
     float GetY() { return y; }
+    int GetLayer() const { return layer; }
+    void SetLayer(int l) { layer = l; }
     bool isStatic = false;
     GameObject(float x = 0.0f, float y = 0.0f);
     virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom) = 0;
