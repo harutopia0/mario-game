@@ -19,6 +19,7 @@ Buff::Buff(float x, float y, int animationId)
 
     isStatic = true;
 	isDeleted = false;
+    layer = LAYER_ITEMS;
 }
 
 void Buff::GetBoundingBox(float& left, float& top, float& right, float& bottom)
