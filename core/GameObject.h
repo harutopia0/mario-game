@@ -22,13 +22,14 @@ protected:
     int layer;
 
 public:
+    int GetLayer() const { return layer; }
+    void SetLayer(int l) { layer = l; }
+
     //địa chỉ trong grid của object
     int gridRow;
     int gridCol;
     float GetX() { return x; }
     float GetY() { return y; }
-    int GetLayer() const { return layer; }
-    void SetLayer(int l) { layer = l; }
     bool isStatic = false;
     GameObject(float x = 0.0f, float y = 0.0f);
     virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom) = 0;

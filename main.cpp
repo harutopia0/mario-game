@@ -470,6 +470,13 @@ void LoadResources() {
   sprites->Add(606, 198, 135, 209, 148, TEX_FIRE_MARIO);
   sprites->Add(607, 214, 134, 229, 149, TEX_FIRE_MARIO);
 
+  // FireBlast
+  sprites->Add(608, 8, 74, 79, 97, TEX_FIRE_MARIO);
+  sprites->Add(609, 8, 106, 79, 129, TEX_FIRE_MARIO);
+
+  // RollingBall
+  sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
+
   // Death
   sprites->Add(30, 90, 53, 105, 68, TEX_MARIO);
 
@@ -651,6 +658,15 @@ void LoadResources() {
   ani->Add(606);
   ani->Add(607);
   animations->Add(605, ani); // Fireball Explosion
+
+  ani = new Animation(50);
+  ani->Add(608);
+  ani->Add(609);
+  animations->Add(610, ani); // FireBlast
+
+  ani = new Animation(100);
+  ani->Add(620);
+  animations->Add(620, ani); // RollingBall
 
   // Items & Enemies Animations
   ani = new Animation(100);

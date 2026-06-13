@@ -142,6 +142,7 @@
     <ClCompile Include="gameobject\Buff.cpp" />
     <ClCompile Include="gameobject\Enemy.cpp" />
     <ClCompile Include="gameobject\Fireball.cpp" />
+    <ClCompile Include="gameobject\FireBlast.cpp" />
     <ClCompile Include="gameobject\Flag.cpp" />
     <ClCompile Include="gameobject\Flower.cpp" />
     <ClCompile Include="gameobject\Ground.cpp" />
@@ -151,6 +152,7 @@
     <ClCompile Include="gameobject\Pipe.cpp" />
     <ClCompile Include="gameobject\Platform.cpp" />
     <ClCompile Include="gameobject\Projectile.cpp" />
+    <ClCompile Include="gameobject\RollingBall.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
     <ClCompile Include="gameplay\SceneManager.cpp" />
     <ClCompile Include="input\MarioInputHandler.cpp" />
@@ -176,6 +178,7 @@
     <ClInclude Include="gameobject\Buff.h" />
     <ClInclude Include="gameobject\Enemy.h" />
     <ClInclude Include="gameobject\Fireball.h" />
+    <ClInclude Include="gameobject\FireBlast.h" />
     <ClInclude Include="gameobject\Flag.h" />
     <ClInclude Include="gameobject\Flower.h" />
     <ClInclude Include="gameobject\Ground.h" />
@@ -185,6 +188,7 @@
     <ClInclude Include="gameobject\Pipe.h" />
     <ClInclude Include="gameobject\Platform.h" />
     <ClInclude Include="gameobject\Projectile.h" />
+    <ClInclude Include="gameobject\RollingBall.h" />
     <ClInclude Include="gameplay\GameManager.h" />
     <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />

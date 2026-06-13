@@ -9,6 +9,7 @@
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
 #include "../gameobject/Fireball.h"
+#include "../gameobject/RollingBall.h"
 #include "../gameplay/GameManager.h"
 #include "../gameplay/SceneManager.h"
 #include "../physics/Collision.h"
@@ -56,6 +57,7 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
 
   isPressingDown = false;
   inputHandler = new MarioInputHandler(this);
+  layer = LAYER_PLAYER;
 }
 
 Mario::~Mario() {
@@ -515,6 +517,41 @@ void Mario::ShootFireball() {
   g_objectList.push_back(fb);
   AddObjectToGrid(fb);
 
+  AudioManager::GetInstance()->PlaySFX("fireball");
+  lastShootTime = GetTickCount64();
+}
+
+#include "FireBlast.h"
+
+void Mario::ShootFireBlast() {
+  if (!isFire) return;
+
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float spawnX = (nx > 0) ? (x + width) : (x - FIREBLAST_WIDTH);
+  float spawnY = y + (height / 2.0f) - (FIREBLAST_HEIGHT / 2.0f);
+
+  FireBlast* blast = new FireBlast(spawnX, spawnY, nx);
+  g_objectList.push_back(blast);
+  AddObjectToGrid(blast);
+
+  AudioManager::GetInstance()->PlaySFX("fireball"); // Có thể đổi sound effect khác nếu có
+  lastShootTime = GetTickCount64();
+}
+
+void Mario::ShootRollingBall() {
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float spawnX = (nx > 0) ? (x + width) : (x - ROLLINGBALL_WIDTH);
+  float spawnY = y + (height / 2.0f) - (ROLLINGBALL_HEIGHT / 2.0f);
+
+  RollingBall* rb = new RollingBall(spawnX, spawnY, nx);
+  g_objectList.push_back(rb);
+  AddObjectToGrid(rb);
+
+  AudioManager::GetInstance()->PlaySFX("fireball");
   lastShootTime = GetTickCount64();
 }
 

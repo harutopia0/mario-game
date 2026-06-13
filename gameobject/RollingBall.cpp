@@ -1,4 +1,4 @@
-#include "Fireball.h"
+#include "RollingBall.h"
 #include "../animation/Animations.h"
 #include "../physics/Collision.h"
 #include "../gameobject/Brick.h"
@@ -8,20 +8,27 @@
 #include "../gameobject/Platform.h"
 #include "../gameobject/Enemy.h"
 
-Fireball::Fireball(float x, float y, int direction) : Projectile(x, y, direction) {
-    width = FIREBALL_WIDTH;
-    height = FIREBALL_HEIGHT;
-    animationId = 600; // Fireball animation
-    vx = direction * FIREBALL_SPEED_X;
+RollingBall::RollingBall(float x, float y, int direction) : Projectile(x, y, direction) {
+    width = ROLLINGBALL_WIDTH;
+    height = ROLLINGBALL_HEIGHT;
+    animationId = 620; // Rolling Ball animation
+    vx = direction * ROLLINGBALL_SPEED_X;
     vy = 0;
-    state = FIREBALL_STATE_NORMAL;
+    state = ROLLINGBALL_STATE_NORMAL;
     explodeStart = 0;
+    rotationAngle = 0.0f;
 }
 
-void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
+void RollingBall::Explode() {
+    state = ROLLINGBALL_STATE_EXPLODING;
+    explodeStart = GetTickCount64();
+    animationId = 605; // Fireball explosion animation used here too
+}
+
+void RollingBall::Update(DWORD dt, vector<GameObject*>* coObjects) {
     if (isDeleted) return;
 
-    if (state == FIREBALL_STATE_EXPLODING) {
+    if (state == ROLLINGBALL_STATE_EXPLODING) {
         vx = 0;
         vy = 0;
         if (GetTickCount64() - explodeStart > 150) {
@@ -30,10 +37,27 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
         return;
     }
 
-    vy += FIREBALL_GRAVITY * dt;
+    if (y < 0.0f) {
+        this->Delete();
+        return;
+    }
+
+    extern std::vector<GameObject*> g_objectList;
+    if (!g_objectList.empty() && g_objectList[0] != nullptr) {
+        float marioX = g_objectList[0]->GetX();
+        // Camera (màn hình) rộng khoảng 320px (khi zoom 2x), nếu cách Mario > 350px là ngoài tầm camera.
+        if (std::abs(this->x - marioX) > 350.0f) {
+            this->Delete();
+            return;
+        }
+    }
+
+    vy += ROLLINGBALL_GRAVITY * dt;
 
     float dx = vx * dt;
     float dy = vy * dt;
+    
+    rotationAngle -= dx * 0.0588f; // C = pi * d = 3.14 * 34 = 106.76. rad/px = 2*PI / 106.76 = 0.0588
 
     // QUÉT VA CHẠM TRỤC X
     float min_tx = 1.0f;
@@ -56,11 +80,6 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                 if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
                     if (!enemy->IsDied()) {
                         enemy->SetDied(true);
-                        x += t * dx; // Cập nhật vị trí tới sát quái
-                        state = FIREBALL_STATE_EXPLODING;
-                        explodeStart = GetTickCount64();
-                        animationId = 605; // Explosion animation
-                        return;
                     }
                 }
                 else if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e)) {
@@ -75,10 +94,7 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
 
     x += min_tx * dx + nx_col * 0.01f;
     if (nx_col != 0) {
-        state = FIREBALL_STATE_EXPLODING;
-        explodeStart = GetTickCount64();
-        animationId = 605; // Explosion animation
-        return;
+        vx = -vx; // Dội ngược lại mãi mãi, không bị vỡ sau 3 lần nữa
     }
 
     // QUÉT VA CHẠM TRỤC Y
@@ -99,13 +115,9 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
 
             if (t < 1.0f && temp_ny != 0) {
                 if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
+                    // Không tiêu diệt quái vật khi đè lên để tránh lỗi collision nếu cần, nhưng cứ để
                     if (!enemy->IsDied()) {
                         enemy->SetDied(true);
-                        y += t * dy; // Cập nhật vị trí tới sát quái
-                        state = FIREBALL_STATE_EXPLODING;
-                        explodeStart = GetTickCount64();
-                        animationId = 605; // Explosion animation
-                        return;
                     }
                 }
                 else if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e) || dynamic_cast<Platform*>(e)) {
@@ -123,23 +135,23 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
     y += min_ty * dy + ny_col * 0.01f;
 
     if (ny_col != 0) {
-        if (ny_col == 1) { // Chạm đất thì nảy lên
-            vy = FIREBALL_BOUNCE_SPEED;
+        if (ny_col == 1) { // Chạm đất
+            vy = 0;
         } else { // Đập đầu lên trần
             vy = 0;
         }
     }
 }
 
-void Fireball::Render() {
+void RollingBall::Render() {
     Animation* ani = Animations::GetInstance()->Get(animationId);
     if (ani != NULL) {
-        if (state == FIREBALL_STATE_EXPLODING) {
-            float offsetX = (ani->GetWidth() - FIREBALL_WIDTH) / 2.0f;
-            float offsetY = (ani->GetHeight() - FIREBALL_HEIGHT) / 2.0f;
+        if (state == ROLLINGBALL_STATE_EXPLODING) {
+            float offsetX = (ani->GetWidth() - ROLLINGBALL_WIDTH) / 2.0f;
+            float offsetY = (ani->GetHeight() - ROLLINGBALL_HEIGHT) / 2.0f;
             ani->Render(x - offsetX, y - offsetY);
         } else {
-            ani->Render(x, y);
+            ani->Render(x, y, rotationAngle);
         }
     }
 }

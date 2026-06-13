@@ -5,6 +5,7 @@ Buff::Buff(float x, float y, int animationId)
     : GameObject(x, y)
 {
     this->animationId = animationId;
+    this->layer = LAYER_ITEMS;
     Animation* anim = Animations::GetInstance()->Get(animationId);
     if (anim != NULL) {
         this->width = anim->GetWidth();

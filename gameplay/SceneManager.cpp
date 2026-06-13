@@ -10,6 +10,8 @@
 #include "../gameobject/Enemy.h"
 #include "../gameobject/Flag.h"
 #include "../gameobject/Pipe.h"
+#include "../gameobject/Projectile.h"
+#include "../gameobject/RollingBall.h"
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -373,12 +375,20 @@ void SceneManager::Update(DWORD dt) {
                                 AudioManager::GetInstance()->PauseMusic();
                                 AudioManager::GetInstance()->PlayEventMusic("star_theme", true);
                             }
-                            else if (cardType == 1) // CARD_MUSHROOM: Biến lớn
+                            else if (cardType == 1) // CARD_MUSHROOM: Biến lớn / Hoặc bắn FireBlast
                             {
                                 if (!mario->IsBig() && !mario->IsFire())
                                 {
                                     GameManager::GetInstance()->SetLives(2);
                                     mario->SetBig(true);
+                                }
+                                else if (mario->IsFire())
+                                {
+                                    mario->ShootFireBlast();
+                                }
+                                else if (mario->IsBig() && !mario->IsFire())
+                                {
+                                    mario->ShootRollingBall();
                                 }
                             }
                             else if (cardType == 2) // CARD_JOGO: Bắn lửa
@@ -400,12 +410,28 @@ void SceneManager::Update(DWORD dt) {
             }
         }
 
+        // Tối ưu: Lấy vị trí Mario (object đầu tiên) để giới hạn Update cho object static ở xa
+        int marioCellX_update = 0;
+        int marioCellY_update = 0;
+        if (!g_objectList.empty() && g_objectList[0] != nullptr) {
+            marioCellX_update = (int)(g_objectList[0]->GetX() / GRID_CELL_SIZE);
+            marioCellY_update = (int)(g_objectList[0]->GetY() / GRID_CELL_SIZE);
+        }
+
         size_t numObjects = g_objectList.size();
         for (size_t objIndex = 0; objIndex < numObjects; objIndex++) {
             GameObject* obj = g_objectList[objIndex];
             if (obj->IsDeleted())
                 continue;
+
+            // Tối ưu: Object static ở xa Mario (ngoài 5 ô lưới = 320px) thì bỏ qua Update.
+            // Object động (Mario, đạn Projectile, quái Enemy...) luôn được Update bất kể khoảng cách.
             if (obj->isStatic == true) {
+                int objCX = (int)(obj->GetX() / GRID_CELL_SIZE);
+                int objCY = (int)(obj->GetY() / GRID_CELL_SIZE);
+                if (std::abs(objCX - marioCellX_update) > 5 || std::abs(objCY - marioCellY_update) > 5) {
+                    continue; // Quá xa Mario, bỏ qua
+                }
                 obj->Update(dt, NULL);
                 continue;
             }
@@ -483,12 +509,23 @@ void SceneManager::Render() {
 
                 // Debug BoundingBox
                 if (g_showBBox && realMario != nullptr) {
-                    int marioCellX = (int)(realMario->GetX() / GRID_CELL_SIZE);
-                    int marioCellY = (int)(realMario->GetY() / GRID_CELL_SIZE);
-                    int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
-                    int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
+                    bool shouldRenderBBox = false;
 
-                    if (std::abs(marioCellX - objCellX) <= 1 && std::abs(marioCellY - objCellY) <= 1) {
+                    // Ghi chú: Đạn (Projectile) và các class kế thừa (như Fireball, RollingBall...) luôn được hiện hitbox ở mọi khoảng cách
+                    if (dynamic_cast<Projectile*>(obj)) {
+                        shouldRenderBBox = true;
+                    } else {
+                        int marioCellX = (int)(realMario->GetX() / GRID_CELL_SIZE);
+                        int marioCellY = (int)(realMario->GetY() / GRID_CELL_SIZE);
+                        int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
+                        int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
+
+                        if (std::abs(marioCellX - objCellX) <= 1 && std::abs(marioCellY - objCellY) <= 1) {
+                            shouldRenderBBox = true;
+                        }
+                    }
+
+                    if (shouldRenderBBox) {
                         obj->RenderBoundingBox();
                     }
                 }
