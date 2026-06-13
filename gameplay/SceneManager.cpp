@@ -410,12 +410,28 @@ void SceneManager::Update(DWORD dt) {
             }
         }
 
+        // Tối ưu: Lấy vị trí Mario (object đầu tiên) để giới hạn Update cho object static ở xa
+        int marioCellX_update = 0;
+        int marioCellY_update = 0;
+        if (!g_objectList.empty() && g_objectList[0] != nullptr) {
+            marioCellX_update = (int)(g_objectList[0]->GetX() / GRID_CELL_SIZE);
+            marioCellY_update = (int)(g_objectList[0]->GetY() / GRID_CELL_SIZE);
+        }
+
         size_t numObjects = g_objectList.size();
         for (size_t objIndex = 0; objIndex < numObjects; objIndex++) {
             GameObject* obj = g_objectList[objIndex];
             if (obj->IsDeleted())
                 continue;
+
+            // Tối ưu: Object static ở xa Mario (ngoài 5 ô lưới = 320px) thì bỏ qua Update.
+            // Object động (Mario, đạn Projectile, quái Enemy...) luôn được Update bất kể khoảng cách.
             if (obj->isStatic == true) {
+                int objCX = (int)(obj->GetX() / GRID_CELL_SIZE);
+                int objCY = (int)(obj->GetY() / GRID_CELL_SIZE);
+                if (std::abs(objCX - marioCellX_update) > 5 || std::abs(objCY - marioCellY_update) > 5) {
+                    continue; // Quá xa Mario, bỏ qua
+                }
                 obj->Update(dt, NULL);
                 continue;
             }
