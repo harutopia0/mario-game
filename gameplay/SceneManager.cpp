@@ -381,7 +381,7 @@ void SceneManager::Update(DWORD dt) {
                                     mario->SetBig(true);
                                 }
                             }
-                            else if (cardType == 2) // CARD_FLOWER: Bắn lửa
+                            else if (cardType == 2) // CARD_JOGO: Bắn lửa
                             {
                                 if (!mario->IsFire())
                                 {
