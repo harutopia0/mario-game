@@ -152,6 +152,7 @@
     <ClCompile Include="gameobject\Pipe.cpp" />
     <ClCompile Include="gameobject\Platform.cpp" />
     <ClCompile Include="gameobject\Projectile.cpp" />
+    <ClCompile Include="gameobject\RollingBall.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
     <ClCompile Include="gameplay\SceneManager.cpp" />
     <ClCompile Include="input\MarioInputHandler.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="gameobject\Pipe.h" />
     <ClInclude Include="gameobject\Platform.h" />
     <ClInclude Include="gameobject\Projectile.h" />
+    <ClInclude Include="gameobject\RollingBall.h" />
     <ClInclude Include="gameplay\GameManager.h" />
     <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />

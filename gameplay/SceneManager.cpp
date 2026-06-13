@@ -11,6 +11,7 @@
 #include "../gameobject/Flag.h"
 #include "../gameobject/Pipe.h"
 #include "../gameobject/Projectile.h"
+#include "../gameobject/RollingBall.h"
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -381,6 +382,14 @@ void SceneManager::Update(DWORD dt) {
                                     GameManager::GetInstance()->SetLives(2);
                                     mario->SetBig(true);
                                 }
+                                else if (mario->IsFire())
+                                {
+                                    mario->ShootFireBlast();
+                                }
+                                else if (mario->IsBig() && !mario->IsFire())
+                                {
+                                    mario->ShootRollingBall();
+                                }
                             }
                             else if (cardType == 2) // CARD_JOGO: Bắn lửa
                             {
@@ -388,10 +397,6 @@ void SceneManager::Update(DWORD dt) {
                                 {
                                     GameManager::GetInstance()->SetLives(3);
                                     mario->SetFire(true);
-                                }
-                                else
-                                {
-                                    mario->ShootFireBlast();
                                 }
                             }
                         }
@@ -488,12 +493,23 @@ void SceneManager::Render() {
 
                 // Debug BoundingBox
                 if (g_showBBox && realMario != nullptr) {
-                    int marioCellX = (int)(realMario->GetX() / GRID_CELL_SIZE);
-                    int marioCellY = (int)(realMario->GetY() / GRID_CELL_SIZE);
-                    int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
-                    int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
+                    bool shouldRenderBBox = false;
 
-                    if (std::abs(marioCellX - objCellX) <= 1 && std::abs(marioCellY - objCellY) <= 1) {
+                    // Ghi chú: Đạn (Projectile) và các class kế thừa (như Fireball, RollingBall...) luôn được hiện hitbox ở mọi khoảng cách
+                    if (dynamic_cast<Projectile*>(obj)) {
+                        shouldRenderBBox = true;
+                    } else {
+                        int marioCellX = (int)(realMario->GetX() / GRID_CELL_SIZE);
+                        int marioCellY = (int)(realMario->GetY() / GRID_CELL_SIZE);
+                        int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
+                        int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
+
+                        if (std::abs(marioCellX - objCellX) <= 1 && std::abs(marioCellY - objCellY) <= 1) {
+                            shouldRenderBBox = true;
+                        }
+                    }
+
+                    if (shouldRenderBBox) {
                         obj->RenderBoundingBox();
                     }
                 }

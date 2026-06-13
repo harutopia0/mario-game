@@ -67,6 +67,7 @@ public:
 	bool IsFire() const { return isFire; }
 	void ShootFireball();
 	void ShootFireBlast();
+	void ShootRollingBall();
 	DWORD lastShootTime;
 
 	void Die();

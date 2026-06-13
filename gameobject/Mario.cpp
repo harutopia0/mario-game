@@ -9,6 +9,7 @@
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
 #include "../gameobject/Fireball.h"
+#include "../gameobject/RollingBall.h"
 #include "../gameplay/GameManager.h"
 #include "../gameplay/SceneManager.h"
 #include "../physics/Collision.h"
@@ -536,6 +537,21 @@ void Mario::ShootFireBlast() {
   AddObjectToGrid(blast);
 
   AudioManager::GetInstance()->PlaySFX("fireball"); // Có thể đổi sound effect khác nếu có
+  lastShootTime = GetTickCount64();
+}
+
+void Mario::ShootRollingBall() {
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float spawnX = (nx > 0) ? (x + width) : (x - ROLLINGBALL_WIDTH);
+  float spawnY = y + (height / 2.0f) - (ROLLINGBALL_HEIGHT / 2.0f);
+
+  RollingBall* rb = new RollingBall(spawnX, spawnY, nx);
+  g_objectList.push_back(rb);
+  AddObjectToGrid(rb);
+
+  AudioManager::GetInstance()->PlaySFX("fireball");
   lastShootTime = GetTickCount64();
 }
 
