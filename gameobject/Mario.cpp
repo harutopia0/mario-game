@@ -525,6 +525,26 @@ void Mario::ShootFireball() {
   g_objectList.push_back(fb);
   AddObjectToGrid(fb);
 
+  AudioManager::GetInstance()->PlaySFX("fireball");
+  lastShootTime = GetTickCount64();
+}
+
+#include "FireBlast.h"
+
+void Mario::ShootFireBlast() {
+  if (!isFire) return;
+
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float spawnX = (nx > 0) ? (x + width) : (x - FIREBLAST_WIDTH);
+  float spawnY = y + (height / 2.0f) - (FIREBLAST_HEIGHT / 2.0f);
+
+  FireBlast* blast = new FireBlast(spawnX, spawnY, nx);
+  g_objectList.push_back(blast);
+  AddObjectToGrid(blast);
+
+  AudioManager::GetInstance()->PlaySFX("fireball"); // Có thể đổi sound effect khác nếu có
   lastShootTime = GetTickCount64();
 }
 

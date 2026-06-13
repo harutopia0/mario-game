@@ -10,6 +10,7 @@
 #include "../gameobject/Enemy.h"
 #include "../gameobject/Flag.h"
 #include "../gameobject/Pipe.h"
+#include "../gameobject/Projectile.h"
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -373,12 +374,16 @@ void SceneManager::Update(DWORD dt) {
                                 AudioManager::GetInstance()->PauseMusic();
                                 AudioManager::GetInstance()->PlayEventMusic("star_theme", true);
                             }
-                            else if (cardType == 1) // CARD_MUSHROOM: Biến lớn
+                            else if (cardType == 1) // CARD_MUSHROOM: Biến lớn / Hoặc bắn FireBlast
                             {
                                 if (!mario->IsBig() && !mario->IsFire())
                                 {
                                     GameManager::GetInstance()->SetLives(2);
                                     mario->SetBig(true);
+                                }
+                                else if (mario->IsFire()) 
+                                {
+                                    mario->ShootFireBlast();
                                 }
                             }
                             else if (cardType == 2) // CARD_FLOWER: Bắn lửa
@@ -483,7 +488,7 @@ void SceneManager::Render() {
                         int objCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
                         int objCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
 
-                        if (std::abs(marioCellX - objCellX) <= 1 && std::abs(marioCellY - objCellY) <= 1) {
+                        if (dynamic_cast<Projectile*>(obj) != NULL || (std::abs(marioCellX - objCellX) <= 1 && std::abs(marioCellY - objCellY) <= 1)) {
                             obj->RenderBoundingBox();
                         }
                     }

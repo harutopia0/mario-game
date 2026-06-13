@@ -1,4 +1,5 @@
 #include "Fireball.h"
+#include "../animation/Animations.h"
 #include "../physics/Collision.h"
 #include "../gameobject/Brick.h"
 #include "../gameobject/Pipe.h"
@@ -126,6 +127,19 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
             vy = FIREBALL_BOUNCE_SPEED;
         } else { // Đập đầu lên trần
             vy = 0;
+        }
+    }
+}
+
+void Fireball::Render() {
+    Animation* ani = Animations::GetInstance()->Get(animationId);
+    if (ani != NULL) {
+        if (state == FIREBALL_STATE_EXPLODING) {
+            float offsetX = (ani->GetWidth() - FIREBALL_WIDTH) / 2.0f;
+            float offsetY = (ani->GetHeight() - FIREBALL_HEIGHT) / 2.0f;
+            ani->Render(x - offsetX, y - offsetY);
+        } else {
+            ani->Render(x, y);
         }
     }
 }
