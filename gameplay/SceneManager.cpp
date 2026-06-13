@@ -389,6 +389,10 @@ void SceneManager::Update(DWORD dt) {
                                     GameManager::GetInstance()->SetLives(3);
                                     mario->SetFire(true);
                                 }
+                                else
+                                {
+                                    mario->ShootFireBlast();
+                                }
                             }
                         }
                     }
