@@ -153,6 +153,8 @@
     <ClCompile Include="gameobject\Platform.cpp" />
     <ClCompile Include="gameobject\Projectile.cpp" />
     <ClCompile Include="gameobject\RollingBall.cpp" />
+    <ClCompile Include="gameobject\SukunaProjectile.cpp" />
+    <ClCompile Include="gameobject\SukunaSlash.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
     <ClCompile Include="gameplay\SceneManager.cpp" />
     <ClCompile Include="input\MarioInputHandler.cpp" />
@@ -189,6 +191,8 @@
     <ClInclude Include="gameobject\Platform.h" />
     <ClInclude Include="gameobject\Projectile.h" />
     <ClInclude Include="gameobject\RollingBall.h" />
+    <ClInclude Include="gameobject\SukunaProjectile.h" />
+    <ClInclude Include="gameobject\SukunaSlash.h" />
     <ClInclude Include="gameplay\GameManager.h" />
     <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />

@@ -53,6 +53,8 @@ enum TEXTURE_ID {
   TEX_ENEMY_TEST = 100,
   TEX_POTION = 101,
   TEX_FLAG = 102,
+  TEX_WORLD_CUTTING_SLASH = 103,
+  TEX_SUKUNA_PROJECTILE = 104,
   TEX_LEVEL_CLEAR = 701,
   TEX_GAME_OVER = 702,
   TEX_YOU_WIN = 703,
@@ -393,6 +395,8 @@ void LoadResources() {
   textures->Add(TEX_MAP_LEVEL, L"assets/map-level.png");
 
   textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
+  textures->Add(TEX_WORLD_CUTTING_SLASH, L"assets/world_cutting_slash.png");
+  textures->Add(TEX_SUKUNA_PROJECTILE, L"assets/sukuna_projectile.png");
 
   // ==========================================
   // 2. CẮT SPRITES
@@ -521,6 +525,16 @@ void LoadResources() {
 
   // Obtain item
   sprites->Add(9000, 0, 0, 640, 480, TEX_OBTAIN_ITEM);
+
+  // World Cutting Slash (16 frames, each 80x80)
+  for (int i = 0; i < 16; i++) {
+    sprites->Add(801 + i, i * 80, 0, (i + 1) * 80, 80, TEX_WORLD_CUTTING_SLASH);
+  }
+
+  // Sukuna Projectile (8 frames, each 80x80)
+  for (int i = 0; i < 8; i++) {
+    sprites->Add(821 + i, i * 80, 0, (i + 1) * 80, 80, TEX_SUKUNA_PROJECTILE);
+  }
 
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION
@@ -675,6 +689,20 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(101, 1000);
   animations->Add(301, ani); // Potion
+
+  // World Cutting Slash Animation
+  ani = new Animation(50);
+  for (int i = 0; i < 16; i++) {
+    ani->Add(801 + i);
+  }
+  animations->Add(800, ani);
+
+  // Sukuna Projectile Animation
+  ani = new Animation(60);
+  for (int i = 0; i < 8; i++) {
+    ani->Add(821 + i);
+  }
+  animations->Add(805, ani);
 
   // ==========================================
   // 4. KHỞI TẠO

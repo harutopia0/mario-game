@@ -95,6 +95,12 @@
     <ClCompile Include="gameobject\RollingBall.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
+    <ClCompile Include="gameobject\SukunaProjectile.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\SukunaSlash.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
     <ClCompile Include="gameobject\Flag.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
@@ -197,6 +203,12 @@
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\Projectile.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\SukunaProjectile.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\SukunaSlash.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\Flag.h">

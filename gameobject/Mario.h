@@ -29,6 +29,7 @@ private:
 	float width, height;
 	bool isBig;
 	bool isFire;
+	bool isSukuna;
 	bool isDead;
 	float pMeterValue;
 	int pMeterLevel;
@@ -65,9 +66,14 @@ public:
 	
 	void SetFire(bool fire);
 	bool IsFire() const { return isFire; }
+	
+	void SetSukuna(bool sukuna);
+	bool IsSukuna() const { return isSukuna; }
+
 	void ShootFireball();
 	void ShootFireBlast();
 	void ShootRollingBall();
+	void ShootSukunaProjectile();
 	DWORD lastShootTime;
 
 	void Die();

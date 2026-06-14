@@ -18,6 +18,7 @@
 #include <cmath>
 
 #include "../input/MarioInputHandler.h"
+#include "SukunaProjectile.h"
 
 Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   isOnGround = false;
@@ -25,6 +26,7 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
 
   this->isBig = isBig;
   this->isFire = isFire;
+  this->isSukuna = false;
 
   if (isBig || isFire) {
     width = MARIO_BIG_WIDTH;
@@ -206,7 +208,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             nx_col = temp_nx;
           }
         } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
-          if (!enemy->IsDied()) {
+          if (!enemy->IsDied() && !enemy->IsFreezed()) {
             TakeDamage();
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
@@ -310,7 +312,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             }
           }
         } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
-          if (!enemy->IsDied()) {
+          if (!enemy->IsDied() && !enemy->IsFreezed()) {
             if (temp_ny == 1) {
               vy = MARIO_JUMP_SPEED_Y * 0.5f;
               OutputDebugStringA("Enemy stomped!\n");
@@ -371,7 +373,7 @@ void Mario::Render() {
     return;
   }
 
-  if (isFire) {
+  if (isFire || isSukuna) {
     if (!isOnGround) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(504)
                      : Animations::GetInstance()->Get(505);
@@ -477,7 +479,9 @@ void Mario::SetBig(bool big) {
     width = MARIO_SMALL_WIDTH;
     height = MARIO_SMALL_HEIGHT;
     isFire = false; // Thu nhỏ thì mất luôn lửa
+    isSukuna = false; // Thu nhỏ thì mất luôn Sukuna
     GameManager::GetInstance()->SetMarioFire(false);
+    GameManager::GetInstance()->SetMarioSukuna(false);
   }
 }
 
@@ -574,7 +578,16 @@ void Mario::TakeDamage() {
       GameManager::GetInstance()->IsLevelClear())
     return;
 
-  if (isFire) {
+  if (isSukuna) {
+    SetSukuna(false);
+    GameManager::GetInstance()->SetMarioSukuna(false);
+    SetBig(true);
+    GameManager::GetInstance()->SetLives(2);
+    untouchable = true;
+    untouchableStart = GetTickCount64();
+    untouchableDuration = MARIO_UNTOUCHABLE_TIME;
+    OutputDebugStringA("Mario lost Sukuna -> Big Mario + invincible\n");
+  } else if (isFire) {
     SetFire(false);
     GameManager::GetInstance()->SetLives(2);
     untouchable = true;
@@ -612,4 +625,43 @@ void Mario::SetHoldingJump(bool holding) {
   if (!holding && vy > MARIO_JUMP_DEFLECT_SPEED) {
     vy = MARIO_JUMP_DEFLECT_SPEED;
   }
+}
+
+void Mario::SetSukuna(bool sukuna) {
+  if (sukuna && !isSukuna) {
+    if (!isBig) {
+      isBig = true;
+      width = MARIO_BIG_WIDTH;
+      height = MARIO_BIG_HEIGHT;
+    }
+    
+    // Bật trạng thái chớp (tàng hình) và phát âm thanh
+    untouchable = true;
+    untouchableStart = GetTickCount64();
+    untouchableDuration = 1000;
+    AudioManager::GetInstance()->PlaySFX("power_up");
+
+    // Tạm dừng game 1 giây khi biến hóa
+    SceneManager::GetInstance()->ProcessTransform();
+  }
+  isSukuna = sukuna;
+  GameManager::GetInstance()->SetMarioSukuna(sukuna);
+}
+
+void Mario::ShootSukunaProjectile() {
+  if (!isSukuna) return;
+  if (GetTickCount64() - lastShootTime < 400) return; // Cooldown 0.4s
+
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float spawnX = (nx > 0) ? (x + width) : (x - 24.0f);
+  float spawnY = y + height / 2.0f - 12.0f;
+
+  SukunaProjectile* proj = new SukunaProjectile(spawnX, spawnY, nx);
+  g_objectList.push_back(proj);
+  AddObjectToGrid(proj);
+
+  AudioManager::GetInstance()->PlaySFX("fireball");
+  lastShootTime = GetTickCount64();
 }
