@@ -23,6 +23,7 @@ GameManager* GameManager::GetInstance()
 
         __instance->isMarioBig = false;
         __instance->isMarioFire = false;
+        __instance->isMarioSukuna = false;
     }
     return __instance;
 }

@@ -23,6 +23,7 @@ Enemy::Enemy(float x, float y, int animationId)
     vy = 0.0f;
 
     died = false;
+    isFreezed = false;
     layer = LAYER_ENEMIES;
 }
 
@@ -37,6 +38,11 @@ void Enemy::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
 {
     if (died) return;
+    if (isFreezed) {
+        vx = 0.0f;
+        vy = 0.0f;
+        return;
+    }
 
     // Gravity
     vy += ENEMY_GRAVITY * dt;
