@@ -2,6 +2,7 @@
 #include "../render/Sprites.h"
 #include "../physics/Collision.h"
 #include "Enemy.h"
+#include "../audio/AudioManager.h"
 #include <cstdlib>
 #include <algorithm>
 
@@ -63,6 +64,9 @@ void SukunaSlash::Update(DWORD dt, std::vector<GameObject*>* coObjects) {
                         targetEnemy->SetFreezed(true);
                         startTime = GetTickCount64();
 
+                        // Play slash sound effect
+                        AudioManager::GetInstance()->PlaySFX("slash-sound");
+
                         // Pre-generate 6 slashes: 4 short (630) and 2 long (631) in random order
                         std::vector<int> spriteIds;
                         for (int k = 0; k < 4; k++) spriteIds.push_back(630);
@@ -119,8 +123,8 @@ void SukunaSlash::Update(DWORD dt, std::vector<GameObject*>* coObjects) {
         if (!isShrinkPhase) {
             ULONGLONG elapsed = GetTickCount64() - startTime;
 
-            // Damage target at 450ms (when all 6 slashes at 75ms finish spawning)
-            if (elapsed >= 450 && !hasDamaged) {
+            // Damage target at 667ms (when all 6 slashes at 67ms finish spawning)
+            if (elapsed >= 667 && !hasDamaged) {
                 if (!targetEnemy->IsDied()) {
                     targetEnemy->SetDied(true);
                 }
@@ -158,10 +162,10 @@ void SukunaSlash::Render() {
 
     if (!isShrinkPhase) {
         ULONGLONG elapsed = GetTickCount64() - startTime;
-        // Every 75ms, one more slash is drawn.
-        // At t < 75ms -> 1st slash drawn (index 0).
-        // At t = 375ms+ -> all 6 slashes drawn (indices 0 to 5).
-        int maxIndex = (int)(elapsed / 75);
+        // Every 67ms (2/30 second), one more slash is drawn.
+        // At t < 67ms -> 1st slash drawn (index 0).
+        // At t = 335ms+ -> all 6 slashes drawn (indices 0 to 5).
+        int maxIndex = (int)(elapsed / 67);
         if (maxIndex > 5) maxIndex = 5;
 
         for (int i = 0; i <= maxIndex; i++) {
