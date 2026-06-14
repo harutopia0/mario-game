@@ -52,6 +52,7 @@ enum TEXTURE_ID {
   TEX_COMMON1 = 1,
   TEX_COMMON2 = 2,
   TEX_FIRE_MARIO = 3,
+  TEX_SUKUNA_MARIO = 4,
   TEX_HUD = 20,
   TEX_INTRO = 30,
   TEX_BBOX = 99,
@@ -414,6 +415,7 @@ void LoadResources() {
   textures->Add(TEX_COMMON1, L"assets/CommonObjects1.png");
   textures->Add(TEX_COMMON2, L"assets/CommonObjects2.png");
   textures->Add(TEX_FIRE_MARIO, L"assets/fireMario.png");
+  textures->Add(TEX_SUKUNA_MARIO, L"assets/sukunaMario.png");
 
   textures->Add(TEX_HUD, L"assets/hud.png");
   textures->Add(TEX_INTRO, L"assets/intro_items.png");
@@ -521,6 +523,13 @@ void LoadResources() {
   // FireBlast (Left)
   sprites->Add(611, 85, 74, 156, 97, TEX_FIRE_MARIO);
   sprites->Add(612, 85, 106, 156, 129, TEX_FIRE_MARIO);
+
+  // ==========================================
+  // SUKUNA MARIO SPRITES
+  // ==========================================
+  // Slash
+  sprites->Add(630, 25, 85, 53, 106, TEX_SUKUNA_MARIO); // short slash
+  sprites->Add(631, 72, 75, 117, 106, TEX_SUKUNA_MARIO); // long slash
 
   // RollingBall
   sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
