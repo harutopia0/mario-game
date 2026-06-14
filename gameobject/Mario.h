@@ -44,6 +44,10 @@ public:
 
 	bool isPressingDown;
 
+	bool isCastingSkill;
+	void SetCastingSkill(bool casting) { isCastingSkill = casting; }
+	bool IsCastingSkill() const { return isCastingSkill; }
+
 	float ax;
 	MarioInputHandler* inputHandler;
 
@@ -66,8 +70,8 @@ public:
 	void SetFire(bool fire);
 	bool IsFire() const { return isFire; }
 	void ShootFireball();
-	void ShootFireBlast();
-	void ShootRollingBall();
+	bool ShootFireBlast();
+	bool ShootRollingBall();
 	DWORD lastShootTime;
 
 	void Die();
