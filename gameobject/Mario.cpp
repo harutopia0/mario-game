@@ -46,6 +46,7 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   untouchable = false;
   untouchableStart = 0;
   untouchableDuration = 0;
+  isCastingSkill = false;
   isStarInvincible = false;
   isPipeAnimating = false;
   lastShootTime = 0;
@@ -240,6 +241,12 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
   if (nx_col != 0)
     vx = 0.0f;
 
+  // Khóa mốc x = 0 (vạch xuất phát) để Mario không đi ngược ra khỏi map
+  if (x < 0.0f) {
+    x = 0.0f;
+    if (vx < 0.0f) vx = 0.0f;
+  }
+
   // QUÉT VA CHẠM TRỤC Y (RƠI / NHẢY)
   GetBoundingBox(ml, mt, mr, mb);
   float min_ty = 1.0f;
@@ -374,7 +381,10 @@ void Mario::Render() {
   }
 
   if (isFire || isSukuna) {
-    if (!isOnGround) {
+    if (isCastingSkill) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(508)
+                     : Animations::GetInstance()->Get(509);
+    } else if (!isOnGround) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(504)
                      : Animations::GetInstance()->Get(505);
     } else {
@@ -389,7 +399,10 @@ void Mario::Render() {
                        : Animations::GetInstance()->Get(503);
     }
   } else if (isBig) {
-    if (!isOnGround) {
+    if (isCastingSkill) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(408)
+                     : Animations::GetInstance()->Get(409);
+    } else if (!isOnGround) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(404)
                      : Animations::GetInstance()->Get(405);
     } else {
@@ -527,8 +540,8 @@ void Mario::ShootFireball() {
 
 #include "FireBlast.h"
 
-void Mario::ShootFireBlast() {
-  if (!isFire) return;
+bool Mario::ShootFireBlast() {
+  if (!isFire) return false;
 
   extern std::vector<GameObject*> g_objectList;
   extern void AddObjectToGrid(GameObject* obj);
@@ -536,27 +549,53 @@ void Mario::ShootFireBlast() {
   float spawnX = (nx > 0) ? (x + width) : (x - FIREBLAST_WIDTH);
   float spawnY = y + (height / 2.0f) - (FIREBLAST_HEIGHT / 2.0f);
 
-  FireBlast* blast = new FireBlast(spawnX, spawnY, nx);
-  g_objectList.push_back(blast);
-  AddObjectToGrid(blast);
 
-  AudioManager::GetInstance()->PlaySFX("fireball"); // Có thể đổi sound effect khác nếu có
+
+  FireBlast* fb = new FireBlast(spawnX, spawnY, nx > 0 ? 1 : -1);
+  g_objectList.push_back(fb);
+  AddObjectToGrid(fb);
+
   lastShootTime = GetTickCount64();
+  return true;
 }
 
-void Mario::ShootRollingBall() {
+bool Mario::ShootRollingBall() {
+  if (!isBig) return false;
+
   extern std::vector<GameObject*> g_objectList;
   extern void AddObjectToGrid(GameObject* obj);
 
   float spawnX = (nx > 0) ? (x + width) : (x - ROLLINGBALL_WIDTH);
-  float spawnY = y + (height / 2.0f) - (ROLLINGBALL_HEIGHT / 2.0f);
+  float spawnY = y + 2.0f;
+
+  float ml = spawnX;
+  float mt = spawnY;
+  float mr = spawnX + ROLLINGBALL_WIDTH;
+  float mb = spawnY + ROLLINGBALL_HEIGHT;
+
+  bool canSpawn = true;
+  for (size_t i = 0; i < g_objectList.size(); i++) {
+    GameObject* e = g_objectList[i];
+    if (e == this || e->IsDeleted()) continue;
+    
+    if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e)) {
+      float sl, st, sr, sb;
+      e->GetBoundingBox(sl, st, sr, sb);
+      if (mr > sl && ml < sr && mb > st && mt < sb) {
+        canSpawn = false;
+        break;
+      }
+    }
+  }
+
+  if (!canSpawn) return false;
 
   RollingBall* rb = new RollingBall(spawnX, spawnY, nx);
   g_objectList.push_back(rb);
   AddObjectToGrid(rb);
 
-  AudioManager::GetInstance()->PlaySFX("fireball");
   lastShootTime = GetTickCount64();
+  return true;
 }
 
 void Mario::Die() {

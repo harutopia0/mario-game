@@ -14,9 +14,11 @@
 #include "gameobject/Platform.h"
 #include "gameplay/GameManager.h"
 #include "gameplay/SceneManager.h"
+#include "render/Camera.h"
 #include "render/Sprites.h"
 #include "render/Textures.h"
 #include "ui/HUD.h"
+
 
 #include <fstream>
 #include <stdlib.h>
@@ -33,6 +35,9 @@
 #define WINDOW_HEIGHT 480
 #define FPS_LIMIT 100
 
+// Kích thước bản đồ (cần khớp với kích thước trong file map)
+#define MAP_WIDTH 2000.0f
+#define MAP_HEIGHT 408.f
 #pragma endregion
 
 #pragma region GlobalVariables/GameObjects/ID_Definitions
@@ -120,6 +125,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
   ZeroMemory(&msg, sizeof(msg));
   ULONGLONG frameStart = GetTickCount64();
   float tickPerFrame = 1000.0f / FPS_LIMIT;
+  // 6. Initialize Camera
+  Camera::GetInstance()->Init(WINDOW_WIDTH, WINDOW_HEIGHT, MAP_WIDTH,
+                              MAP_HEIGHT, 5.0f);
 
   while (msg.message != WM_QUIT) {
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -195,20 +203,42 @@ void Update(DWORD dt) {
     static bool isFPressed = false;
 
     if (GetAsyncKeyState('A') & 0x8000) {
-      if (!isAPressed) { gm->AddCard(1); isAPressed = true; }
-    } else isAPressed = false;
+      if (!isAPressed) {
+        gm->AddCard(1);
+        isAPressed = true;
+      }
+    } else
+      isAPressed = false;
 
     if (GetAsyncKeyState('S') & 0x8000) {
-      if (!isSPressed) { gm->AddCard(2); isSPressed = true; }
-    } else isSPressed = false;
+      if (!isSPressed) {
+        gm->AddCard(2);
+        isSPressed = true;
+      }
+    } else
+      isSPressed = false;
 
     if (GetAsyncKeyState('D') & 0x8000) {
-      if (!isDPressed) { gm->AddCard(3); isDPressed = true; }
-    } else isDPressed = false;
+      if (!isDPressed) {
+        gm->AddCard(3);
+        isDPressed = true;
+      }
+    } else
+      isDPressed = false;
 
     if (GetAsyncKeyState('F') & 0x8000) {
-      if (!isFPressed) { gm->AddCard(4); isFPressed = true; }
-    } else isFPressed = false;
+      if (!isFPressed) {
+        gm->AddCard(4);
+        isFPressed = true;
+      }
+    } else
+      isFPressed = false;
+  }
+
+  extern std::vector<GameObject *> g_objectList;
+  GameObject *mario = g_objectList.empty() ? NULL : g_objectList[0];
+  if (mario && SceneManager::GetInstance()->GetState() == STATE_PLAYING) {
+    Camera::GetInstance()->Update(mario->GetX(), mario->GetY(), dt / 1000.0f);
   }
 
   SceneManager::GetInstance()->Update(dt);
@@ -232,6 +262,9 @@ void Render() {
     dev->OMSetBlendState(game->GetBlendState(), blendFactor, 0xffffffff);
 
     game->GetSpriteHandler()->Begin(D3DX10_SPRITE_SORT_TEXTURE);
+    D3DXMATRIX view = Camera::GetInstance()->GetViewMatrix();
+
+    game->GetSpriteHandler()->SetViewTransform(&view);
 
     SceneManager::GetInstance()->Render();
 
@@ -442,6 +475,10 @@ void LoadResources() {
   sprites->Add(28, 166, 89, 181, 116, TEX_MARIO); // Phải sang trái (Skid Right)
   sprites->Add(29, 15, 89, 30, 116, TEX_MARIO);   // Trái sang phải (Skid Left)
 
+  // Cast
+  sprites->Add(30, 71, 119, 84, 136, TEX_MARIO); // Phải
+  sprites->Add(31, 112, 119, 125, 136, TEX_MARIO); // Trái
+
   // ==========================================
   // FIRE MARIO SPRITES
   // ==========================================
@@ -463,6 +500,10 @@ void LoadResources() {
   sprites->Add(48, 215, 42, 230, 69, TEX_FIRE_MARIO); // Mặt trái (Skid Right)
   sprites->Add(49, 175, 42, 190, 69, TEX_FIRE_MARIO); // Mặt phải (Skid Left)
 
+  // Cast
+  sprites->Add(50, 252, 42, 272, 68, TEX_FIRE_MARIO); // Phải
+  sprites->Add(51, 133, 42, 153, 68, TEX_FIRE_MARIO); // Trái
+
   // Fireball
   sprites->Add(601, 178, 124, 185, 131, TEX_FIRE_MARIO);
   sprites->Add(602, 188, 124, 195, 131, TEX_FIRE_MARIO);
@@ -474,15 +515,18 @@ void LoadResources() {
   sprites->Add(606, 198, 135, 209, 148, TEX_FIRE_MARIO);
   sprites->Add(607, 214, 134, 229, 149, TEX_FIRE_MARIO);
 
-  // FireBlast
+  // FireBlast (Right)
   sprites->Add(608, 8, 74, 79, 97, TEX_FIRE_MARIO);
   sprites->Add(609, 8, 106, 79, 129, TEX_FIRE_MARIO);
+  // FireBlast (Left)
+  sprites->Add(611, 85, 74, 156, 97, TEX_FIRE_MARIO);
+  sprites->Add(612, 85, 106, 156, 129, TEX_FIRE_MARIO);
 
   // RollingBall
   sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
 
   // Death
-  sprites->Add(30, 90, 53, 105, 68, TEX_MARIO);
+  sprites->Add(32, 90, 53, 105, 68, TEX_MARIO);
 
   // Brick
   sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
@@ -574,7 +618,7 @@ void LoadResources() {
   animations->Add(107, ani); // Skid Left
 
   ani = new Animation(100);
-  ani->Add(30, 1000);
+  ani->Add(32, 1000);
   animations->Add(108, ani); // Death
 
   // Common Objects Animations
@@ -626,6 +670,13 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(29, 1000);
   animations->Add(407, ani); // Skid Left
+  
+  ani = new Animation(100);
+  ani->Add(30, 1000);
+  animations->Add(408, ani); // Cast Right
+  ani = new Animation(100);
+  ani->Add(31, 1000);
+  animations->Add(409, ani); // Cast Left
 
   // Fire Mario Animations
   ani = new Animation(100);
@@ -659,6 +710,13 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(49, 1000);
   animations->Add(507, ani); // Skid Left
+  
+  ani = new Animation(100);
+  ani->Add(50, 1000);
+  animations->Add(508, ani); // Cast Right
+  ani = new Animation(100);
+  ani->Add(51, 1000);
+  animations->Add(509, ani); // Cast Left
 
   ani = new Animation(50);
   ani->Add(601);
@@ -676,7 +734,12 @@ void LoadResources() {
   ani = new Animation(50);
   ani->Add(608);
   ani->Add(609);
-  animations->Add(610, ani); // FireBlast
+  animations->Add(610, ani); // FireBlast (Right)
+
+  ani = new Animation(50);
+  ani->Add(611);
+  ani->Add(612);
+  animations->Add(611, ani); // FireBlast (Left)
 
   ani = new Animation(100);
   ani->Add(620);
@@ -732,6 +795,12 @@ void LoadResources() {
                                          "assets/super-mario-pipe.mp3");
   AudioManager::GetInstance()->LoadSound("win_level",
                                          "assets/win-level-complete-mario.mp3");
+  AudioManager::GetInstance()->LoadSound("use-failed",
+                                         "assets/use-failed.mp3");
+  AudioManager::GetInstance()->LoadSound("fire-blast",
+                                         "assets/fire-blast.mp3");
+  AudioManager::GetInstance()->LoadSound("rolling-ball",
+                                         "assets/rolling-ball.mp3");
   AudioManager::GetInstance()->LoadSound(
       "mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
   AudioManager::GetInstance()->LoadSound("mario_jump",

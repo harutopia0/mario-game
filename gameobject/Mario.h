@@ -45,6 +45,10 @@ public:
 
 	bool isPressingDown;
 
+	bool isCastingSkill;
+	void SetCastingSkill(bool casting) { isCastingSkill = casting; }
+	bool IsCastingSkill() const { return isCastingSkill; }
+
 	float ax;
 	MarioInputHandler* inputHandler;
 
@@ -71,8 +75,8 @@ public:
 	bool IsSukuna() const { return isSukuna; }
 
 	void ShootFireball();
-	void ShootFireBlast();
-	void ShootRollingBall();
+	bool ShootFireBlast();
+	bool ShootRollingBall();
 	void ShootSukunaProjectile();
 	DWORD lastShootTime;
 
