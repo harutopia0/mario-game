@@ -134,6 +134,7 @@ void SceneManager::SwitchTo(GameState newState) {
     // Tạo Mario mới và khôi phục form từ GameManager
     Mario *mario =
         new Mario(100.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire());
+    mario->SetSukuna(gm->IsMarioSukuna());
 
     g_objectList.insert(g_objectList.begin(), mario);
 
@@ -179,6 +180,7 @@ void SceneManager::ProcessLevelClear() {
   if (mario != nullptr) {
     GameManager::GetInstance()->SetMarioBig(mario->IsBig());
     GameManager::GetInstance()->SetMarioFire(mario->IsFire());
+    GameManager::GetInstance()->SetMarioSukuna(mario->IsSukuna());
   }
 
   isMarioLevelClearing = true;
@@ -208,6 +210,7 @@ void SceneManager::ProcessGameWin() {
   if (mario != nullptr) {
     GameManager::GetInstance()->SetMarioBig(mario->IsBig());
     GameManager::GetInstance()->SetMarioFire(mario->IsFire());
+    GameManager::GetInstance()->SetMarioSukuna(mario->IsSukuna());
   }
 
   isMarioGameWinning = true;
@@ -394,6 +397,12 @@ void SceneManager::Update(DWORD dt) {
                 if (!mario->IsFire()) {
                   GameManager::GetInstance()->SetLives(3);
                   mario->SetFire(true);
+                }
+              } else if (cardType == 4) // CARD_SUKUNA: Trạng thái Sukuna
+              {
+                if (!mario->IsSukuna()) {
+                  GameManager::GetInstance()->SetLives(3);
+                  mario->SetSukuna(true);
                 }
               }
             }

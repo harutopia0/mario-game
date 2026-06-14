@@ -29,7 +29,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -153,6 +153,8 @@
     <ClCompile Include="gameobject\Platform.cpp" />
     <ClCompile Include="gameobject\Projectile.cpp" />
     <ClCompile Include="gameobject\RollingBall.cpp" />
+    <ClCompile Include="gameobject\SukunaProjectile.cpp" />
+    <ClCompile Include="gameobject\SukunaSlash.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
     <ClCompile Include="gameplay\SceneManager.cpp" />
     <ClCompile Include="input\MarioInputHandler.cpp" />
@@ -190,6 +192,8 @@
     <ClInclude Include="gameobject\Platform.h" />
     <ClInclude Include="gameobject\Projectile.h" />
     <ClInclude Include="gameobject\RollingBall.h" />
+    <ClInclude Include="gameobject\SukunaProjectile.h" />
+    <ClInclude Include="gameobject\SukunaSlash.h" />
     <ClInclude Include="gameplay\GameManager.h" />
     <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />

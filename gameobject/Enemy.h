@@ -8,6 +8,7 @@ private:
 	float width, height;
 	int animationId;
 	bool died;
+	bool isFreezed;
 public:
 	Enemy(float x, float y, int animationId);
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
@@ -19,5 +20,7 @@ public:
 		this->died = died;
 		return this->died;
 	}
+	bool IsFreezed() const { return isFreezed; }
+	void SetFreezed(bool frozen) { this->isFreezed = frozen; }
 };
 
