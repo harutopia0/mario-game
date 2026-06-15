@@ -77,7 +77,7 @@ public:
 	void ShootFireball();
 	bool ShootFireBlast();
 	bool ShootRollingBall();
-	void ShootSukunaProjectile();
+	void ShootSukunaSlash();
 	DWORD lastShootTime;
 
 	void Die();

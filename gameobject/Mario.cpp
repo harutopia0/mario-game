@@ -18,7 +18,7 @@
 #include <cmath>
 
 #include "../input/MarioInputHandler.h"
-#include "SukunaProjectile.h"
+#include "SukunaSlash.h"
 
 Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   isOnGround = false;
@@ -687,7 +687,7 @@ void Mario::SetSukuna(bool sukuna) {
   GameManager::GetInstance()->SetMarioSukuna(sukuna);
 }
 
-void Mario::ShootSukunaProjectile() {
+void Mario::ShootSukunaSlash() {
   if (!isSukuna) return;
   if (GetTickCount64() - lastShootTime < 400) return; // Cooldown 0.4s
 
@@ -697,7 +697,7 @@ void Mario::ShootSukunaProjectile() {
   float spawnX = (nx > 0) ? (x + width) : (x - 24.0f);
   float spawnY = y + height / 2.0f - 12.0f;
 
-  SukunaProjectile* proj = new SukunaProjectile(spawnX, spawnY, nx);
+  SukunaSlash* proj = new SukunaSlash(spawnX, spawnY, nx);
   g_objectList.push_back(proj);
   AddObjectToGrid(proj);
 
