@@ -543,6 +543,28 @@ void LoadResources() {
   // ==========================================
   // SUKUNA MARIO SPRITES
   // ==========================================
+  // Idle
+  sprites->Add(60, 216, 2, 229, 28, TEX_SUKUNA_MARIO); // Phải
+  sprites->Add(61, 176, 2, 189, 28, TEX_SUKUNA_MARIO); // Trái
+
+  // Run
+  sprites->Add(62, 255, 2, 270, 28, TEX_SUKUNA_MARIO); // Phải 1
+  sprites->Add(63, 295, 3, 310, 28, TEX_SUKUNA_MARIO); // Phải 2
+  sprites->Add(64, 135, 2, 150, 28, TEX_SUKUNA_MARIO); // Trái 1
+  sprites->Add(65, 95, 3, 110, 28, TEX_SUKUNA_MARIO);  // Trái 2
+
+  // Jump
+  sprites->Add(66, 335, 3, 350, 28, TEX_SUKUNA_MARIO); // Phải
+  sprites->Add(67, 55, 3, 70, 28, TEX_SUKUNA_MARIO);   // Trái
+
+  // Skid
+  sprites->Add(68, 215, 42, 230, 69, TEX_SUKUNA_MARIO); // Mặt trái (Skid Right)
+  sprites->Add(69, 175, 42, 190, 69, TEX_SUKUNA_MARIO); // Mặt phải (Skid Left)
+
+  // Cast
+  sprites->Add(70, 252, 42, 272, 68, TEX_SUKUNA_MARIO); // Phải
+  sprites->Add(71, 133, 42, 153, 68, TEX_SUKUNA_MARIO); // Trái
+
   // Slash
   sprites->Add(630, 25, 85, 53, 106, TEX_SUKUNA_MARIO); // short slash
   sprites->Add(631, 72, 75, 117, 106, TEX_SUKUNA_MARIO); // long slash
@@ -734,6 +756,46 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(51, 1000);
   animations->Add(509, ani); // Cast Left
+
+  // Sukuna Mario Animations
+  ani = new Animation(100);
+  ani->Add(60, 1000);
+  animations->Add(700, ani); // Idle Phải
+  ani = new Animation(100);
+  ani->Add(61, 1000);
+  animations->Add(701, ani); // Idle Trái
+
+  ani = new Animation(100);
+  ani->Add(62);
+  ani->Add(60);
+  ani->Add(63);
+  animations->Add(702, ani); // Run Phải
+  ani = new Animation(100);
+  ani->Add(64);
+  ani->Add(61);
+  ani->Add(65);
+  animations->Add(703, ani); // Run Trái
+
+  ani = new Animation(100);
+  ani->Add(66, 1000);
+  animations->Add(704, ani); // Jump Phải
+  ani = new Animation(100);
+  ani->Add(67, 1000);
+  animations->Add(705, ani); // Jump Trái
+
+  ani = new Animation(100);
+  ani->Add(68, 1000);
+  animations->Add(706, ani); // Skid Right
+  ani = new Animation(100);
+  ani->Add(69, 1000);
+  animations->Add(707, ani); // Skid Left
+  
+  ani = new Animation(100);
+  ani->Add(70, 1000);
+  animations->Add(708, ani); // Cast Right
+  ani = new Animation(100);
+  ani->Add(71, 1000);
+  animations->Add(709, ani); // Cast Left
 
   ani = new Animation(50);
   ani->Add(601);

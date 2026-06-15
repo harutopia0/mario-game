@@ -380,7 +380,25 @@ void Mario::Render() {
     return;
   }
 
-  if (isFire || isSukuna) {
+  if (isSukuna) {
+    if (isCastingSkill) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(708)
+                     : Animations::GetInstance()->Get(709);
+    } else if (!isOnGround) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(704)
+                     : Animations::GetInstance()->Get(705);
+    } else {
+      if (isSkidding)
+        ani = (nx > 0) ? Animations::GetInstance()->Get(707)
+                       : Animations::GetInstance()->Get(706);
+      else if (vx == 0.0f)
+        ani = (nx > 0) ? Animations::GetInstance()->Get(700)
+                       : Animations::GetInstance()->Get(701);
+      else
+        ani = (nx > 0) ? Animations::GetInstance()->Get(702)
+                       : Animations::GetInstance()->Get(703);
+    }
+  } else if (isFire) {
     if (isCastingSkill) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(508)
                      : Animations::GetInstance()->Get(509);
