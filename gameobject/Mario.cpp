@@ -7,6 +7,7 @@
 #include "../gameobject/Block.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
+#include "../gameobject/Koopa.h"
 
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
@@ -221,7 +222,13 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           }
         } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
           if (!enemy->IsDied() && !enemy->IsFreezed()) {
-            TakeDamage();
+            Koopa* koopa = dynamic_cast<Koopa*>(enemy);
+            if (koopa && koopa->GetState() == KOOPA_STATE_SHELL) {
+              int dir = (x < koopa->GetX()) ? 1 : -1;
+              koopa->Kick(dir);
+            } else {
+              TakeDamage();
+            }
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
@@ -350,10 +357,15 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             if (temp_ny == 1) {
               vy = MARIO_JUMP_SPEED_Y * 0.5f;
               OutputDebugStringA("Enemy stomped!\n");
-              enemy->SetDied(true);
+              enemy->OnStomped(this);
             } else if (temp_ny == -1) {
-              OutputDebugStringA("Mario damaged by enemy\n");
-              TakeDamage();
+              Koopa* koopa = dynamic_cast<Koopa*>(enemy);
+              if (koopa && koopa->GetState() == KOOPA_STATE_SHELL) {
+                int dir = (x < koopa->GetX()) ? 1 : -1;
+                koopa->Kick(dir);
+              } else {
+                TakeDamage();
+              }
             }
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {

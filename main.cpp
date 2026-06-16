@@ -7,6 +7,8 @@
 #include "gameobject/Brick.h"
 #include "gameobject/Buff.h"
 #include "gameobject/Enemy.h"
+#include "gameobject/Goomba.h"
+#include "gameobject/Koopa.h"
 
 #include "gameobject/LuckyBlock.h"
 #include "gameobject/Mario.h"
@@ -421,6 +423,28 @@ void LoadMap(LPCWSTR filePath) {
             }
           }
         }
+      } else if (tileID == 11) {
+        Goomba *goomba = new Goomba(realX, realY + 2.0f);
+        g_objectList.push_back(goomba);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(goomba);
+        }
+      } else if (tileID == 12) {
+        Koopa *koopa = new Koopa(realX, realY + 2.0f);
+        g_objectList.push_back(koopa);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(koopa);
+        }
       }
     }
   }
@@ -640,8 +664,17 @@ void LoadResources() {
   // Bounding Box
   sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
 
-  // Enemy
-  sprites->Add(100, 0, 0, 16, 16, TEX_ENEMY_TEST);
+  // Enemy (Goomba & Koopa sprites)
+  sprites->Add(100, 0, 16, 15, 31, TEX_ENEMY_TEST); // Giữ nguyên ID 100 làm mặc định nếu cần
+  sprites->Add(30001, 0, 16, 15, 31, TEX_ENEMY_TEST);
+  sprites->Add(30002, 16, 16, 31, 31, TEX_ENEMY_TEST);
+  sprites->Add(30003, 32, 16, 47, 31, TEX_ENEMY_TEST);
+  sprites->Add(30101, 96, 0, 111, 31, TEX_ENEMY_TEST);
+  sprites->Add(30102, 112, 0, 127, 31, TEX_ENEMY_TEST);
+  sprites->Add(30103, 160, 0, 175, 31, TEX_ENEMY_TEST);
+  sprites->Add(30104, 176, 0, 191, 31, TEX_ENEMY_TEST);
+  sprites->Add(30105, 192, 0, 207, 31, TEX_ENEMY_TEST);
+  sprites->Add(30106, 208, 0, 223, 31, TEX_ENEMY_TEST);
 
   // Potion
   sprites->Add(101, 0, 0, 16, 16, TEX_POTION);
@@ -878,6 +911,35 @@ void LoadResources() {
   ani->Add(101, 1000);
   animations->Add(301, ani); // Potion
 
+  // Goomba & Koopa Animations
+  ani = new Animation(150);
+  ani->Add(30001);
+  ani->Add(30002);
+  animations->Add(310, ani); // Goomba walk
+
+  ani = new Animation(100);
+  ani->Add(30003);
+  animations->Add(311, ani); // Goomba flat
+
+  ani = new Animation(150);
+  ani->Add(30101);
+  ani->Add(30102);
+  animations->Add(312, ani); // Koopa walk
+
+  ani = new Animation(100);
+  ani->Add(30103);
+  animations->Add(313, ani); // Koopa shell static
+
+  ani = new Animation(50);
+  ani->Add(30105);
+  ani->Add(30106);
+  animations->Add(314, ani); // Koopa shell spinning
+
+  ani = new Animation(100);
+  ani->Add(30103);
+  ani->Add(30104);
+  animations->Add(315, ani); // Koopa shell shaking (wake up)
+
   ani = new Animation(100);
   ani->Add(900, 1000);
 
@@ -922,6 +984,8 @@ void LoadResources() {
       "star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
   AudioManager::GetInstance()->LoadSound("slash-sound",
                                          "assets/slash-sound.mp3");
+  AudioManager::GetInstance()->LoadSound("stomp", "assets/stomp.wav");
+  AudioManager::GetInstance()->LoadSound("kick", "assets/kick.wav");
 
   // Phát nhạc intro sau khi tất cả âm thanh đã được nạp xong
   AudioManager::GetInstance()->PlayMusic("intro_theme", true);
@@ -943,7 +1007,7 @@ void Cleanup() {
 }
 
 void SpawnEnemy(float x, float y) {
-  Enemy *enemy = new Enemy(x, y, 300);
+  Goomba *enemy = new Goomba(x, y);
   g_objectList.push_back(enemy);
   AddObjectToGrid(enemy);
 }

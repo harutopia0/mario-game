@@ -83,6 +83,12 @@
     <ClCompile Include="gameobject\Enemy.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
+    <ClCompile Include="gameobject\Goomba.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Koopa.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
     <ClCompile Include="gameobject\Fireball.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
@@ -201,6 +207,12 @@
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\Enemy.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Goomba.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Koopa.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\Fireball.h">
