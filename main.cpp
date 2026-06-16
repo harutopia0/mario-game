@@ -63,9 +63,7 @@ enum TEXTURE_ID {
   TEX_GAME_OVER = 702,
   TEX_YOU_WIN = 703,
   TEX_MAP_LEVEL = 800,
-  TEX_OBTAIN_ITEM = 900,
-  TEX_DOMAIN_BARRIER = 1000,
-  TEX_DOMAIN = 1001
+  TEX_OBTAIN_ITEM = 900
 };
 
 #pragma endregion
@@ -494,9 +492,6 @@ void LoadResources() {
 
   textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
 
-  textures->Add(TEX_DOMAIN_BARRIER, L"assets/domain_barrier.png");
-  textures->Add(TEX_DOMAIN, L"assets/domain.png");
-
   // ==========================================
   // 2. CẮT SPRITES
   // ==========================================
@@ -665,12 +660,6 @@ void LoadResources() {
 
   // Obtain item
   sprites->Add(9000, 0, 0, 640, 480, TEX_OBTAIN_ITEM);
-
-  // Domain Barrier
-  sprites->Add(9001, 0, 0, 405, 405, TEX_DOMAIN_BARRIER);
-
-  // Domain Volcano
-  sprites->Add(9002, 1, 0, 304, 255, TEX_DOMAIN);
 
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION

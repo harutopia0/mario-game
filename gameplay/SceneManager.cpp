@@ -49,9 +49,6 @@ SceneManager::SceneManager() {
   rouletteCardType = 1;
   lastRouletteTick = 0;
   isRouletteDone = false;
-
-  isMarioDomainExpansion = false;
-  domainExpansionStartTime = 0;
 }
 
 SceneManager *SceneManager::GetInstance() {
@@ -311,18 +308,7 @@ void SceneManager::Update(DWORD dt) {
     }
   }
 
-  // Tạm dừng game 3 giây khi Mario dùng Domain Expansion (bấm thẻ Jogo lúc đang
-  // Fire Form)
-  if (isMarioDomainExpansion) {
-    if (GetTickCount64() - domainExpansionStartTime >= 3000) {
-      isMarioDomainExpansion = false;
-      AudioManager::GetInstance()->ResumeMusic();
-    } else {
-      // Chỉ cập nhật HUD, không update game objects
-      HUD::GetInstance()->Update(dt);
-      return;
-    }
-  }
+
 
   if (currentState == STATE_INTRO) {
     if (introScene) {
@@ -411,12 +397,7 @@ void SceneManager::Update(DWORD dt) {
                   GameManager::GetInstance()->SetLives(3);
                   mario->SetFire(true);
                 } else {
-                  if (!isMarioDomainExpansion) {
-                    isMarioDomainExpansion = true;
-                    domainExpansionStartTime = GetTickCount64();
-                    AudioManager::GetInstance()->PauseMusic();
-                    // Tiêu thụ thẻ nếu Domain Expansion kích hoạt
-                  }
+                  ProcessMarioCastSkill(cardType, slot);
                 }
               } else if (cardType == 4) // CARD_SUKUNA: Trạng thái Sukuna
               {
@@ -572,57 +553,7 @@ void SceneManager::Render() {
         }
       }
 
-      // Render domain barrier sau LAYER_ITEMS
-      if (l == LAYER_ITEMS && isMarioDomainExpansion && realMario != nullptr) {
-        DWORD elapsedTime = GetTickCount64() - domainExpansionStartTime;
-        float scale = 0.0f;
-        if (elapsedTime < 1000) {
-          scale = ((float)elapsedTime / 1000.0f) * 0.5f;
-        } else if (elapsedTime >= 2500) {
-          float shrinkTime = (float)(elapsedTime - 2500);
-          scale = 0.5f - ((shrinkTime / 500.0f) * 0.5f);
-          if (scale < 0.0f)
-            scale = 0.0f;
-        } else {
-          scale = 0.5f;
-        }
 
-        Sprite *barrierSprite = Sprites::GetInstance()->Get(9001);
-        if (barrierSprite) {
-          // Mario size is roughly 14x26
-          float mx = realMario->GetX() + 7.0f;
-          float my = realMario->GetY() + 13.0f;
-
-          // barrier size is 405x405
-          float bx = mx - (405.0f / 2.0f);
-          float by = my - (405.0f / 2.0f);
-
-          barrierSprite->DrawRotatedScaled(bx, by, 0.0f, scale, 1.0f);
-        }
-
-        // Hiện hình nền núi lửa sau khi rào chắn đạt tối đa (sau 1 giây)
-        if (elapsedTime >= 1000) {
-          Sprite *volcanoSprite = Sprites::GetInstance()->Get(9002);
-          if (volcanoSprite) {
-            float volcanoScale = scale * 0.5f; // Kích thước bằng 50% hiện tại
-            
-            float mx = realMario->GetX() + 7.0f;
-            float my_feet = realMario->GetY(); // Trục Y hướng lên, GetY() chính là tọa độ dưới cùng (chân) của Mario
-
-            // Kích thước núi lửa là 303x255
-            float vx = mx - (303.0f / 2.0f);
-            
-            // Tính vy sao cho đáy của núi lửa (sau khi scale) ngang bằng chân Mario
-            // Với trục Y hướng lên: Tâm centerY = vy + 127.5f.
-            // Đáy của núi lửa (visual) = centerY - 127.5f * volcanoScale.
-            // Để Đáy = my_feet => vy + 127.5f - 127.5f * volcanoScale = my_feet
-            // => vy = my_feet - 127.5f * (1.0f - volcanoScale)
-            float vy = my_feet - 127.5f * (1.0f - volcanoScale);
-
-            volcanoSprite->DrawRotatedScaled(vx, vy, 0.0f, volcanoScale, 1.0f);
-          }
-        }
-      }
     }
 
     D3DXMATRIX matUI;
@@ -689,12 +620,12 @@ void SceneManager::ProcessMarioCastSkill(int cardType, int slot) {
       bool skillSuccess = false;
 
       // Tung chiêu ngay lập tức
-      if (cardType == 1) { // Mushroom Card -> Skill
+      if (cardType == 1 || cardType == 2) { // Mushroom or Jogo Card -> Skill
         if (mario->IsFire()) {
           skillSuccess = mario->ShootFireBlast();
           if (skillSuccess)
             AudioManager::GetInstance()->PlaySFX("fire-blast");
-        } else if (mario->IsBig() && !mario->IsFire()) {
+        } else if (cardType == 1 && mario->IsBig() && !mario->IsFire()) {
           skillSuccess = mario->ShootRollingBall();
           if (skillSuccess)
             AudioManager::GetInstance()->PlaySFX("rolling-ball");
