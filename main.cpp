@@ -63,7 +63,8 @@ enum TEXTURE_ID {
   TEX_GAME_OVER = 702,
   TEX_YOU_WIN = 703,
   TEX_MAP_LEVEL = 800,
-  TEX_OBTAIN_ITEM = 900
+  TEX_OBTAIN_ITEM = 900,
+  TEX_DOMAIN_BARRIER = 1000
 };
 
 #pragma endregion
@@ -449,6 +450,8 @@ void LoadResources() {
 
   textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
 
+  textures->Add(TEX_DOMAIN_BARRIER, L"assets/domain_barrier.png");
+
   // ==========================================
   // 2. CẮT SPRITES
   // ==========================================
@@ -616,6 +619,9 @@ void LoadResources() {
 
   // Obtain item
   sprites->Add(9000, 0, 0, 640, 480, TEX_OBTAIN_ITEM);
+
+  // Domain Barrier
+  sprites->Add(9001, 0, 0, 405, 405, TEX_DOMAIN_BARRIER);
 
 
 
@@ -871,7 +877,7 @@ void LoadResources() {
   AudioManager::GetInstance()->LoadSound(
       "mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
   AudioManager::GetInstance()->LoadSound("mario_jump",
-                                         "assets/mario-jump-sound-effect.mp3");
+                                         "assets/jump.mp3");
   AudioManager::GetInstance()->LoadSound(
       "intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
   AudioManager::GetInstance()->LoadSound(

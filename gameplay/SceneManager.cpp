@@ -49,6 +49,9 @@ SceneManager::SceneManager() {
   rouletteCardType = 1;
   lastRouletteTick = 0;
   isRouletteDone = false;
+
+  isMarioDomainExpansion = false;
+  domainExpansionStartTime = 0;
 }
 
 SceneManager *SceneManager::GetInstance() {
@@ -298,12 +301,25 @@ void SceneManager::Update(DWORD dt) {
   if (isMarioCastingSkill) {
     if (GetTickCount64() - castSkillStartTime >= 1000) {
       isMarioCastingSkill = false;
+      AudioManager::GetInstance()->ResumeMusic();
       if (!g_objectList.empty()) {
         Mario *mario = dynamic_cast<Mario *>(g_objectList[0]);
         if (mario != nullptr) {
           mario->SetCastingSkill(false); // Xóa frame vận công
         }
       }
+    } else {
+      // Chỉ cập nhật HUD, không update game objects
+      HUD::GetInstance()->Update(dt);
+      return;
+    }
+  }
+
+  // Tạm dừng game 3 giây khi Mario dùng Domain Expansion (bấm thẻ Jogo lúc đang Fire Form)
+  if (isMarioDomainExpansion) {
+    if (GetTickCount64() - domainExpansionStartTime >= 3000) {
+      isMarioDomainExpansion = false;
+      AudioManager::GetInstance()->ResumeMusic();
     } else {
       // Chỉ cập nhật HUD, không update game objects
       HUD::GetInstance()->Update(dt);
@@ -397,6 +413,13 @@ void SceneManager::Update(DWORD dt) {
                 if (!mario->IsFire()) {
                   GameManager::GetInstance()->SetLives(3);
                   mario->SetFire(true);
+                } else {
+                  if (!isMarioDomainExpansion) {
+                    isMarioDomainExpansion = true;
+                    domainExpansionStartTime = GetTickCount64();
+                    AudioManager::GetInstance()->PauseMusic();
+                    // Tiêu thụ thẻ nếu Domain Expansion kích hoạt
+                  }
                 }
               } else if (cardType == 4) // CARD_SUKUNA: Trạng thái Sukuna
               {
@@ -512,7 +535,7 @@ void SceneManager::Render() {
       realMario = dynamic_cast<Mario *>(g_objectList[0]);
     }
 
-    for (int l = LAYER_BACKGROUND; l <= LAYER_PLAYER; l++) {
+    for (int l = LAYER_BACKGROUND; l <= LAYER_EFFECTS; l++) {
       for (size_t i = 0; i < g_objectList.size(); i++) {
         GameObject *obj = g_objectList[i];
         if (obj->IsDeleted())
@@ -545,6 +568,34 @@ void SceneManager::Render() {
           if (shouldRenderBBox) {
             obj->RenderBoundingBox();
           }
+        }
+      }
+
+      // Render domain barrier right after LAYER_ITEMS (so it is below enemies and mario)
+      if (l == LAYER_ITEMS && isMarioDomainExpansion && realMario != nullptr) {
+        DWORD elapsedTime = GetTickCount64() - domainExpansionStartTime;
+        float scale = 0.0f;
+        if (elapsedTime < 1000) {
+          scale = ((float)elapsedTime / 1000.0f) * 0.5f;
+        } else if (elapsedTime >= 2500) {
+          float shrinkTime = (float)(elapsedTime - 2500);
+          scale = 0.5f - ((shrinkTime / 500.0f) * 0.5f);
+          if (scale < 0.0f) scale = 0.0f;
+        } else {
+          scale = 0.5f;
+        }
+
+        Sprite *barrierSprite = Sprites::GetInstance()->Get(9001);
+        if (barrierSprite) {
+          // Mario size is roughly 14x26
+          float mx = realMario->GetX() + 7.0f;
+          float my = realMario->GetY() + 13.0f;
+
+          // barrier size is 405x405
+          float bx = mx - (405.0f / 2.0f);
+          float by = my - (405.0f / 2.0f);
+
+          barrierSprite->DrawRotatedScaled(bx, by, 0.0f, scale, 1.0f);
         }
       }
     }
@@ -628,6 +679,7 @@ void SceneManager::ProcessMarioCastSkill(int cardType, int slot) {
         isMarioCastingSkill = true;
         castSkillStartTime = GetTickCount64();
         mario->SetCastingSkill(true);
+        AudioManager::GetInstance()->PauseMusic();
       } else {
         // Hoàn thẻ nếu tung chiêu thất bại (VD: kẹt tường)
         GameManager::GetInstance()->GetHoldingCards()[slot] = cardType;

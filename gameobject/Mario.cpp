@@ -672,6 +672,7 @@ void Mario::Jump() {
   if (isOnGround) {
     vy = MARIO_JUMP_SPEED_Y;
     isOnGround = false;
+    AudioManager::GetInstance()->PlaySFX("mario_jump");
   }
 }
 

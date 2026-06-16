@@ -11,6 +11,7 @@ using namespace std;
 #define LAYER_ITEMS       2   // Nấm, Hoa, Buff
 #define LAYER_ENEMIES     3   // Quái vật (Goomba, Koopa...)
 #define LAYER_PLAYER      4   // Mario, Fireball
+#define LAYER_EFFECTS     5   // Hiệu ứng (Nổ, chém...)
 
 class GameObject
 {

@@ -58,6 +58,7 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                         enemy->SetDied(true);
                         x += t * dx; // Cập nhật vị trí tới sát quái
                         state = FIREBALL_STATE_EXPLODING;
+                        layer = LAYER_EFFECTS;
                         explodeStart = GetTickCount64();
                         animationId = 605; // Explosion animation
                         return;
@@ -76,6 +77,7 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
     x += min_tx * dx + nx_col * 0.01f;
     if (nx_col != 0) {
         state = FIREBALL_STATE_EXPLODING;
+        layer = LAYER_EFFECTS;
         explodeStart = GetTickCount64();
         animationId = 605; // Explosion animation
         return;
@@ -103,6 +105,7 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                         enemy->SetDied(true);
                         y += t * dy; // Cập nhật vị trí tới sát quái
                         state = FIREBALL_STATE_EXPLODING;
+                        layer = LAYER_EFFECTS;
                         explodeStart = GetTickCount64();
                         animationId = 605; // Explosion animation
                         return;
