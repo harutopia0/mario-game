@@ -20,6 +20,7 @@ private:
 	int lives;
 	int time;
 	DWORD timeAccumulator;
+	float mapRightEdge;
 
 	// Form Mario (giữ qua các màn)
 	bool isMarioBig;
@@ -33,6 +34,8 @@ public:
 	// Level
 	void SetLevel(int level) { this->level = level; }
 	int GetLevel() { return level; }
+	void SetMapRightEdge(float edge) { this->mapRightEdge = edge; }
+	float GetMapRightEdge() { return mapRightEdge; }
 
 	// Game state flags
 	void SetGameOver(bool isGameOver) { this->isGameOver = isGameOver; }

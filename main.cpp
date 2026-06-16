@@ -7,7 +7,7 @@
 #include "gameobject/Brick.h"
 #include "gameobject/Buff.h"
 #include "gameobject/Enemy.h"
-#include "gameobject/Flag.h"
+
 #include "gameobject/LuckyBlock.h"
 #include "gameobject/Mario.h"
 #include "gameobject/Pipe.h"
@@ -18,7 +18,6 @@
 #include "render/Sprites.h"
 #include "render/Textures.h"
 #include "ui/HUD.h"
-
 
 #include <fstream>
 #include <stdlib.h>
@@ -58,7 +57,7 @@ enum TEXTURE_ID {
   TEX_BBOX = 99,
   TEX_ENEMY_TEST = 100,
   TEX_POTION = 101,
-  TEX_FLAG = 102,
+
   TEX_LEVEL_CLEAR = 701,
   TEX_GAME_OVER = 702,
   TEX_YOU_WIN = 703,
@@ -127,10 +126,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
   ULONGLONG frameStart = GetTickCount64();
   float tickPerFrame = 1000.0f / FPS_LIMIT;
   // 6. Initialize Camera
-  // Vì Game đang dùng ma trận zoom 2.0f (Scale 2x) trong SceneManager, 
-  // nên chiều rộng thực tế của Camera trong thế giới game chỉ bằng một nửa WINDOW_WIDTH
-  Camera::GetInstance()->Init(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, MAP_WIDTH,
-                              MAP_HEIGHT);
+  // Vì Game đang dùng ma trận zoom 2.0f (Scale 2x) trong SceneManager,
+  // nên chiều rộng thực tế của Camera trong thế giới game chỉ bằng một nửa
+  // WINDOW_WIDTH
+  Camera::GetInstance()->Init(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f,
+                              MAP_WIDTH, MAP_HEIGHT);
 
   while (msg.message != WM_QUIT) {
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -276,7 +276,7 @@ void Render() {
     float bgColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     if (SceneManager::GetInstance()->GetState() == STATE_PLAYING) {
       int currentLevel = GameManager::GetInstance()->GetLevel();
-      
+
       if (currentLevel == 2 || currentLevel == 4 || currentLevel == 5) {
         // Đen (Lòng đất, Ban đêm, Lâu đài)
         bgColor[0] = 0.0f;
@@ -335,8 +335,8 @@ void LoadMap(LPCWSTR filePath) {
       int tileID;
       f >> tileID;
 
-      float realX = c * 16.0f;
-      float realY = ((rows - r - 1) * 16.0f) + 35.0f;
+      float realX = c * 15.0f;
+      float realY = ((rows - r - 1) * 15.0f) + 35.0f;
 
       if (tileID == 1 || tileID == 2) {
         Brick *brick = new Brick(realX, realY, 201);
@@ -405,15 +405,16 @@ void LoadMap(LPCWSTR filePath) {
             cellY < MAX_CELL_ROW) {
           AddObjectToGrid(pipe);
           // Ống nước có thể cao nhiều grid cells
-          for(int i = 1; i <= pipeHeight / 4 + 1; i++) {
-              if (cellY + i < MAX_CELL_ROW) {
-                  grid[cellY + i][cellX].push_back(pipe);
-              }
+          for (int i = 1; i <= pipeHeight / 4 + 1; i++) {
+            if (cellY + i < MAX_CELL_ROW) {
+              grid[cellY + i][cellX].push_back(pipe);
+            }
           }
         }
       }
     }
   }
+  GameManager::GetInstance()->SetMapRightEdge(cols * 15.0f);
   f.close();
 }
 
@@ -529,7 +530,7 @@ void LoadResources() {
   sprites->Add(29, 15, 89, 30, 116, TEX_MARIO);   // Trái sang phải (Skid Left)
 
   // Cast
-  sprites->Add(30, 71, 119, 84, 136, TEX_MARIO); // Phải
+  sprites->Add(30, 71, 119, 84, 136, TEX_MARIO);   // Phải
   sprites->Add(31, 112, 119, 125, 136, TEX_MARIO); // Trái
 
   // ==========================================
@@ -601,7 +602,7 @@ void LoadResources() {
   sprites->Add(71, 133, 42, 153, 68, TEX_SUKUNA_MARIO); // Trái
 
   // Slash
-  sprites->Add(630, 25, 85, 53, 106, TEX_SUKUNA_MARIO); // short slash
+  sprites->Add(630, 25, 85, 53, 106, TEX_SUKUNA_MARIO);  // short slash
   sprites->Add(631, 72, 75, 117, 106, TEX_SUKUNA_MARIO); // long slash
 
   // RollingBall
@@ -620,8 +621,8 @@ void LoadResources() {
   sprites->Add(12, 469, 470, 500, 501, TEX_COMMON1);
 
   // Pipe (Default 3 blocks) & Supplementary Body
-  sprites->Add(13, 5, 28, 36, 75, TEX_COMMON2); // Default Pipe
-  sprites->Add(16, 5, 59, 36, 75, TEX_COMMON2); // Supplementary Body
+  sprites->Add(13, 5, 28, 36, 73, TEX_COMMON2); // Default Pipe (32x46px)
+  sprites->Add(16, 5, 60, 36, 75, TEX_COMMON2); // Supplementary Body (32x16px)
 
   // Breakable
   sprites->Add(14, 453, 152, 468, 167, TEX_COMMON1);
@@ -629,8 +630,6 @@ void LoadResources() {
   // Lucky Block
   sprites->Add(15, 185, 7, 200, 22, TEX_COMMON2);
 
-  // Cột Cờ (Flag Pole & Flag)
-  sprites->Add(900, 536, 654, 566, 805, TEX_COMMON2);
 
   // Bounding Box
   sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
@@ -661,8 +660,6 @@ void LoadResources() {
 
   // Domain Volcano
   sprites->Add(9002, 1, 0, 304, 255, TEX_DOMAIN);
-
-
 
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION
@@ -718,7 +715,7 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(13, 1000);
   animations->Add(204, ani); // Default Pipe
-  
+
   ani = new Animation(100);
   ani->Add(16, 1000);
   animations->Add(207, ani); // Supplementary Body
@@ -758,7 +755,7 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(29, 1000);
   animations->Add(407, ani); // Skid Left
-  
+
   ani = new Animation(100);
   ani->Add(30, 1000);
   animations->Add(408, ani); // Cast Right
@@ -798,7 +795,7 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(49, 1000);
   animations->Add(507, ani); // Skid Left
-  
+
   ani = new Animation(100);
   ani->Add(50, 1000);
   animations->Add(508, ani); // Cast Right
@@ -838,7 +835,7 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(69, 1000);
   animations->Add(707, ani); // Skid Left
-  
+
   ani = new Animation(100);
   ani->Add(70, 1000);
   animations->Add(708, ani); // Cast Right
@@ -883,9 +880,6 @@ void LoadResources() {
 
   ani = new Animation(100);
   ani->Add(900, 1000);
-  animations->Add(900, ani); // Flag
-
-
 
   // ==========================================
   // 4. KHỞI TẠO
@@ -915,16 +909,13 @@ void LoadResources() {
                                          "assets/super-mario-pipe.mp3");
   AudioManager::GetInstance()->LoadSound("win_level",
                                          "assets/win-level-complete-mario.mp3");
-  AudioManager::GetInstance()->LoadSound("use-failed",
-                                         "assets/use-failed.mp3");
-  AudioManager::GetInstance()->LoadSound("fire-blast",
-                                         "assets/fire-blast.mp3");
+  AudioManager::GetInstance()->LoadSound("use-failed", "assets/use-failed.mp3");
+  AudioManager::GetInstance()->LoadSound("fire-blast", "assets/fire-blast.mp3");
   AudioManager::GetInstance()->LoadSound("rolling-ball",
                                          "assets/rolling-ball.mp3");
   AudioManager::GetInstance()->LoadSound(
       "mario_die", "assets/super-mario-death-sound-sound-effect.mp3");
-  AudioManager::GetInstance()->LoadSound("mario_jump",
-                                         "assets/jump.mp3");
+  AudioManager::GetInstance()->LoadSound("mario_jump", "assets/jump.mp3");
   AudioManager::GetInstance()->LoadSound(
       "intro_theme", "assets/Super Mario Bros3 Opening theme.mp3");
   AudioManager::GetInstance()->LoadSound(

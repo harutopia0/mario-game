@@ -3,7 +3,7 @@
 #include "../core/Game.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
-#include "../gameobject/Flag.h"
+
 #include "../gameobject/Mario.h"
 #include "../gameobject/Pipe.h"
 #include "../gameobject/Projectile.h"

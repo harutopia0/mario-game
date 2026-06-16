@@ -6,7 +6,7 @@
 #include "../gameobject/Brick.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
-#include "../gameobject/Flag.h"
+
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
 #include "../gameobject/Fireball.h"
@@ -245,18 +245,32 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
   // Khóa mốc x = 0 (vạch xuất phát) để Mario không đi ngược ra khỏi map
   if (x < 0.0f) {
     x = 0.0f;
-    if (vx < 0.0f) vx = 0.0f;
   }
   
   // Khi Mario đi tới hoặc vượt qua sát mép phải bản đồ
-  float rightEdge = Camera::GetInstance()->GetMapWidth();
-  if (x > rightEdge - width) {
+  float mapEnd = GameManager::GetInstance()->GetMapRightEdge();
+  if (mapEnd > 0) {
     if (!GameManager::GetInstance()->IsLevelClear() && !GameManager::GetInstance()->IsGameWin()) {
-      int currentLevel = GameManager::GetInstance()->GetLevel();
-      if (currentLevel == 5) {
-        SceneManager::GetInstance()->ProcessGameWin();
-      } else {
-        SceneManager::GetInstance()->ProcessLevelClear();
+      if (x > mapEnd - width) {
+        int currentLevel = GameManager::GetInstance()->GetLevel();
+        if (currentLevel == 5) {
+          SceneManager::GetInstance()->ProcessGameWin();
+        } else {
+          SceneManager::GetInstance()->ProcessLevelClear();
+        }
+      }
+    }
+  } else {
+    // Fallback if mapEnd is not set
+    float rightEdge = Camera::GetInstance()->GetMapWidth();
+    if (x > rightEdge - width) {
+      if (!GameManager::GetInstance()->IsLevelClear() && !GameManager::GetInstance()->IsGameWin()) {
+        int currentLevel = GameManager::GetInstance()->GetLevel();
+        if (currentLevel == 5) {
+          SceneManager::GetInstance()->ProcessGameWin();
+        } else {
+          SceneManager::GetInstance()->ProcessLevelClear();
+        }
       }
     }
   }
@@ -355,30 +369,6 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           }
         }
 
-        // CHẠM CỜ THEO TRỤC Y
-        else if (Flag *flag = dynamic_cast<Flag *>(e)) {
-          if (!flag->GetVisited()) {
-            flag->SetVisited();
-            
-            float diff = y - flag->GetY();
-            int points = 100;
-            if (diff > 120.0f) points = 5000;
-            else if (diff > 80.0f) points = 2000;
-            else if (diff > 50.0f) points = 1000;
-            else if (diff > 20.0f) points = 500;
-            
-            GameManager::GetInstance()->AddScore(points);
-            char debugMsg[100];
-            sprintf_s(debugMsg, "Flag touched (Y)! Score added: %d\n", points);
-            OutputDebugStringA(debugMsg);
-
-            // Bắt đầu trượt xuống cột cờ
-            isSlidingPole = true;
-            x = flag->GetX() + 5.0f; // Bám sát vào cột cờ
-            vx = 0.0f;
-            ax = 0.0f;
-          }
-        }
       }
     }
   }
