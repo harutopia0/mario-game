@@ -143,9 +143,10 @@
     <ClCompile Include="gameobject\Enemy.cpp" />
     <ClCompile Include="gameobject\Fireball.cpp" />
     <ClCompile Include="gameobject\FireBlast.cpp" />
-    <ClCompile Include="gameobject\Flag.cpp" />
+
     <ClCompile Include="gameobject\Flower.cpp" />
     <ClCompile Include="gameobject\Ground.cpp" />
+    <ClCompile Include="gameobject\GroundBlock.cpp" />
     <ClCompile Include="gameobject\LuckyBlock.cpp" />
     <ClCompile Include="gameobject\Mario.cpp" />
     <ClCompile Include="gameobject\Mushroom.cpp" />
@@ -177,11 +178,15 @@
     <ClInclude Include="debug.h" />
     <ClInclude Include="gameobject\Breakable.h" />
     <ClInclude Include="gameobject\Brick.h" />
+    <ClInclude Include="gameobject\Block.h" />
+    <ClInclude Include="gameobject\StaticBlock.h" />
+    <ClInclude Include="gameobject\DynamicBlock.h" />
+    <ClInclude Include="gameobject\GroundBlock.h" />
     <ClInclude Include="gameobject\Buff.h" />
     <ClInclude Include="gameobject\Enemy.h" />
     <ClInclude Include="gameobject\Fireball.h" />
     <ClInclude Include="gameobject\FireBlast.h" />
-    <ClInclude Include="gameobject\Flag.h" />
+
     <ClInclude Include="gameobject\Flower.h" />
     <ClInclude Include="gameobject\Ground.h" />
     <ClInclude Include="gameobject\LuckyBlock.h" />

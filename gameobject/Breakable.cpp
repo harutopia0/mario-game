@@ -1,7 +1,7 @@
 #include "Breakable.h"
 #include "../animation/Animations.h"
 
-Breakable::Breakable(float x, float y, int animationId) : GameObject(x, y)
+Breakable::Breakable(float x, float y, int animationId) : DynamicBlock(x, y)
 {
     this->animationId = animationId;
     Animation* anim = Animations::GetInstance()->Get(animationId);
@@ -12,7 +12,7 @@ Breakable::Breakable(float x, float y, int animationId) : GameObject(x, y)
         this->width = 16;
         this->height = 16;
     }
-    this->isStatic = true;
+    // this->isStatic is already set by DynamicBlock
 }
 
 void Breakable::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -29,7 +29,7 @@ void Breakable::Render()
     if (ani != NULL) ani->Render(x, y);
 }
 
-void Breakable::Break()
+void Breakable::Break(bool dropItem)
 {
     this->Delete();
 }

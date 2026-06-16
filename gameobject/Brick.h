@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/GameObject.h"
+#include "DynamicBlock.h"
 
-class Brick : public GameObject
+class Brick : public DynamicBlock
 {
 private:
     float width;
@@ -14,4 +14,5 @@ public:
     virtual void Update(DWORD dt);
     virtual void Render();
     virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom);
+    virtual void Break(bool dropItem = true);
 };

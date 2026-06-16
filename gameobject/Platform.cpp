@@ -1,7 +1,7 @@
 #include "Platform.h"
 #include "../animation/Animations.h"
 
-Platform::Platform(float x, float y, int animationId) : GameObject(x, y)
+Platform::Platform(float x, float y, int animationId) : StaticBlock(x, y)
 {
     this->animationId = animationId;
     Animation* anim = Animations::GetInstance()->Get(animationId);
@@ -12,7 +12,6 @@ Platform::Platform(float x, float y, int animationId) : GameObject(x, y)
         this->width = 16;
         this->height = 16;
     }
-    this->isStatic = true;
 }
 
 void Platform::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -25,7 +24,6 @@ void Platform::GetBoundingBox(float& left, float& top, float& right, float& bott
 
 void Platform::Render()
 {
-
     Animation* ani = Animations::GetInstance()->Get(this->animationId);
     if (ani != NULL) ani->Render(x, y);
 }

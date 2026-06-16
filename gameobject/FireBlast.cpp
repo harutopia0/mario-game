@@ -1,9 +1,7 @@
 #include "FireBlast.h"
 #include "../core/Game.h"
-#include "../gameobject/Breakable.h"
-#include "../gameobject/Brick.h"
+#include "../gameobject/DynamicBlock.h"
 #include "../gameobject/Enemy.h"
-#include "../gameobject/LuckyBlock.h"
 #include "../physics/Collision.h"
 
 
@@ -45,10 +43,8 @@ void FireBlast::Update(DWORD dt, vector<GameObject *> *coObjects) {
         // Va chạm AABB
         if (Enemy *enemy = dynamic_cast<Enemy *>(obj)) {
           enemy->SetDied(true);
-        } else if (dynamic_cast<Brick *>(obj) ||
-                   dynamic_cast<Breakable *>(obj) ||
-                   dynamic_cast<LuckyBlock *>(obj)) {
-          obj->Delete();
+        } else if (DynamicBlock *block = dynamic_cast<DynamicBlock *>(obj)) {
+          block->Break();
         }
       }
     }

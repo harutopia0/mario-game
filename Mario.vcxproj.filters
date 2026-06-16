@@ -98,9 +98,7 @@
     <ClCompile Include="gameobject\SukunaSlash.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
-    <ClCompile Include="gameobject\Flag.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
+
     <ClCompile Include="gameobject\Mario.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
@@ -138,6 +136,9 @@
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameobject\LuckyBlock.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\GroundBlock.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameplay\SceneManager.cpp">
@@ -184,6 +185,18 @@
     <ClInclude Include="gameobject\Brick.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
+    <ClInclude Include="gameobject\Block.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\StaticBlock.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\DynamicBlock.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\GroundBlock.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
     <ClInclude Include="gameobject\Buff.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
@@ -205,9 +218,7 @@
     <ClInclude Include="gameobject\SukunaSlash.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
-    <ClInclude Include="gameobject\Flag.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
+
     <ClInclude Include="gameobject\Mario.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>

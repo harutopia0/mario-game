@@ -7,7 +7,7 @@
 #define MARIO_BIG_WIDTH 15.0f
 #define MARIO_BIG_HEIGHT 27.0f
 
-#define MARIO_JUMP_SPEED_Y      0.27f 
+#define MARIO_JUMP_SPEED_Y      0.31f 
 #define MARIO_JUMP_DEFLECT_SPEED 0.1f
 #define MARIO_GRAVITY           -0.00067f
 #define MARIO_WALKING_SPEED		0.15f
@@ -42,6 +42,8 @@ public:
 	float pipeDestX;
 	float pipeDestY;
 	float pipeEnterStartY;
+
+	bool isSlidingPole = false;
 
 	bool isPressingDown;
 

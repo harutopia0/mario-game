@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "../gameobject/Brick.h"
+#include "../gameobject/Block.h"
 #include "../physics/Collision.h"
 
 
@@ -63,11 +63,11 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     for (GameObject* obj : *coObjects)
     {
         if (obj == this) continue;
-        Brick* brick = dynamic_cast<Brick*>(obj);
-        if (brick)
+        Block* block = dynamic_cast<Block*>(obj);
+        if (block)
         {
             float sl, st, sr, sb;
-            brick->GetBoundingBox(sl, st, sr, sb);
+            block->GetBoundingBox(sl, st, sr, sb);
             //Chỉ check nếu overlap X
             if (mr > sl && ml < sr)
             {

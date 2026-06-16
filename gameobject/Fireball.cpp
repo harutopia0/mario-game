@@ -1,11 +1,8 @@
 #include "Fireball.h"
 #include "../animation/Animations.h"
 #include "../physics/Collision.h"
-#include "../gameobject/Brick.h"
-#include "../gameobject/Pipe.h"
-#include "../gameobject/Breakable.h"
-#include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Platform.h"
+#include "../gameobject/Block.h"
 #include "../gameobject/Enemy.h"
 
 Fireball::Fireball(float x, float y, int direction) : Projectile(x, y, direction) {
@@ -58,12 +55,13 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                         enemy->SetDied(true);
                         x += t * dx; // Cập nhật vị trí tới sát quái
                         state = FIREBALL_STATE_EXPLODING;
+                        layer = LAYER_EFFECTS;
                         explodeStart = GetTickCount64();
                         animationId = 605; // Explosion animation
                         return;
                     }
                 }
-                else if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e)) {
+                else if (dynamic_cast<Block*>(e) && !dynamic_cast<Platform*>(e)) {
                     if (t < min_tx) {
                         min_tx = t;
                         nx_col = temp_nx;
@@ -76,6 +74,7 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
     x += min_tx * dx + nx_col * 0.01f;
     if (nx_col != 0) {
         state = FIREBALL_STATE_EXPLODING;
+        layer = LAYER_EFFECTS;
         explodeStart = GetTickCount64();
         animationId = 605; // Explosion animation
         return;
@@ -103,12 +102,13 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                         enemy->SetDied(true);
                         y += t * dy; // Cập nhật vị trí tới sát quái
                         state = FIREBALL_STATE_EXPLODING;
+                        layer = LAYER_EFFECTS;
                         explodeStart = GetTickCount64();
                         animationId = 605; // Explosion animation
                         return;
                     }
                 }
-                else if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e) || dynamic_cast<Platform*>(e)) {
+                else if (dynamic_cast<Block*>(e)) {
                     if (dynamic_cast<Platform*>(e) && temp_ny != 1) continue;
 
                     if (t < min_ty) {

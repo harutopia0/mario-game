@@ -2,7 +2,7 @@
 #include "../animation/Animations.h"
 
 LuckyBlock::LuckyBlock(float x, float y, int activeAnimationId, int usedAnimationId)
-    : GameObject(x, y)
+    : DynamicBlock(x, y)
 {
     this->activeAnimationId = activeAnimationId;
     this->usedAnimationId = usedAnimationId;
@@ -15,7 +15,7 @@ LuckyBlock::LuckyBlock(float x, float y, int activeAnimationId, int usedAnimatio
         this->height = 16;
     }
     this->isHit = false;
-    this->isStatic = true;
+    // this->isStatic is already set by DynamicBlock
 }
 
 void LuckyBlock::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -38,4 +38,13 @@ void LuckyBlock::Hit()
     if (!isHit) {
         isHit = true;
     }
+}
+
+void LuckyBlock::Break(bool dropItem)
+{
+    if (!isHit && dropItem) {
+        // TODO: Spawn item (Mushroom/Flower/Coin) here
+        OutputDebugStringA("LuckyBlock broken! Dropping item...\n");
+    }
+    this->Delete();
 }

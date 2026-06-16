@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <d3d10.h>
 #include <d3dx10.h>
 
@@ -50,6 +50,7 @@ public:
 
     float GetX() const { return x; }
     float GetY() const { return y; }
+    float GetMapWidth() const { return mapWidth; }
 
     float ScreenToWorldX(float screenX) const { return screenX + x; }
     float ScreenToWorldY(float screenY) const { return screenY + y; }

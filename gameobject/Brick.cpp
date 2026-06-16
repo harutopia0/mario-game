@@ -1,7 +1,7 @@
 #include "Brick.h"
 #include "../animation/animations.h"
 
-Brick::Brick(float x, float y, int animationId) : GameObject(x, y)
+Brick::Brick(float x, float y, int animationId) : DynamicBlock(x, y)
 {
     this->animationId = animationId;
     Animation* anim = Animations::GetInstance()->Get(animationId);
@@ -12,7 +12,13 @@ Brick::Brick(float x, float y, int animationId) : GameObject(x, y)
         this->width = 16;
         this->height = 16;
     }
-    this->isStatic = true;
+    // this->isStatic is already set by DynamicBlock
+}
+
+void Brick::Break(bool dropItem)
+{
+    // Brick thường (cầu thang, tường) khi vỡ chỉ biến mất
+    this->Delete();
 }
 
 void Brick::Update(DWORD dt)

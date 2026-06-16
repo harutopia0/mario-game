@@ -43,6 +43,9 @@ private:
     bool isMarioCastingSkill;
     DWORD castSkillStartTime;
 
+    bool isMarioDomainExpansion;
+    DWORD domainExpansionStartTime;
+
     // Cơ chế Roulette Thẻ bài khi thắng màn
     int rouletteCardType;
     DWORD lastRouletteTick;
