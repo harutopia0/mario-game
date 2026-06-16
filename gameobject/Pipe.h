@@ -4,14 +4,13 @@
 class Pipe : public GameObject
 {
 private:
-    float width;
-    float height;
-    int animationId;
+    int pipeHeight; // in blocks (16px each)
     bool canEnter;
     float destX, destY;
+    float width, height;
 
 public:
-    Pipe(float x, float y, int animationId, bool canEnter = false, float destX = 0, float destY = 0);
+    Pipe(float x, float y, int pipeHeight, bool canEnter, float destX, float destY);
 
     void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
     void Render() override;

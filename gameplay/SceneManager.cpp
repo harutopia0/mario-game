@@ -148,13 +148,9 @@ void SceneManager::SwitchTo(GameState newState) {
     g_objectList.push_back(potion);
     AddObjectToGrid(potion);
 
-    Flag *flag = new Flag(300.0f, 100.0f);
-    g_objectList.push_back(flag);
-    AddObjectToGrid(flag);
 
-    Pipe *pipe = new Pipe(15.0f, 80.0f, 204, true, 300.0f, 300.0f);
-    g_objectList.push_back(pipe);
-    AddObjectToGrid(pipe);
+
+    // (Ống nước giờ đã được load tự động từ file Level_1.txt qua hàm LoadMap)
 
     AudioManager::GetInstance()->PlayMusic("mario_theme", true);
   }
@@ -315,7 +311,8 @@ void SceneManager::Update(DWORD dt) {
     }
   }
 
-  // Tạm dừng game 3 giây khi Mario dùng Domain Expansion (bấm thẻ Jogo lúc đang Fire Form)
+  // Tạm dừng game 3 giây khi Mario dùng Domain Expansion (bấm thẻ Jogo lúc đang
+  // Fire Form)
   if (isMarioDomainExpansion) {
     if (GetTickCount64() - domainExpansionStartTime >= 3000) {
       isMarioDomainExpansion = false;
@@ -528,6 +525,10 @@ void SceneManager::Render() {
     matFinal = matCamera * matZoom;
 
     game->GetSpriteHandler()->SetViewTransform(&matFinal);
+
+    // RENDER LỚP 2: Hình nền tĩnh cố định trên bản đồ.
+    // (Hiện tại chưa có ảnh, sẽ thêm Sprite sau nếu cần)
+
     // === VÒNG LẶP RENDER THEO LAYER ===
     // Quét từ Layer thấp nhất → cao nhất
     Mario *realMario = nullptr;
@@ -571,7 +572,7 @@ void SceneManager::Render() {
         }
       }
 
-      // Render domain barrier right after LAYER_ITEMS (so it is below enemies and mario)
+      // Render domain barrier sau LAYER_ITEMS
       if (l == LAYER_ITEMS && isMarioDomainExpansion && realMario != nullptr) {
         DWORD elapsedTime = GetTickCount64() - domainExpansionStartTime;
         float scale = 0.0f;
@@ -580,7 +581,8 @@ void SceneManager::Render() {
         } else if (elapsedTime >= 2500) {
           float shrinkTime = (float)(elapsedTime - 2500);
           scale = 0.5f - ((shrinkTime / 500.0f) * 0.5f);
-          if (scale < 0.0f) scale = 0.0f;
+          if (scale < 0.0f)
+            scale = 0.0f;
         } else {
           scale = 0.5f;
         }
@@ -596,6 +598,29 @@ void SceneManager::Render() {
           float by = my - (405.0f / 2.0f);
 
           barrierSprite->DrawRotatedScaled(bx, by, 0.0f, scale, 1.0f);
+        }
+
+        // Hiện hình nền núi lửa sau khi rào chắn đạt tối đa (sau 1 giây)
+        if (elapsedTime >= 1000) {
+          Sprite *volcanoSprite = Sprites::GetInstance()->Get(9002);
+          if (volcanoSprite) {
+            float volcanoScale = scale * 0.5f; // Kích thước bằng 50% hiện tại
+            
+            float mx = realMario->GetX() + 7.0f;
+            float my_feet = realMario->GetY(); // Trục Y hướng lên, GetY() chính là tọa độ dưới cùng (chân) của Mario
+
+            // Kích thước núi lửa là 303x255
+            float vx = mx - (303.0f / 2.0f);
+            
+            // Tính vy sao cho đáy của núi lửa (sau khi scale) ngang bằng chân Mario
+            // Với trục Y hướng lên: Tâm centerY = vy + 127.5f.
+            // Đáy của núi lửa (visual) = centerY - 127.5f * volcanoScale.
+            // Để Đáy = my_feet => vy + 127.5f - 127.5f * volcanoScale = my_feet
+            // => vy = my_feet - 127.5f * (1.0f - volcanoScale)
+            float vy = my_feet - 127.5f * (1.0f - volcanoScale);
+
+            volcanoSprite->DrawRotatedScaled(vx, vy, 0.0f, volcanoScale, 1.0f);
+          }
         }
       }
     }
@@ -667,10 +692,12 @@ void SceneManager::ProcessMarioCastSkill(int cardType, int slot) {
       if (cardType == 1) { // Mushroom Card -> Skill
         if (mario->IsFire()) {
           skillSuccess = mario->ShootFireBlast();
-          if (skillSuccess) AudioManager::GetInstance()->PlaySFX("fire-blast");
+          if (skillSuccess)
+            AudioManager::GetInstance()->PlaySFX("fire-blast");
         } else if (mario->IsBig() && !mario->IsFire()) {
           skillSuccess = mario->ShootRollingBall();
-          if (skillSuccess) AudioManager::GetInstance()->PlaySFX("rolling-ball");
+          if (skillSuccess)
+            AudioManager::GetInstance()->PlaySFX("rolling-ball");
         }
       }
 

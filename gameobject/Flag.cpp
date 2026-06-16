@@ -1,11 +1,11 @@
-﻿#include "Flag.h"
+#include "Flag.h"
 #include "../animation/Animations.h"
 #include "../gameplay/GameManager.h"
 
 Flag::Flag(float x, float y)
 	: GameObject(x, y){
-	width = BUFF_WIDTH;
-	height = BUFF_HEIGHT;
+	width = 30.0f;
+	height = 151.0f;
 
 	vx = 0.0f;
 	vy = 0.0f;
@@ -20,11 +20,11 @@ void Flag::Render() {
 
 	if (isVisited)
 	{
-		ani = Animations::GetInstance()->Get(104); // flag đã chạm
+		ani = Animations::GetInstance()->Get(900); // flag đã chạm (tạm thời dùng chung)
 	}
 	else
 	{
-		ani = Animations::GetInstance()->Get(100); // flag bình thường
+		ani = Animations::GetInstance()->Get(900); // flag bình thường
 	}
 
 	if (ani) ani->Render(x, y);

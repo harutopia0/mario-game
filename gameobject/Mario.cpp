@@ -1,4 +1,5 @@
 #include "Mario.h"
+#include "../render/Camera.h"
 #include "../animation/Animations.h"
 #include "../audio/AudioManager.h"
 #include "../gameobject/Breakable.h"
@@ -129,7 +130,12 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     return;
   }
 
-  if (inputHandler != NULL) {
+  // Khi qua màn, Mario tự động đi bộ về bên phải
+  if (GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin()) {
+    vx = MARIO_WALKING_SPEED;
+    nx = 1;
+    // Bỏ qua input từ người chơi
+  } else if (inputHandler != NULL) {
     inputHandler->KeyState(NULL); // Update continuous keyboard state
   }
 
@@ -154,23 +160,28 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     vx = -MARIO_WALKING_SPEED;
 
   // XỬ LÝ PMETER THEO LOGIC VẬT LÝ
-  if (std::abs(vx) >= MARIO_WALKING_SPEED * 0.95f) {
-    if (pMeterLevel < 7) {
-      pMeterTimer += dt;
-      if (pMeterTimer >= PMETER_STEP_UP_TIME) {
-        pMeterLevel++;
-        pMeterTimer = 0;
-      }
-    }
+  if (GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin()) {
+    pMeterLevel = 0;
+    pMeterTimer = 0;
   } else {
-    if (pMeterLevel > 0) {
-      pMeterTimer += dt;
-      if (pMeterTimer >= PMETER_STEP_DOWN_TIME) {
-        pMeterLevel--;
-        pMeterTimer = 0;
+    if (std::abs(vx) >= MARIO_WALKING_SPEED * 0.95f) {
+      if (pMeterLevel < 7) {
+        pMeterTimer += dt;
+        if (pMeterTimer >= PMETER_STEP_UP_TIME) {
+          pMeterLevel++;
+          pMeterTimer = 0;
+        }
       }
     } else {
-      pMeterTimer = 0;
+      if (pMeterLevel > 0) {
+        pMeterTimer += dt;
+        if (pMeterTimer >= PMETER_STEP_DOWN_TIME) {
+          pMeterLevel--;
+          pMeterTimer = 0;
+        }
+      } else {
+        pMeterTimer = 0;
+      }
     }
   }
 
@@ -223,16 +234,6 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             OutputDebugStringA("Buff added to inventory\n");
           }
         }
-        // CHẠM CỜ THEO TRỤC X
-        else if (Flag *flag = dynamic_cast<Flag *>(e)) {
-          int currentLevel = GameManager::GetInstance()->GetLevel();
-          if (currentLevel == 5) {
-            SceneManager::GetInstance()->ProcessGameWin();
-          } else {
-            SceneManager::GetInstance()->ProcessLevelClear();
-          }
-          OutputDebugStringA("Win level\n");
-        }
       }
     }
   }
@@ -245,6 +246,19 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
   if (x < 0.0f) {
     x = 0.0f;
     if (vx < 0.0f) vx = 0.0f;
+  }
+  
+  // Khi Mario đi tới hoặc vượt qua sát mép phải bản đồ
+  float rightEdge = Camera::GetInstance()->GetMapWidth();
+  if (x > rightEdge - width) {
+    if (!GameManager::GetInstance()->IsLevelClear() && !GameManager::GetInstance()->IsGameWin()) {
+      int currentLevel = GameManager::GetInstance()->GetLevel();
+      if (currentLevel == 5) {
+        SceneManager::GetInstance()->ProcessGameWin();
+      } else {
+        SceneManager::GetInstance()->ProcessLevelClear();
+      }
+    }
   }
 
   // QUÉT VA CHẠM TRỤC Y (RƠI / NHẢY)
@@ -340,15 +354,30 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             OutputDebugStringA("Buff added to inventory\n");
           }
         }
+
         // CHẠM CỜ THEO TRỤC Y
         else if (Flag *flag = dynamic_cast<Flag *>(e)) {
-          int currentLevel = GameManager::GetInstance()->GetLevel();
-          if (currentLevel == 5) {
-            SceneManager::GetInstance()->ProcessGameWin();
-          } else {
-            SceneManager::GetInstance()->ProcessLevelClear();
+          if (!flag->GetVisited()) {
+            flag->SetVisited();
+            
+            float diff = y - flag->GetY();
+            int points = 100;
+            if (diff > 120.0f) points = 5000;
+            else if (diff > 80.0f) points = 2000;
+            else if (diff > 50.0f) points = 1000;
+            else if (diff > 20.0f) points = 500;
+            
+            GameManager::GetInstance()->AddScore(points);
+            char debugMsg[100];
+            sprintf_s(debugMsg, "Flag touched (Y)! Score added: %d\n", points);
+            OutputDebugStringA(debugMsg);
+
+            // Bắt đầu trượt xuống cột cờ
+            isSlidingPole = true;
+            x = flag->GetX() + 5.0f; // Bám sát vào cột cờ
+            vx = 0.0f;
+            ax = 0.0f;
           }
-          OutputDebugStringA("Win level\n");
         }
       }
     }

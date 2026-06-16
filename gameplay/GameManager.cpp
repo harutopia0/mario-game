@@ -76,6 +76,8 @@ void GameManager::ResetTime()
 
 void GameManager::UpdateTime(DWORD dt)
 {
+    if (isLevelClear || isGameWin) return;
+
     if (time > 0)
     {
         timeAccumulator += dt;

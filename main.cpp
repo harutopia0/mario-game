@@ -36,7 +36,7 @@
 #define FPS_LIMIT 100
 
 // Kích thước bản đồ (cần khớp với kích thước trong file map)
-#define MAP_WIDTH 2000.0f
+#define MAP_WIDTH (125 * 15.0f) // 1875.0f
 #define MAP_HEIGHT 408.f
 #pragma endregion
 
@@ -64,7 +64,8 @@ enum TEXTURE_ID {
   TEX_YOU_WIN = 703,
   TEX_MAP_LEVEL = 800,
   TEX_OBTAIN_ITEM = 900,
-  TEX_DOMAIN_BARRIER = 1000
+  TEX_DOMAIN_BARRIER = 1000,
+  TEX_DOMAIN = 1001
 };
 
 #pragma endregion
@@ -126,8 +127,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
   ULONGLONG frameStart = GetTickCount64();
   float tickPerFrame = 1000.0f / FPS_LIMIT;
   // 6. Initialize Camera
-  Camera::GetInstance()->Init(WINDOW_WIDTH, WINDOW_HEIGHT, MAP_WIDTH,
-                              MAP_HEIGHT, 5.0f);
+  // Vì Game đang dùng ma trận zoom 2.0f (Scale 2x) trong SceneManager, 
+  // nên chiều rộng thực tế của Camera trong thế giới game chỉ bằng một nửa WINDOW_WIDTH
+  Camera::GetInstance()->Init(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f, MAP_WIDTH,
+                              MAP_HEIGHT);
 
   while (msg.message != WM_QUIT) {
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -272,9 +275,19 @@ void Render() {
   if (dev) {
     float bgColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     if (SceneManager::GetInstance()->GetState() == STATE_PLAYING) {
-      bgColor[0] = 0.2f;
-      bgColor[1] = 0.2f;
-      bgColor[2] = 0.2f;
+      int currentLevel = GameManager::GetInstance()->GetLevel();
+      
+      if (currentLevel == 2 || currentLevel == 4 || currentLevel == 5) {
+        // Đen (Lòng đất, Ban đêm, Lâu đài)
+        bgColor[0] = 0.0f;
+        bgColor[1] = 0.0f;
+        bgColor[2] = 0.0f;
+      } else {
+        // Màu bầu trời (Layer 1: Xanh da trời trơn cho Đồng bằng và Mây)
+        bgColor[0] = 92.0f / 255.0f;
+        bgColor[1] = 148.0f / 255.0f;
+        bgColor[2] = 252.0f / 255.0f;
+      }
     }
     dev->ClearRenderTargetView(game->GetRenderTargetView(), bgColor);
 
@@ -322,8 +335,8 @@ void LoadMap(LPCWSTR filePath) {
       int tileID;
       f >> tileID;
 
-      float realX = c * 15.0f;
-      float realY = ((rows - r - 1) * 15.0f) + 50.0f;
+      float realX = c * 16.0f;
+      float realY = ((rows - r - 1) * 16.0f) + 35.0f;
 
       if (tileID == 1 || tileID == 2) {
         Brick *brick = new Brick(realX, realY, 201);
@@ -379,6 +392,24 @@ void LoadMap(LPCWSTR filePath) {
         if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
             cellY < MAX_CELL_ROW) {
           AddObjectToGrid(lucky);
+        }
+      } else if (tileID >= 7 && tileID <= 10) {
+        int pipeHeight = tileID - 5; // 7->2, 8->3, 9->4
+        Pipe *pipe = new Pipe(realX, realY, pipeHeight, false, 0, 0);
+        g_objectList.push_back(pipe);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(pipe);
+          // Ống nước có thể cao nhiều grid cells
+          for(int i = 1; i <= pipeHeight / 4 + 1; i++) {
+              if (cellY + i < MAX_CELL_ROW) {
+                  grid[cellY + i][cellX].push_back(pipe);
+              }
+          }
         }
       }
     }
@@ -451,6 +482,7 @@ void LoadResources() {
   textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
 
   textures->Add(TEX_DOMAIN_BARRIER, L"assets/domain_barrier.png");
+  textures->Add(TEX_DOMAIN, L"assets/domain.png");
 
   // ==========================================
   // 2. CẮT SPRITES
@@ -587,14 +619,18 @@ void LoadResources() {
   // Big Block
   sprites->Add(12, 469, 470, 500, 501, TEX_COMMON1);
 
-  // Pipe
-  sprites->Add(13, 5, 28, 36, 75, TEX_COMMON2);
+  // Pipe (Default 3 blocks) & Supplementary Body
+  sprites->Add(13, 5, 28, 36, 75, TEX_COMMON2); // Default Pipe
+  sprites->Add(16, 5, 59, 36, 75, TEX_COMMON2); // Supplementary Body
 
   // Breakable
   sprites->Add(14, 453, 152, 468, 167, TEX_COMMON1);
 
   // Lucky Block
   sprites->Add(15, 185, 7, 200, 22, TEX_COMMON2);
+
+  // Cột Cờ (Flag Pole & Flag)
+  sprites->Add(900, 536, 654, 566, 805, TEX_COMMON2);
 
   // Bounding Box
   sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
@@ -622,6 +658,9 @@ void LoadResources() {
 
   // Domain Barrier
   sprites->Add(9001, 0, 0, 405, 405, TEX_DOMAIN_BARRIER);
+
+  // Domain Volcano
+  sprites->Add(9002, 1, 0, 304, 255, TEX_DOMAIN);
 
 
 
@@ -678,7 +717,11 @@ void LoadResources() {
   animations->Add(203, ani); // Big Block
   ani = new Animation(100);
   ani->Add(13, 1000);
-  animations->Add(204, ani); // Pipe
+  animations->Add(204, ani); // Default Pipe
+  
+  ani = new Animation(100);
+  ani->Add(16, 1000);
+  animations->Add(207, ani); // Supplementary Body
   ani = new Animation(100);
   ani->Add(14, 1000);
   animations->Add(205, ani); // Breakable
@@ -837,6 +880,10 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(101, 1000);
   animations->Add(301, ani); // Potion
+
+  ani = new Animation(100);
+  ani->Add(900, 1000);
+  animations->Add(900, ani); // Flag
 
 
 
