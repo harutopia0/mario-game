@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/GameObject.h"
+#include "DynamicBlock.h"
 
-class LuckyBlock : public GameObject
+class LuckyBlock : public DynamicBlock
 {
 private:
     float width;
@@ -18,4 +18,6 @@ public:
 
     void Hit();
     bool IsHit() { return isHit; }
+
+    virtual void Break(bool dropItem = true);
 };

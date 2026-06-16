@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/GameObject.h"
+#include "StaticBlock.h"
 
-class Pipe : public GameObject
+class Pipe : public StaticBlock
 {
 private:
     int pipeHeight; // in blocks (16px each)

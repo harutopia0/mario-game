@@ -2,7 +2,7 @@
 #include "../animation/Animations.h"
 
 Pipe::Pipe(float x, float y, int pipeHeight, bool canEnter, float destX, float destY)
-    : GameObject(x, y)
+    : StaticBlock(x, y)
 {
     this->pipeHeight = pipeHeight;
     this->width = 32.0f;
@@ -11,7 +11,7 @@ Pipe::Pipe(float x, float y, int pipeHeight, bool canEnter, float destX, float d
     this->canEnter = canEnter;
     this->destX = destX;
     this->destY = destY;
-    this->isStatic = true;
+    // this->isStatic is already set by StaticBlock
     this->layer = LAYER_BACKGROUND;
 }
 

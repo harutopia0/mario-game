@@ -4,6 +4,7 @@
 #include "../audio/AudioManager.h"
 #include "../gameobject/Breakable.h"
 #include "../gameobject/Brick.h"
+#include "../gameobject/Block.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
 
@@ -213,8 +214,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                                           sb, t, temp_nx, temp_ny);
 
       if (t < 1.0f && temp_nx != 0) {
-        if (dynamic_cast<Brick *>(e) || dynamic_cast<Pipe *>(e) ||
-            dynamic_cast<Breakable *>(e) || dynamic_cast<LuckyBlock *>(e)) {
+        if (dynamic_cast<Block *>(e) && !dynamic_cast<Platform *>(e)) {
           if (t < min_tx) {
             min_tx = t;
             nx_col = temp_nx;
@@ -294,8 +294,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                                           sb, t, temp_nx, temp_ny);
 
       if (t < 1.0f && temp_ny != 0) {
-        if (dynamic_cast<Brick *>(e) || dynamic_cast<Pipe *>(e) ||
-            dynamic_cast<Breakable *>(e) || dynamic_cast<LuckyBlock *>(e)) {
+        if (dynamic_cast<Block *>(e) && !dynamic_cast<Platform *>(e)) {
           if (t < min_ty) {
             min_ty = t;
             ny_col = temp_ny;
@@ -615,7 +614,7 @@ bool Mario::ShootRollingBall() {
     GameObject* e = g_objectList[i];
     if (e == this || e->IsDeleted()) continue;
     
-    if (dynamic_cast<Brick*>(e) || dynamic_cast<Pipe*>(e) || dynamic_cast<Breakable*>(e) || dynamic_cast<LuckyBlock*>(e)) {
+    if (dynamic_cast<Block*>(e) && !dynamic_cast<Platform*>(e)) {
       float sl, st, sr, sb;
       e->GetBoundingBox(sl, st, sr, sb);
       if (mr > sl && ml < sr && mb > st && mt < sb) {

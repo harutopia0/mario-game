@@ -12,6 +12,7 @@
 #include "gameobject/Mario.h"
 #include "gameobject/Pipe.h"
 #include "gameobject/Platform.h"
+#include "gameobject/GroundBlock.h"
 #include "gameplay/GameManager.h"
 #include "gameplay/SceneManager.h"
 #include "render/Camera.h"
@@ -338,7 +339,18 @@ void LoadMap(LPCWSTR filePath) {
       float realX = c * 15.0f;
       float realY = ((rows - r - 1) * 15.0f) + 35.0f;
 
-      if (tileID == 1 || tileID == 2) {
+      if (tileID == 1) {
+        GroundBlock *ground = new GroundBlock(realX, realY, 201);
+        g_objectList.push_back(ground);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(ground);
+        }
+      } else if (tileID == 2) {
         Brick *brick = new Brick(realX, realY, 201);
         g_objectList.push_back(brick);
 
@@ -621,15 +633,14 @@ void LoadResources() {
   sprites->Add(12, 469, 470, 500, 501, TEX_COMMON1);
 
   // Pipe (Default 3 blocks) & Supplementary Body
-  sprites->Add(13, 5, 28, 36, 73, TEX_COMMON2); // Default Pipe (32x46px)
-  sprites->Add(16, 5, 60, 36, 75, TEX_COMMON2); // Supplementary Body (32x16px)
+  sprites->Add(13, 5, 28, 36, 73, TEX_COMMON2);
+  sprites->Add(16, 5, 60, 36, 75, TEX_COMMON2);
 
   // Breakable
   sprites->Add(14, 453, 152, 468, 167, TEX_COMMON1);
 
   // Lucky Block
   sprites->Add(15, 185, 7, 200, 22, TEX_COMMON2);
-
 
   // Bounding Box
   sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
