@@ -1,14 +1,18 @@
 #include "Mario.h"
+#include "../render/Camera.h"
 #include "../animation/Animations.h"
 #include "../audio/AudioManager.h"
 #include "../gameobject/Breakable.h"
 #include "../gameobject/Brick.h"
+#include "../gameobject/Block.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
-#include "../gameobject/Flag.h"
+#include "../gameobject/Koopa.h"
+
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
 #include "../gameobject/Fireball.h"
+#include "../gameobject/RollingBall.h"
 #include "../gameplay/GameManager.h"
 #include "../gameplay/SceneManager.h"
 #include "../physics/Collision.h"
@@ -17,6 +21,7 @@
 #include <cmath>
 
 #include "../input/MarioInputHandler.h"
+#include "SukunaSlash.h"
 
 Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   isOnGround = false;
@@ -24,6 +29,7 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
 
   this->isBig = isBig;
   this->isFire = isFire;
+  this->isSukuna = false;
 
   if (isBig || isFire) {
     width = MARIO_BIG_WIDTH;
@@ -43,9 +49,13 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   untouchable = false;
   untouchableStart = 0;
   untouchableDuration = 0;
+  isCastingSkill = false;
   isStarInvincible = false;
-  isEnteringPipe = false;
+  isPipeAnimating = false;
   lastShootTime = 0;
+
+  // Gán layer cho Mario
+  layer = LAYER_PLAYER;
 
   // Khởi tạo trạng thái P-Meter
   pMeterLevel = 0;
@@ -53,6 +63,7 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
 
   isPressingDown = false;
   inputHandler = new MarioInputHandler(this);
+  layer = LAYER_PLAYER;
 }
 
 Mario::~Mario() {
@@ -107,20 +118,26 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
   }
 
   // Xử lý chui ống
-  if (isEnteringPipe) {
+  if (isPipeAnimating) {
     vy = -0.05f;
     y += vy * dt;
 
     if (pipeEnterStartY - y > height) {
       x = pipeDestX;
       y = pipeDestY;
-      isEnteringPipe = false;
+      isPipeAnimating = false;
+      layer = LAYER_PLAYER; // Trả Mario về layer bình thường
       vy = 0;
     }
     return;
   }
 
-  if (inputHandler != NULL) {
+  // Khi qua màn, Mario tự động đi bộ về bên phải
+  if (GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin()) {
+    vx = MARIO_WALKING_SPEED;
+    nx = 1;
+    // Bỏ qua input từ người chơi
+  } else if (inputHandler != NULL) {
     inputHandler->KeyState(NULL); // Update continuous keyboard state
   }
 
@@ -145,23 +162,28 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     vx = -MARIO_WALKING_SPEED;
 
   // XỬ LÝ PMETER THEO LOGIC VẬT LÝ
-  if (std::abs(vx) >= MARIO_WALKING_SPEED * 0.95f) {
-    if (pMeterLevel < 7) {
-      pMeterTimer += dt;
-      if (pMeterTimer >= PMETER_STEP_UP_TIME) {
-        pMeterLevel++;
-        pMeterTimer = 0;
-      }
-    }
+  if (GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin()) {
+    pMeterLevel = 0;
+    pMeterTimer = 0;
   } else {
-    if (pMeterLevel > 0) {
-      pMeterTimer += dt;
-      if (pMeterTimer >= PMETER_STEP_DOWN_TIME) {
-        pMeterLevel--;
-        pMeterTimer = 0;
+    if (std::abs(vx) >= MARIO_WALKING_SPEED * 0.95f) {
+      if (pMeterLevel < 7) {
+        pMeterTimer += dt;
+        if (pMeterTimer >= PMETER_STEP_UP_TIME) {
+          pMeterLevel++;
+          pMeterTimer = 0;
+        }
       }
     } else {
-      pMeterTimer = 0;
+      if (pMeterLevel > 0) {
+        pMeterTimer += dt;
+        if (pMeterTimer >= PMETER_STEP_DOWN_TIME) {
+          pMeterLevel--;
+          pMeterTimer = 0;
+        }
+      } else {
+        pMeterTimer = 0;
+      }
     }
   }
 
@@ -193,42 +215,21 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                                           sb, t, temp_nx, temp_ny);
 
       if (t < 1.0f && temp_nx != 0) {
-        if (dynamic_cast<Brick *>(e) || dynamic_cast<Pipe *>(e) ||
-            dynamic_cast<Breakable *>(e) || dynamic_cast<LuckyBlock *>(e)) {
+        if (dynamic_cast<Block *>(e) && !dynamic_cast<Platform *>(e)) {
           if (t < min_tx) {
             min_tx = t;
             nx_col = temp_nx;
           }
-        } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
-          if (!enemy->IsDied()) {
-            TakeDamage();
-          }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
-          if (buffType == 301) {
-            if (!isBig && !isFire) {
-              GameManager::GetInstance()->SetLives(2);
-              SetBig(true);
-              OutputDebugStringA("Mario became BIG\n");
-            }
-          } else {
-            if (!isFire) {
-              GameManager::GetInstance()->SetLives(3);
-              SetFire(true);
-              OutputDebugStringA("Mario became FIRE\n");
-            }
+          int cardType = 2; // Default to Flower
+          if (buffType == 301) cardType = 1; // Mushroom
+          else if (buffType == 303) cardType = 3; // Star
+
+          if (GameManager::GetInstance()->AddCard(cardType)) {
+            buff->Delete();
+            OutputDebugStringA("Buff added to inventory\n");
           }
-          buff->Delete();
-        }
-        // CHẠM CỜ THEO TRỤC X
-        else if (Flag *flag = dynamic_cast<Flag *>(e)) {
-          int currentLevel = GameManager::GetInstance()->GetLevel();
-          if (currentLevel == 5) {
-            SceneManager::GetInstance()->ProcessGameWin();
-          } else {
-            SceneManager::GetInstance()->ProcessLevelClear();
-          }
-          OutputDebugStringA("Win level\n");
         }
       }
     }
@@ -237,6 +238,39 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
   x += min_tx * dx + nx_col * 0.01f;
   if (nx_col != 0)
     vx = 0.0f;
+
+  // Khóa mốc x = 0 (vạch xuất phát) để Mario không đi ngược ra khỏi map
+  if (x < 0.0f) {
+    x = 0.0f;
+  }
+  
+  // Khi Mario đi tới hoặc vượt qua sát mép phải bản đồ
+  float mapEnd = GameManager::GetInstance()->GetMapRightEdge();
+  if (mapEnd > 0) {
+    if (!GameManager::GetInstance()->IsLevelClear() && !GameManager::GetInstance()->IsGameWin()) {
+      if (x > mapEnd - width) {
+        int currentLevel = GameManager::GetInstance()->GetLevel();
+        if (currentLevel == 5) {
+          SceneManager::GetInstance()->ProcessGameWin();
+        } else {
+          SceneManager::GetInstance()->ProcessLevelClear();
+        }
+      }
+    }
+  } else {
+    // Fallback if mapEnd is not set
+    float rightEdge = Camera::GetInstance()->GetMapWidth();
+    if (x > rightEdge - width) {
+      if (!GameManager::GetInstance()->IsLevelClear() && !GameManager::GetInstance()->IsGameWin()) {
+        int currentLevel = GameManager::GetInstance()->GetLevel();
+        if (currentLevel == 5) {
+          SceneManager::GetInstance()->ProcessGameWin();
+        } else {
+          SceneManager::GetInstance()->ProcessLevelClear();
+        }
+      }
+    }
+  }
 
   // QUÉT VA CHẠM TRỤC Y (RƠI / NHẢY)
   GetBoundingBox(ml, mt, mr, mb);
@@ -257,8 +291,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                                           sb, t, temp_nx, temp_ny);
 
       if (t < 1.0f && temp_ny != 0) {
-        if (dynamic_cast<Brick *>(e) || dynamic_cast<Pipe *>(e) ||
-            dynamic_cast<Breakable *>(e) || dynamic_cast<LuckyBlock *>(e)) {
+        if (dynamic_cast<Block *>(e) && !dynamic_cast<Platform *>(e)) {
           if (t < min_ty) {
             min_ty = t;
             ny_col = temp_ny;
@@ -272,7 +305,8 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                 float marioCenterX = x + width / 2;
 
                 if (abs(pipeCenterX - marioCenterX) < 10.0f) {
-                  isEnteringPipe = true;
+                  isPipeAnimating = true;
+                  layer = LAYER_BACKGROUND; // Chìm ra sau ống
                   pipeDestX = pipe->GetDestX();
                   pipeDestY = pipe->GetDestY();
                   pipeEnterStartY = y;
@@ -309,43 +343,27 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             }
           }
         } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
-          if (!enemy->IsDied()) {
+          if (!enemy->IsDied() && !enemy->IsFreezed()) {
             if (temp_ny == 1) {
+              // Mario dẫm lên đầu enemy
               vy = MARIO_JUMP_SPEED_Y * 0.5f;
               OutputDebugStringA("Enemy stomped!\n");
-              enemy->SetDied(true);
-            } else if (temp_ny == -1) {
-              OutputDebugStringA("Mario damaged by enemy\n");
-              TakeDamage();
+              enemy->OnStomped(this);
             }
+            // Lưu ý: va chạm ngang với enemy được xử lý ở phần AABB check bên dưới
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
-          if (buffType == 301) {
-            if (!isBig && !isFire) {
-              GameManager::GetInstance()->SetLives(2);
-              SetBig(true);
-              OutputDebugStringA("Mario became BIG\n");
-            }
-          } else {
-            if (!isFire) {
-              GameManager::GetInstance()->SetLives(3);
-              SetFire(true);
-              OutputDebugStringA("Mario became FIRE\n");
-            }
+          int cardType = 2; // Default to Flower
+          if (buffType == 301) cardType = 1; // Mushroom
+          else if (buffType == 303) cardType = 3; // Star
+
+          if (GameManager::GetInstance()->AddCard(cardType)) {
+            buff->Delete();
+            OutputDebugStringA("Buff added to inventory\n");
           }
-          buff->Delete();
         }
-        // CHẠM CỜ THEO TRỤC Y
-        else if (Flag *flag = dynamic_cast<Flag *>(e)) {
-          int currentLevel = GameManager::GetInstance()->GetLevel();
-          if (currentLevel == 5) {
-            SceneManager::GetInstance()->ProcessGameWin();
-          } else {
-            SceneManager::GetInstance()->ProcessLevelClear();
-          }
-          OutputDebugStringA("Win level\n");
-        }
+
       }
     }
   }
@@ -358,6 +376,57 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
       isOnGround = true;
   } else {
     isOnGround = false;
+  }
+
+  // KIỂM TRA VA CHẠM NGANG VỚI ENEMY (AABB overlap - xử lý cả khi mario đứng yên)
+  // Thực hiện sau khi đã di chuyển xong để đảm bảo chính xác
+  if (!untouchable && !isDead) {
+    float fl, ft, fr, fb;
+    GetBoundingBox(fl, ft, fr, fb);
+
+    for (UINT i = 0; i < coObjects->size(); i++) {
+      GameObject *e = coObjects->at(i);
+      if (e == this) continue;
+
+      Enemy *enemy = dynamic_cast<Enemy *>(e);
+      if (!enemy || enemy->IsDied() || enemy->IsFreezed()) continue;
+
+      float el, et, er, eb;
+      enemy->GetBoundingBox(el, et, er, eb);
+
+      // Kiểm tra AABB overlap theo cả 2 trục
+      if (fr <= el || fl >= er || fb <= et || ft >= eb) continue;
+
+      // MTV (Minimum Translation Vector): axis có overlap nhỏ hơn = hướng va chạm
+      float actualOverlapX = min(fr, er) - max(fl, el);
+      float actualOverlapY = min(fb, eb) - max(ft, et);
+
+      Koopa *koopa = dynamic_cast<Koopa *>(enemy);
+
+      if (actualOverlapX >= actualOverlapY) {
+        // Va chạm theo chiều dọc (dẫm hoặc đập đầu) → đã được xử lý bởi swept AABB
+        continue;
+      }
+
+      // Va chạm theo chiều ngang (side hit)
+      if (koopa && (koopa->GetState() == KOOPA_STATE_SHELL ||
+                    koopa->GetState() == KOOPA_STATE_SHELL_SHAKING)) {
+        // Đá mai rùa nằm yên — chỉ kick nếu shell không mới vừa được tạo
+        if (!koopa->IsJustShelled()) {
+          int dir = ((fl + fr) / 2.0f < (el + er) / 2.0f) ? 1 : -1;
+          koopa->Kick(dir);
+        }
+      } else if (koopa && koopa->GetState() == KOOPA_STATE_SHELL_SPINNING) {
+        // Mai rùa đang xoay: chỉ damage nếu HẾT cooldown kick
+        // (tránh trường hợp Mario đá xong chạy theo bị dame ngay)
+        if (!koopa->IsKickedCooldown()) {
+          TakeDamage();
+        }
+      } else {
+        // Đụng enemy bình thường → nhận damage
+        TakeDamage();
+      }
+    }
   }
 
   if (IsDied()) {
@@ -376,8 +445,29 @@ void Mario::Render() {
     return;
   }
 
-  if (isFire) {
-    if (!isOnGround) {
+  if (isSukuna) {
+    if (isCastingSkill) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(708)
+                     : Animations::GetInstance()->Get(709);
+    } else if (!isOnGround) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(704)
+                     : Animations::GetInstance()->Get(705);
+    } else {
+      if (isSkidding)
+        ani = (nx > 0) ? Animations::GetInstance()->Get(707)
+                       : Animations::GetInstance()->Get(706);
+      else if (vx == 0.0f)
+        ani = (nx > 0) ? Animations::GetInstance()->Get(700)
+                       : Animations::GetInstance()->Get(701);
+      else
+        ani = (nx > 0) ? Animations::GetInstance()->Get(702)
+                       : Animations::GetInstance()->Get(703);
+    }
+  } else if (isFire) {
+    if (isCastingSkill) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(508)
+                     : Animations::GetInstance()->Get(509);
+    } else if (!isOnGround) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(504)
                      : Animations::GetInstance()->Get(505);
     } else {
@@ -392,7 +482,10 @@ void Mario::Render() {
                        : Animations::GetInstance()->Get(503);
     }
   } else if (isBig) {
-    if (!isOnGround) {
+    if (isCastingSkill) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(408)
+                     : Animations::GetInstance()->Get(409);
+    } else if (!isOnGround) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(404)
                      : Animations::GetInstance()->Get(405);
     } else {
@@ -482,7 +575,9 @@ void Mario::SetBig(bool big) {
     width = MARIO_SMALL_WIDTH;
     height = MARIO_SMALL_HEIGHT;
     isFire = false; // Thu nhỏ thì mất luôn lửa
+    isSukuna = false; // Thu nhỏ thì mất luôn Sukuna
     GameManager::GetInstance()->SetMarioFire(false);
+    GameManager::GetInstance()->SetMarioSukuna(false);
   }
 }
 
@@ -522,7 +617,68 @@ void Mario::ShootFireball() {
   g_objectList.push_back(fb);
   AddObjectToGrid(fb);
 
+  AudioManager::GetInstance()->PlaySFX("fireball");
   lastShootTime = GetTickCount64();
+}
+
+#include "FireBlast.h"
+
+bool Mario::ShootFireBlast() {
+  if (!isFire) return false;
+
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float spawnX = (nx > 0) ? (x + width) : (x - FIREBLAST_WIDTH);
+  float spawnY = y + (height / 2.0f) - (FIREBLAST_HEIGHT / 2.0f);
+
+
+
+  FireBlast* fb = new FireBlast(spawnX, spawnY, nx > 0 ? 1 : -1);
+  g_objectList.push_back(fb);
+  AddObjectToGrid(fb);
+
+  lastShootTime = GetTickCount64();
+  return true;
+}
+
+bool Mario::ShootRollingBall() {
+  if (!isBig) return false;
+
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float spawnX = (nx > 0) ? (x + width) : (x - ROLLINGBALL_WIDTH);
+  float spawnY = y + 2.0f;
+
+  float ml = spawnX;
+  float mt = spawnY;
+  float mr = spawnX + ROLLINGBALL_WIDTH;
+  float mb = spawnY + ROLLINGBALL_HEIGHT;
+
+  bool canSpawn = true;
+  for (size_t i = 0; i < g_objectList.size(); i++) {
+    GameObject* e = g_objectList[i];
+    if (e == this || e->IsDeleted()) continue;
+    
+    if (dynamic_cast<Block*>(e) && !dynamic_cast<Platform*>(e)) {
+      float sl, st, sr, sb;
+      e->GetBoundingBox(sl, st, sr, sb);
+      if (mr > sl && ml < sr && mb > st && mt < sb) {
+        canSpawn = false;
+        break;
+      }
+    }
+  }
+
+  if (!canSpawn) return false;
+
+  RollingBall* rb = new RollingBall(spawnX, spawnY, nx);
+  g_objectList.push_back(rb);
+  AddObjectToGrid(rb);
+
+  lastShootTime = GetTickCount64();
+  return true;
 }
 
 void Mario::Die() {
@@ -544,7 +700,16 @@ void Mario::TakeDamage() {
       GameManager::GetInstance()->IsLevelClear())
     return;
 
-  if (isFire) {
+  if (isSukuna) {
+    SetSukuna(false);
+    GameManager::GetInstance()->SetMarioSukuna(false);
+    SetBig(true);
+    GameManager::GetInstance()->SetLives(2);
+    untouchable = true;
+    untouchableStart = GetTickCount64();
+    untouchableDuration = MARIO_UNTOUCHABLE_TIME;
+    OutputDebugStringA("Mario lost Sukuna -> Big Mario + invincible\n");
+  } else if (isFire) {
     SetFire(false);
     GameManager::GetInstance()->SetLives(2);
     untouchable = true;
@@ -572,6 +737,7 @@ void Mario::Jump() {
   if (isOnGround) {
     vy = MARIO_JUMP_SPEED_Y;
     isOnGround = false;
+    AudioManager::GetInstance()->PlaySFX("mario_jump");
   }
 }
 
@@ -582,4 +748,43 @@ void Mario::SetHoldingJump(bool holding) {
   if (!holding && vy > MARIO_JUMP_DEFLECT_SPEED) {
     vy = MARIO_JUMP_DEFLECT_SPEED;
   }
+}
+
+void Mario::SetSukuna(bool sukuna) {
+  if (sukuna && !isSukuna) {
+    if (!isBig) {
+      isBig = true;
+      width = MARIO_BIG_WIDTH;
+      height = MARIO_BIG_HEIGHT;
+    }
+    
+    // Bật trạng thái chớp (tàng hình) và phát âm thanh
+    untouchable = true;
+    untouchableStart = GetTickCount64();
+    untouchableDuration = 1000;
+    AudioManager::GetInstance()->PlaySFX("power_up");
+
+    // Tạm dừng game 1 giây khi biến hóa
+    SceneManager::GetInstance()->ProcessTransform();
+  }
+  isSukuna = sukuna;
+  GameManager::GetInstance()->SetMarioSukuna(sukuna);
+}
+
+void Mario::ShootSukunaSlash() {
+  if (!isSukuna) return;
+  if (GetTickCount64() - lastShootTime < 400) return; // Cooldown 0.4s
+
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float spawnX = (nx > 0) ? (x + width) : (x - 24.0f);
+  float spawnY = y + height / 2.0f - 12.0f;
+
+  SukunaSlash* proj = new SukunaSlash(spawnX, spawnY, nx);
+  g_objectList.push_back(proj);
+  AddObjectToGrid(proj);
+
+  AudioManager::GetInstance()->PlaySFX("fireball");
+  lastShootTime = GetTickCount64();
 }

@@ -16,4 +16,5 @@ class Fireball : public Projectile {
 public:
     Fireball(float x, float y, int direction);
     void Update(DWORD dt, vector<GameObject*>* coObjects) override;
+    void Render() override;
 };

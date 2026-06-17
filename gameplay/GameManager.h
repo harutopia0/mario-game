@@ -20,10 +20,12 @@ private:
 	int lives;
 	int time;
 	DWORD timeAccumulator;
+	float mapRightEdge;
 
 	// Form Mario (giữ qua các màn)
 	bool isMarioBig;
 	bool isMarioFire;
+	bool isMarioSukuna;
 
 public:
 	static GameManager* GetInstance();
@@ -32,6 +34,8 @@ public:
 	// Level
 	void SetLevel(int level) { this->level = level; }
 	int GetLevel() { return level; }
+	void SetMapRightEdge(float edge) { this->mapRightEdge = edge; }
+	float GetMapRightEdge() { return mapRightEdge; }
 
 	// Game state flags
 	void SetGameOver(bool isGameOver) { this->isGameOver = isGameOver; }
@@ -51,7 +55,7 @@ public:
 	void ResetClearedLevels();
 
 	// Quản lý thẻ bài
-	void AddCard(int cardType);
+	bool AddCard(int cardType);
 	int* GetHoldingCards() { return holdingCards; }
 	void ClearHoldingCards();
 	int UseCard(int slot);  // Sử dụng thẻ tại vị trí slot (0, 1, 2), trả về loại thẻ
@@ -80,6 +84,8 @@ public:
 	bool IsMarioBig() { return isMarioBig; }
 	void SetMarioFire(bool fire) { isMarioFire = fire; }
 	bool IsMarioFire() { return isMarioFire; }
+	void SetMarioSukuna(bool sukuna) { isMarioSukuna = sukuna; }
+	bool IsMarioSukuna() { return isMarioSukuna; }
 
 
 	// Reset một số giá trị khi vào màn chơi mới

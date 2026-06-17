@@ -72,10 +72,34 @@ void Game::InitDirectX(HWND hWnd)
 
 bool Game::LoadTexture(LPCWSTR filePath, ID3D10ShaderResourceView** outTexture)
 {
-    HRESULT hr = D3DX10CreateShaderResourceViewFromFile(
+    D3DX10_IMAGE_INFO imageInfo;
+    HRESULT hr = D3DX10GetImageInfoFromFile(filePath, NULL, &imageInfo, NULL);
+    if (FAILED(hr))
+    {
+        OutputDebugString(L"[ERROR] D3DX10GetImageInfoFromFile failed!\n");
+        return false;
+    }
+
+    D3DX10_IMAGE_LOAD_INFO info;
+    ZeroMemory(&info, sizeof(D3DX10_IMAGE_LOAD_INFO));
+    info.Width = imageInfo.Width;
+    info.Height = imageInfo.Height;
+    info.Depth = imageInfo.Depth;
+    info.FirstMipLevel = 0;
+    info.MipLevels = 1;
+    info.Usage = D3D10_USAGE_DEFAULT;
+    info.BindFlags = D3DX10_DEFAULT;
+    info.CpuAccessFlags = D3DX10_DEFAULT;
+    info.MiscFlags = D3DX10_DEFAULT;
+    info.Format = imageInfo.Format;
+    info.Filter = D3DX10_FILTER_NONE;
+    info.MipFilter = D3DX10_DEFAULT;
+    info.pSrcInfo = &imageInfo;
+
+    hr = D3DX10CreateShaderResourceViewFromFile(
         pDevice,
         filePath,
-        NULL,
+        &info,
         NULL,
         outTexture,
         NULL
@@ -83,7 +107,7 @@ bool Game::LoadTexture(LPCWSTR filePath, ID3D10ShaderResourceView** outTexture)
 
     if (FAILED(hr))
     {
-        OutputDebugString(L"[ERROR] Failed to load texture!\n");
+        OutputDebugString(L"[ERROR] Failed to load texture with custom load info!\n");
         return false;
     }
 

@@ -7,7 +7,7 @@
 #define MARIO_BIG_WIDTH 15.0f
 #define MARIO_BIG_HEIGHT 27.0f
 
-#define MARIO_JUMP_SPEED_Y      0.27f 
+#define MARIO_JUMP_SPEED_Y      0.31f 
 #define MARIO_JUMP_DEFLECT_SPEED 0.1f
 #define MARIO_GRAVITY           -0.00067f
 #define MARIO_WALKING_SPEED		0.15f
@@ -29,6 +29,7 @@ private:
 	float width, height;
 	bool isBig;
 	bool isFire;
+	bool isSukuna;
 	bool isDead;
 	float pMeterValue;
 	int pMeterLevel;
@@ -37,12 +38,18 @@ public:
 	DWORD deathStart;
 	bool isOnGround;
 
-	bool isEnteringPipe;
+	bool isPipeAnimating;
 	float pipeDestX;
 	float pipeDestY;
 	float pipeEnterStartY;
 
+	bool isSlidingPole = false;
+
 	bool isPressingDown;
+
+	bool isCastingSkill;
+	void SetCastingSkill(bool casting) { isCastingSkill = casting; }
+	bool IsCastingSkill() const { return isCastingSkill; }
 
 	float ax;
 	MarioInputHandler* inputHandler;
@@ -65,7 +72,14 @@ public:
 	
 	void SetFire(bool fire);
 	bool IsFire() const { return isFire; }
+	
+	void SetSukuna(bool sukuna);
+	bool IsSukuna() const { return isSukuna; }
+
 	void ShootFireball();
+	bool ShootFireBlast();
+	bool ShootRollingBall();
+	void ShootSukunaSlash();
 	DWORD lastShootTime;
 
 	void Die();

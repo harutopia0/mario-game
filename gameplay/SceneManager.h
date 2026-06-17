@@ -40,6 +40,9 @@ private:
     DWORD gameWinStartTime;
     DWORD transformStartTime;
 
+    bool isMarioCastingSkill;
+    DWORD castSkillStartTime;
+
     // Cơ chế Roulette Thẻ bài khi thắng màn
     int rouletteCardType;
     DWORD lastRouletteTick;
@@ -52,6 +55,9 @@ public:
     void Update(DWORD dt);
     void Render();
     void Cleanup();
+
+    void ProcessMarioCastSkill(int cardType, int slot);
+    bool IsCastingSkill() const { return isMarioCastingSkill; }
 
     GameState GetState() const { return currentState; }
     void SwitchTo(GameState newState);

@@ -23,6 +23,7 @@ GameManager* GameManager::GetInstance()
 
         __instance->isMarioBig = false;
         __instance->isMarioFire = false;
+        __instance->isMarioSukuna = false;
     }
     return __instance;
 }
@@ -41,16 +42,17 @@ void GameManager::ResetClearedLevels()
     for (int i = 0; i < 6; i++) clearedLevels[i] = false;
 }
 
-void GameManager::AddCard(int cardType)
+bool GameManager::AddCard(int cardType)
 {
     for (int i = 0; i < 3; i++)
     {
         if (holdingCards[i] == 0)
         {
             holdingCards[i] = cardType;
-            break;
+            return true;
         }
     }
+    return false;
 }
 
 void GameManager::ClearHoldingCards()
@@ -74,6 +76,8 @@ void GameManager::ResetTime()
 
 void GameManager::UpdateTime(DWORD dt)
 {
+    if (isLevelClear || isGameWin) return;
+
     if (time > 0)
     {
         timeAccumulator += dt;

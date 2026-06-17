@@ -29,7 +29,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -141,16 +141,22 @@
     <ClCompile Include="gameobject\Brick.cpp" />
     <ClCompile Include="gameobject\Buff.cpp" />
     <ClCompile Include="gameobject\Enemy.cpp" />
+    <ClCompile Include="gameobject\Goomba.cpp" />
+    <ClCompile Include="gameobject\Koopa.cpp" />
     <ClCompile Include="gameobject\Fireball.cpp" />
-    <ClCompile Include="gameobject\Flag.cpp" />
+    <ClCompile Include="gameobject\FireBlast.cpp" />
+
     <ClCompile Include="gameobject\Flower.cpp" />
     <ClCompile Include="gameobject\Ground.cpp" />
+    <ClCompile Include="gameobject\GroundBlock.cpp" />
     <ClCompile Include="gameobject\LuckyBlock.cpp" />
     <ClCompile Include="gameobject\Mario.cpp" />
     <ClCompile Include="gameobject\Mushroom.cpp" />
     <ClCompile Include="gameobject\Pipe.cpp" />
     <ClCompile Include="gameobject\Platform.cpp" />
     <ClCompile Include="gameobject\Projectile.cpp" />
+    <ClCompile Include="gameobject\RollingBall.cpp" />
+    <ClCompile Include="gameobject\SukunaSlash.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
     <ClCompile Include="gameplay\SceneManager.cpp" />
     <ClCompile Include="input\MarioInputHandler.cpp" />
@@ -174,10 +180,17 @@
     <ClInclude Include="debug.h" />
     <ClInclude Include="gameobject\Breakable.h" />
     <ClInclude Include="gameobject\Brick.h" />
+    <ClInclude Include="gameobject\Block.h" />
+    <ClInclude Include="gameobject\StaticBlock.h" />
+    <ClInclude Include="gameobject\DynamicBlock.h" />
+    <ClInclude Include="gameobject\GroundBlock.h" />
     <ClInclude Include="gameobject\Buff.h" />
     <ClInclude Include="gameobject\Enemy.h" />
+    <ClInclude Include="gameobject\Goomba.h" />
+    <ClInclude Include="gameobject\Koopa.h" />
     <ClInclude Include="gameobject\Fireball.h" />
-    <ClInclude Include="gameobject\Flag.h" />
+    <ClInclude Include="gameobject\FireBlast.h" />
+
     <ClInclude Include="gameobject\Flower.h" />
     <ClInclude Include="gameobject\Ground.h" />
     <ClInclude Include="gameobject\LuckyBlock.h" />
@@ -186,6 +199,8 @@
     <ClInclude Include="gameobject\Pipe.h" />
     <ClInclude Include="gameobject\Platform.h" />
     <ClInclude Include="gameobject\Projectile.h" />
+    <ClInclude Include="gameobject\RollingBall.h" />
+    <ClInclude Include="gameobject\SukunaSlash.h" />
     <ClInclude Include="gameplay\GameManager.h" />
     <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />

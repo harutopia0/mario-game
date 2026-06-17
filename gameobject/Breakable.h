@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/GameObject.h"
+#include "DynamicBlock.h"
 
-class Breakable : public GameObject
+class Breakable : public DynamicBlock
 {
 private:
     float width;
@@ -14,5 +14,5 @@ public:
     void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
     void Render() override;
 
-    void Break();
+    virtual void Break(bool dropItem = true);
 };

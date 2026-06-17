@@ -1,7 +1,7 @@
 #pragma once
-#include "../core/GameObject.h"
+#include "StaticBlock.h"
 
-class Platform : public GameObject
+class Platform : public StaticBlock
 {
 private:
     float width;
