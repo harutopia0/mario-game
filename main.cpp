@@ -7,6 +7,8 @@
 #include "gameobject/Brick.h"
 #include "gameobject/Buff.h"
 #include "gameobject/Enemy.h"
+#include "gameobject/Goomba.h"
+#include "gameobject/Koopa.h"
 
 #include "gameobject/LuckyBlock.h"
 #include "gameobject/Mario.h"
@@ -53,6 +55,8 @@ enum TEXTURE_ID {
   TEX_COMMON2 = 2,
   TEX_FIRE_MARIO = 3,
   TEX_SUKUNA_MARIO = 4,
+  TEX_ENEMIES_1 = 10,   // enemies_transparent.png (Goomba, Green Koopa walk)
+  TEX_ENEMIES_2 = 15,   // enemies_transparent_3.png (Koopa shell, Red Koopa, Flying Koopa)
   TEX_HUD = 20,
   TEX_INTRO = 30,
   TEX_BBOX = 99,
@@ -421,6 +425,50 @@ void LoadMap(LPCWSTR filePath) {
             }
           }
         }
+      } else if (tileID == 11) {
+        Goomba *goomba = new Goomba(realX, realY + 2.0f, GOOMBA_TYPE_NORMAL);
+        g_objectList.push_back(goomba);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(goomba);
+        }
+      } else if (tileID == 12) {
+        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_GREEN);
+        g_objectList.push_back(koopa);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(koopa);
+        }
+      } else if (tileID == 13) {
+        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_RED);
+        g_objectList.push_back(koopa);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(koopa);
+        }
+      } else if (tileID == 14) {
+        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_GREEN_FLYING);
+        g_objectList.push_back(koopa);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(koopa);
+        }
       }
     }
   }
@@ -491,6 +539,10 @@ void LoadResources() {
   textures->Add(TEX_MAP_LEVEL, L"assets/map-level.png");
 
   textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
+
+  // Enemy sprite sheets from Game-Thay-Dung
+  textures->Add(TEX_ENEMIES_1, L"assets/enemies_transparent.png");
+  textures->Add(TEX_ENEMIES_2, L"assets/enemies_transparent_3.png");
 
   // ==========================================
   // 2. CẮT SPRITES
@@ -640,8 +692,17 @@ void LoadResources() {
   // Bounding Box
   sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
 
-  // Enemy
-  sprites->Add(100, 0, 0, 16, 16, TEX_ENEMY_TEST);
+  // Enemy (Goomba & Koopa sprites)
+  sprites->Add(100, 0, 16, 15, 31, TEX_ENEMY_TEST); // Giữ nguyên ID 100 làm mặc định nếu cần
+  sprites->Add(30001, 0, 16, 15, 31, TEX_ENEMY_TEST);
+  sprites->Add(30002, 16, 16, 31, 31, TEX_ENEMY_TEST);
+  sprites->Add(30003, 32, 16, 47, 31, TEX_ENEMY_TEST);
+  sprites->Add(30101, 96, 0, 111, 31, TEX_ENEMY_TEST);
+  sprites->Add(30102, 112, 0, 127, 31, TEX_ENEMY_TEST);
+  sprites->Add(30103, 160, 0, 175, 31, TEX_ENEMY_TEST);
+  sprites->Add(30104, 176, 0, 191, 31, TEX_ENEMY_TEST);
+  sprites->Add(30105, 192, 0, 207, 31, TEX_ENEMY_TEST);
+  sprites->Add(30106, 208, 0, 223, 31, TEX_ENEMY_TEST);
 
   // Potion
   sprites->Add(101, 0, 0, 16, 16, TEX_POTION);
@@ -878,6 +939,162 @@ void LoadResources() {
   ani->Add(101, 1000);
   animations->Add(301, ani); // Potion
 
+  // ==========================================
+  // GOOMBA SPRITES (from enemies_transparent.png = TEX_ENEMIES_1, texID=10)
+  // ==========================================
+  // Normal Goomba walk
+  sprites->Add(31001, 32, 348, 47, 365, TEX_ENEMIES_1);
+  sprites->Add(31002, 53, 348, 68, 365, TEX_ENEMIES_1);
+  // Normal Goomba flat (die)
+  sprites->Add(32001, 11, 356, 26, 365, TEX_ENEMIES_1);
+  // Normal Goomba die reverse
+  sprites->Add(32002, 170, 348, 185, 365, TEX_ENEMIES_1);
+
+
+
+  // ==========================================
+  // GREEN KOOPA SPRITES (from enemies_transparent.png = TEX_ENEMIES_1)
+  // ==========================================
+  // Walk left
+  sprites->Add(36001, 71, 66, 86, 93, TEX_ENEMIES_1);
+  sprites->Add(36002, 88, 66, 103, 93, TEX_ENEMIES_1);
+  // Walk right
+  sprites->Add(36501, 638, 66, 653, 93, TEX_ENEMIES_1);
+  sprites->Add(36502, 655, 66, 670, 93, TEX_ENEMIES_1);
+  // Die (flipped upside-down)
+  sprites->Add(39001, 210, 348, 227, 364, TEX_ENEMIES_1);
+
+  // ==========================================
+  // GREEN KOOPA SHELL SPRITES (from enemies_transparent_3.png = TEX_ENEMIES_2)
+  // ==========================================
+  // Shell (sleep)
+  sprites->Add(37001, 49, 103, 66, 120, TEX_ENEMIES_2);
+  // Shell reverse (sleep upside-down)
+  sprites->Add(37501, 328, 103, 347, 120, TEX_ENEMIES_2);
+  // Slip (spinning shell)
+  sprites->Add(38001, 14, 103, 31, 120, TEX_ENEMIES_2);
+  sprites->Add(38002, 14, 128, 31, 145, TEX_ENEMIES_2);
+  sprites->Add(38003, 14, 153, 31, 170, TEX_ENEMIES_2);
+  // Reborn (shaking shell)
+  sprites->Add(40001, 83, 103, 102, 120, TEX_ENEMIES_2);
+
+  // ==========================================
+  // RED KOOPA SPRITES (from enemies_transparent_3.png = TEX_ENEMIES_2)
+  // ==========================================
+  // Walk left
+  sprites->Add(106001, 124, 198, 141, 225, TEX_ENEMIES_2);
+  sprites->Add(106002, 164, 198, 181, 225, TEX_ENEMIES_2);
+  // Walk right
+  sprites->Add(106003, 254, 198, 271, 225, TEX_ENEMIES_2);
+  sprites->Add(106004, 214, 198, 231, 225, TEX_ENEMIES_2);
+  // Red shell (sleep)
+  sprites->Add(107001, 49, 203, 66, 220, TEX_ENEMIES_2);
+  // Red slip (spinning)
+  sprites->Add(108001, 14, 203, 31, 220, TEX_ENEMIES_2);
+  sprites->Add(108002, 14, 228, 31, 245, TEX_ENEMIES_2);
+  sprites->Add(108003, 14, 253, 31, 270, TEX_ENEMIES_2);
+  // Red reborn (shaking)
+  sprites->Add(110000, 83, 203, 102, 220, TEX_ENEMIES_2);
+
+  // ==========================================
+  // FLYING KOOPA (PARATROOPA) SPRITES (from enemies_transparent_3.png = TEX_ENEMIES_2)
+  // ==========================================
+  // Jump left
+  sprites->Add(71001, 164, 147, 181, 176, TEX_ENEMIES_2);
+  sprites->Add(71002, 44, 147, 61, 176, TEX_ENEMIES_2);
+  // Jump right
+  sprites->Add(71501, 214, 147, 231, 176, TEX_ENEMIES_2);
+  sprites->Add(71502, 334, 147, 351, 176, TEX_ENEMIES_2);
+
+  // ==========================================
+  // GOOMBA & KOOPA ANIMATIONS
+  // ==========================================
+
+  // --- Normal Goomba ---
+  ani = new Animation(150);
+  ani->Add(31001);
+  ani->Add(31002);
+  animations->Add(310, ani); // Goomba walk
+
+  ani = new Animation(100);
+  ani->Add(32001);
+  animations->Add(311, ani); // Goomba flat (die)
+
+  ani = new Animation(100);
+  ani->Add(32002);
+  animations->Add(316, ani); // Goomba die reverse
+
+
+
+  // --- Green Koopa ---
+  ani = new Animation(150);
+  ani->Add(36001);
+  ani->Add(36002);
+  animations->Add(312, ani); // Green Koopa walk left
+
+  ani = new Animation(150);
+  ani->Add(36501);
+  ani->Add(36502);
+  animations->Add(330, ani); // Green Koopa walk right
+
+  ani = new Animation(100);
+  ani->Add(37001);
+  animations->Add(313, ani); // Green Koopa shell static (sleep)
+
+  ani = new Animation(45);
+  ani->Add(37001);
+  ani->Add(38001);
+  ani->Add(38002);
+  ani->Add(38003);
+  animations->Add(314, ani); // Green Koopa shell spinning (slip)
+
+  ani = new Animation(100);
+  ani->Add(37001);
+  ani->Add(40001);
+  animations->Add(315, ani); // Green Koopa shell shaking (reborn)
+
+  ani = new Animation(100);
+  ani->Add(39001);
+  animations->Add(331, ani); // Green Koopa die (flipped)
+
+  // --- Red Koopa ---
+  ani = new Animation(150);
+  ani->Add(106001);
+  ani->Add(106002);
+  animations->Add(340, ani); // Red Koopa walk left
+
+  ani = new Animation(150);
+  ani->Add(106003);
+  ani->Add(106004);
+  animations->Add(341, ani); // Red Koopa walk right
+
+  ani = new Animation(100);
+  ani->Add(107001);
+  animations->Add(342, ani); // Red Koopa shell static (sleep)
+
+  ani = new Animation(45);
+  ani->Add(107001);
+  ani->Add(108001);
+  ani->Add(108002);
+  ani->Add(108003);
+  animations->Add(343, ani); // Red Koopa shell spinning (slip)
+
+  ani = new Animation(100);
+  ani->Add(107001);
+  ani->Add(110000);
+  animations->Add(344, ani); // Red Koopa shell shaking (reborn)
+
+  // --- Flying Koopa (Green Paratroopa) ---
+  ani = new Animation(100);
+  ani->Add(71001);
+  ani->Add(71002);
+  animations->Add(350, ani); // Flying Koopa jump left
+
+  ani = new Animation(100);
+  ani->Add(71501);
+  ani->Add(71502);
+  animations->Add(351, ani); // Flying Koopa jump right
+
   ani = new Animation(100);
   ani->Add(900, 1000);
 
@@ -922,6 +1139,8 @@ void LoadResources() {
       "star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
   AudioManager::GetInstance()->LoadSound("slash-sound",
                                          "assets/slash-sound.mp3");
+  AudioManager::GetInstance()->LoadSound("stomp", "assets/stomp.wav");
+  AudioManager::GetInstance()->LoadSound("kick", "assets/kick.wav");
 
   // Phát nhạc intro sau khi tất cả âm thanh đã được nạp xong
   AudioManager::GetInstance()->PlayMusic("intro_theme", true);
@@ -943,7 +1162,7 @@ void Cleanup() {
 }
 
 void SpawnEnemy(float x, float y) {
-  Enemy *enemy = new Enemy(x, y, 300);
+  Goomba *enemy = new Goomba(x, y, GOOMBA_TYPE_NORMAL);
   g_objectList.push_back(enemy);
   AddObjectToGrid(enemy);
 }

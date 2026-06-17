@@ -139,7 +139,6 @@ void SceneManager::SwitchTo(GameState newState) {
     g_objectList.insert(g_objectList.begin(), mario);
 
     // Spawn các objects cơ bản cho màn chơi
-    SpawnEnemy(200.0f, 200.0f);
 
     Buff *potion = new Buff(150.0f, 200.0f, 301);
     g_objectList.push_back(potion);

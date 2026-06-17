@@ -141,6 +141,8 @@
     <ClCompile Include="gameobject\Brick.cpp" />
     <ClCompile Include="gameobject\Buff.cpp" />
     <ClCompile Include="gameobject\Enemy.cpp" />
+    <ClCompile Include="gameobject\Goomba.cpp" />
+    <ClCompile Include="gameobject\Koopa.cpp" />
     <ClCompile Include="gameobject\Fireball.cpp" />
     <ClCompile Include="gameobject\FireBlast.cpp" />
 
@@ -184,6 +186,8 @@
     <ClInclude Include="gameobject\GroundBlock.h" />
     <ClInclude Include="gameobject\Buff.h" />
     <ClInclude Include="gameobject\Enemy.h" />
+    <ClInclude Include="gameobject\Goomba.h" />
+    <ClInclude Include="gameobject\Koopa.h" />
     <ClInclude Include="gameobject\Fireball.h" />
     <ClInclude Include="gameobject\FireBlast.h" />
 

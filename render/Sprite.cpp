@@ -47,6 +47,31 @@ void Sprite::Draw(float x, float y)
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteInfo, 1, 0, 0);
 }
 
+void Sprite::Draw(float x, float y, int nx)
+{
+    Game* game = Game::GetInstance();
+    D3DXMATRIX matTranslation;
+
+    float spriteWidth = (this->right - this->left + 1);
+    float spriteHeight = (this->bottom - this->top + 1);
+
+    float centerX = x + (spriteWidth / 2.0f);
+    float centerY = y + (spriteHeight / 2.0f);
+
+    D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+
+    D3DX10_SPRITE spriteToDraw = this->spriteInfo;
+    spriteToDraw.matWorld = (this->matScaling * matTranslation);
+
+    if (nx > 0)
+    {
+        spriteToDraw.TexCoord.x = this->spriteInfo.TexCoord.x + this->spriteInfo.TexSize.x;
+        spriteToDraw.TexSize.x = -this->spriteInfo.TexSize.x;
+    }
+
+    game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
+}
+
 void Sprite::Draw(float x, float y, float angle)
 {
     Game* game = Game::GetInstance();
