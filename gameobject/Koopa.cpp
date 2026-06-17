@@ -16,6 +16,7 @@ Koopa::Koopa(float x, float y, int type) : Enemy(x, y, 312)
 	this->width = 16.0f;
 	this->height = 27.0f;
 	this->shellTimeStart = 0;
+	this->kickCooldownStart = 0;
 
 	if (type == KOOPA_TYPE_GREEN_FLYING)
 	{
@@ -228,24 +229,37 @@ void Koopa::Render()
 		}
 	}
 
-	Animations::GetInstance()->Get(aniId)->Render(drawX, y);
+	Animation* anim = Animations::GetInstance()->Get(aniId);
+	if (anim == nullptr) return;
+
+	// Offset cố định từ walking sprite (28px) - hitbox (27px) = 1px
+	// Dùng hằng số để shell/walking/jumping đều căn chỉnh nhất quán
+	anim->Render(drawX, y - 1.0f);
 }
 
 void Koopa::OnStomped(Mario* mario)
 {
 	if (state == KOOPA_STATE_WALKING || state == KOOPA_STATE_JUMPING)
 	{
-		// Flying Koopa bị dẫm: mất cánh, trở thành Green Koopa trong mai
 		if (type == KOOPA_TYPE_GREEN_FLYING)
 		{
+			// Rùa bay bị dẫm: mất cánh, tiếp tục đi bộ bình thường (không vào shell)
 			type = KOOPA_TYPE_GREEN;
+			state = KOOPA_STATE_WALKING;
+			height = 27.0f;
+			vx = KOOPA_WALKING_SPEED; // Đi theo hướng mặc định
+			vy = 0.0f;
+			nx = -1;
 		}
-
-		state = KOOPA_STATE_SHELL;
-		shellTimeStart = GetTickCount64();
-		height = 15.0f;
-		vx = 0.0f;
-		vy = 0.0f;
+		else
+		{
+			// Koopa thường bị dẫm → vào mai
+			state = KOOPA_STATE_SHELL;
+			shellTimeStart = GetTickCount64();
+			height = 15.0f;
+			vx = 0.0f;
+			vy = 0.0f;
+		}
 
 		AudioManager::GetInstance()->PlaySFX("stomp");
 	}
@@ -279,6 +293,7 @@ void Koopa::OnStomped(Mario* mario)
 
 void Koopa::Kick(int direction)
 {
+	SetKickedCooldown(); // Bật cooldown 500ms, shell không thể damage Mario trong thời gian này
 	state = KOOPA_STATE_SHELL_SPINNING;
 	vx = direction * KOOPA_SPINNING_SPEED;
 	nx = direction;

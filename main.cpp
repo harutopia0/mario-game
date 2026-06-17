@@ -540,7 +540,7 @@ void LoadResources() {
 
   textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
 
-  // Enemy sprite sheets from Game-Thay-Dung
+  // Enemy sprite sheets
   textures->Add(TEX_ENEMIES_1, L"assets/enemies_transparent.png");
   textures->Add(TEX_ENEMIES_2, L"assets/enemies_transparent_3.png");
 

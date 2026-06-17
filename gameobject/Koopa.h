@@ -2,7 +2,7 @@
 #include "Enemy.h"
 
 #define KOOPA_WALKING_SPEED -0.03f
-#define KOOPA_SPINNING_SPEED 0.15f
+#define KOOPA_SPINNING_SPEED 0.25f
 #define KOOPA_JUMP_SPEED 0.31f
 
 // Koopa types
@@ -21,6 +21,8 @@
 // Timeouts
 #define KOOPA_WAKE_UP_TIME         5000
 #define KOOPA_SHAKE_TIME           3000
+#define KOOPA_JUST_SHELLED_TIME    200  // ms: cooldown sau khi vừa vào SHELL, không bị kick ngay
+#define KOOPA_KICK_COOLDOWN        500  // ms: sau khi Mario đá, shell không damage Mario
 
 // Cliff detection threshold for Red Koopa
 #define KOOPA_CLIFF_CHECK_AHEAD    18.0f
@@ -31,6 +33,7 @@ private:
 	int state;
 	int type;
 	ULONGLONG shellTimeStart;
+	ULONGLONG kickCooldownStart; // thời điểm Mario vừa kick shell
 
 public:
 	Koopa(float x, float y, int type = KOOPA_TYPE_GREEN);
@@ -42,6 +45,20 @@ public:
 	void Kick(int direction);
 	int GetState() const { return state; }
 	int GetType() const { return type; }
+
+	// Trả về true nếu shell vừa được tạo (trong KOOPA_JUST_SHELLED_TIME ms)
+	// Dùng để tránh AABB check kick shell ngay sau khi dẫm Koopa
+	bool IsJustShelled() const {
+		return (state == KOOPA_STATE_SHELL || state == KOOPA_STATE_SHELL_SHAKING)
+			&& (GetTickCount64() - shellTimeStart < KOOPA_JUST_SHELLED_TIME);
+	}
+
+	// Trả về true nếu shell đang trong cooldown sau khi Mario kick (không thể gây dame cho Mario)
+	bool IsKickedCooldown() const {
+		return (GetTickCount64() - kickCooldownStart < KOOPA_KICK_COOLDOWN);
+	}
+
+	void SetKickedCooldown() { kickCooldownStart = GetTickCount64(); }
 
 private:
 	bool CheckCliffAhead(vector<GameObject*>* coObjects);

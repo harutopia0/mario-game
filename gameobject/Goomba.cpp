@@ -46,6 +46,10 @@ void Goomba::Update(DWORD dt, vector<GameObject*>* coObjects)
 	Enemy::Update(dt, coObjects);
 }
 
+// Offset cố định được xác định từ walking sprite (18px) - hitbox (16px) = 2px
+// Dùng hằng số để mọi state (walking, flat, die) đều căn chỉnh nhất quán
+#define GOOMBA_RENDER_OFFSET_Y 2.0f
+
 void Goomba::Render()
 {
 	if (isDeleted) return;
@@ -56,7 +60,8 @@ void Goomba::Render()
 	else if (state == GOOMBA_STATE_DIE_REVERSE)
 		aniId = 316; // Die reverse
 
-	Animations::GetInstance()->Get(aniId)->Render(x, y);
+	// Render với offset cố định: chân sprite luôn khớp bounding box bottom
+	Animations::GetInstance()->Get(aniId)->Render(x, y - GOOMBA_RENDER_OFFSET_Y);
 }
 
 void Goomba::OnStomped(Mario* mario)
