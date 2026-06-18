@@ -43,6 +43,17 @@ private:
     bool isMarioCastingSkill;
     DWORD castSkillStartTime;
 
+    // World Slash variables
+    bool isMarioWorldSlashing;
+    DWORD worldSlashStartTime;
+    float worldSlashOverlayAlpha;
+    bool worldSlashEnemiesKilled;
+    float wsX[5];
+    float wsY[5];
+    float wsAngle[5];
+    float wsLength[5];
+    float wsThickness[5];
+
     // Cơ chế Roulette Thẻ bài khi thắng màn
     int rouletteCardType;
     DWORD lastRouletteTick;
@@ -58,6 +69,10 @@ public:
 
     void ProcessMarioCastSkill(int cardType, int slot);
     bool IsCastingSkill() const { return isMarioCastingSkill; }
+
+    void ProcessWorldSlash();
+    bool IsWorldSlashing() const { return isMarioWorldSlashing; }
+    void RenderWorldSlashOverlay();
 
     GameState GetState() const { return currentState; }
     void SwitchTo(GameState newState);

@@ -129,6 +129,26 @@ void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, float alp
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
 }
 
+void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, D3DXCOLOR color)
+{
+    Game* game = Game::GetInstance();
+    D3DXMATRIX matTranslation, matScaling;
+
+    D3DXMatrixScaling(&matScaling, drawWidth, drawHeight, 1.0f);
+
+    float centerX = x + (drawWidth / 2.0f);
+    float centerY = y + (drawHeight / 2.0f);
+
+    D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+
+    D3DX10_SPRITE spriteToDraw = this->spriteInfo;
+    spriteToDraw.matWorld = (matScaling * matTranslation);
+
+    spriteToDraw.ColorModulate = color;
+    game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
+}
+
+
 void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, float alpha)
 {
     Game* game = Game::GetInstance();
@@ -148,6 +168,52 @@ void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, float
     D3DX10_SPRITE spriteToDraw = this->spriteInfo;
     spriteToDraw.matWorld = (matScale * matRotation * matTranslation);
     spriteToDraw.ColorModulate = D3DXCOLOR(1.0f, 1.0f, 1.0f, alpha);
+
+    game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
+}
+
+void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, D3DXCOLOR color)
+{
+    Game* game = Game::GetInstance();
+    D3DXMATRIX matTranslation, matRotation, matScale;
+
+    float spriteWidth = (this->right - this->left + 1);
+    float spriteHeight = (this->bottom - this->top + 1);
+
+    D3DXMatrixScaling(&matScale, spriteWidth * scale, spriteHeight * scale, 1.0f);
+    D3DXMatrixRotationZ(&matRotation, angle);
+
+    float centerX = x + (spriteWidth / 2.0f);
+    float centerY = y + (spriteHeight / 2.0f);
+
+    D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+
+    D3DX10_SPRITE spriteToDraw = this->spriteInfo;
+    spriteToDraw.matWorld = (matScale * matRotation * matTranslation);
+    spriteToDraw.ColorModulate = color;
+
+    game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
+}
+
+void Sprite::DrawRotatedScaled(float x, float y, float angle, float scaleX, float scaleY, D3DXCOLOR color)
+{
+    Game* game = Game::GetInstance();
+    D3DXMATRIX matTranslation, matRotation, matScale;
+
+    float spriteWidth = (this->right - this->left + 1);
+    float spriteHeight = (this->bottom - this->top + 1);
+
+    D3DXMatrixScaling(&matScale, spriteWidth * scaleX, spriteHeight * scaleY, 1.0f);
+    D3DXMatrixRotationZ(&matRotation, angle);
+
+    float centerX = x + (spriteWidth / 2.0f);
+    float centerY = y + (spriteHeight / 2.0f);
+
+    D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+
+    D3DX10_SPRITE spriteToDraw = this->spriteInfo;
+    spriteToDraw.matWorld = (matScale * matRotation * matTranslation);
+    spriteToDraw.ColorModulate = color;
 
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
 }
