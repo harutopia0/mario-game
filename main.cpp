@@ -67,7 +67,8 @@ enum TEXTURE_ID {
   TEX_GAME_OVER = 702,
   TEX_YOU_WIN = 703,
   TEX_MAP_LEVEL = 800,
-  TEX_OBTAIN_ITEM = 900
+  TEX_OBTAIN_ITEM = 900,
+  TEX_WHITE = 999
 };
 
 #pragma endregion
@@ -539,6 +540,7 @@ void LoadResources() {
   textures->Add(TEX_MAP_LEVEL, L"assets/map-level.png");
 
   textures->Add(TEX_OBTAIN_ITEM, L"assets/obtain-item.png");
+  textures->Add(TEX_WHITE, L"assets/white.png");
 
   // Enemy sprite sheets
   textures->Add(TEX_ENEMIES_1, L"assets/enemies_transparent.png");
@@ -721,6 +723,9 @@ void LoadResources() {
 
   // Obtain item
   sprites->Add(9000, 0, 0, 640, 480, TEX_OBTAIN_ITEM);
+
+  // White line drawing block sprite
+  sprites->Add(99998, 0, 0, 1, 1, TEX_WHITE);
 
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION
