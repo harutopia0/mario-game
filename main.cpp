@@ -10,11 +10,11 @@
 #include "gameobject/Goomba.h"
 #include "gameobject/Koopa.h"
 
+#include "gameobject/GroundBlock.h"
 #include "gameobject/LuckyBlock.h"
 #include "gameobject/Mario.h"
 #include "gameobject/Pipe.h"
 #include "gameobject/Platform.h"
-#include "gameobject/GroundBlock.h"
 #include "gameplay/GameManager.h"
 #include "gameplay/SceneManager.h"
 #include "render/Camera.h"
@@ -55,8 +55,9 @@ enum TEXTURE_ID {
   TEX_COMMON2 = 2,
   TEX_FIRE_MARIO = 3,
   TEX_SUKUNA_MARIO = 4,
-  TEX_ENEMIES_1 = 10,   // enemies_transparent.png (Goomba, Green Koopa walk)
-  TEX_ENEMIES_2 = 15,   // enemies_transparent_3.png (Koopa shell, Red Koopa, Flying Koopa)
+  TEX_ENEMIES_1 = 10, // enemies_transparent.png (Goomba, Green Koopa walk)
+  TEX_ENEMIES_2 =
+      15, // enemies_transparent_3.png (Koopa shell, Red Koopa, Flying Koopa)
   TEX_HUD = 20,
   TEX_INTRO = 30,
   TEX_BBOX = 99,
@@ -666,8 +667,18 @@ void LoadResources() {
   sprites->Add(630, 25, 85, 53, 106, TEX_SUKUNA_MARIO);  // short slash
   sprites->Add(631, 72, 75, 117, 106, TEX_SUKUNA_MARIO); // long slash
 
-  // RollingBall
-  sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
+  // Parry Left
+  sprites->Add(632, 382, 113, 396, 140, TEX_SUKUNA_MARIO);
+  sprites->Add(633, 356, 113, 371, 140, TEX_SUKUNA_MARIO);
+  sprites->Add(634, 331, 114, 347, 140, TEX_SUKUNA_MARIO);
+
+  // Parry Right
+  sprites->Add(635, 331, 82, 345, 109, TEX_SUKUNA_MARIO);
+  sprites->Add(636, 356, 82, 371, 109, TEX_SUKUNA_MARIO);
+  sprites->Add(637, 380, 83, 396, 109, TEX_SUKUNA_MARIO);
+
+      // RollingBall
+      sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
 
   // Death
   sprites->Add(32, 90, 53, 105, 68, TEX_MARIO);
@@ -695,7 +706,8 @@ void LoadResources() {
   sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
 
   // Enemy (Goomba & Koopa sprites)
-  sprites->Add(100, 0, 16, 15, 31, TEX_ENEMY_TEST); // Giữ nguyên ID 100 làm mặc định nếu cần
+  sprites->Add(100, 0, 16, 15, 31,
+               TEX_ENEMY_TEST); // Giữ nguyên ID 100 làm mặc định nếu cần
   sprites->Add(30001, 0, 16, 15, 31, TEX_ENEMY_TEST);
   sprites->Add(30002, 16, 16, 31, 31, TEX_ENEMY_TEST);
   sprites->Add(30003, 32, 16, 47, 31, TEX_ENEMY_TEST);
@@ -909,6 +921,19 @@ void LoadResources() {
   ani->Add(71, 1000);
   animations->Add(709, ani); // Cast Left
 
+  // Parry animations
+  ani = new Animation(80);
+  ani->Add(635);
+  ani->Add(636);
+  ani->Add(637);
+  animations->Add(710, ani); // Parry Right
+
+  ani = new Animation(80);
+  ani->Add(632);
+  ani->Add(633);
+  ani->Add(634);
+  animations->Add(711, ani); // Parry Left
+
   ani = new Animation(50);
   ani->Add(601);
   ani->Add(602);
@@ -955,8 +980,6 @@ void LoadResources() {
   // Normal Goomba die reverse
   sprites->Add(32002, 170, 348, 185, 365, TEX_ENEMIES_1);
 
-
-
   // ==========================================
   // GREEN KOOPA SPRITES (from enemies_transparent.png = TEX_ENEMIES_1)
   // ==========================================
@@ -1002,7 +1025,8 @@ void LoadResources() {
   sprites->Add(110000, 83, 203, 102, 220, TEX_ENEMIES_2);
 
   // ==========================================
-  // FLYING KOOPA (PARATROOPA) SPRITES (from enemies_transparent_3.png = TEX_ENEMIES_2)
+  // FLYING KOOPA (PARATROOPA) SPRITES (from enemies_transparent_3.png =
+  // TEX_ENEMIES_2)
   // ==========================================
   // Jump left
   sprites->Add(71001, 164, 147, 181, 176, TEX_ENEMIES_2);
@@ -1028,8 +1052,6 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(32002);
   animations->Add(316, ani); // Goomba die reverse
-
-
 
   // --- Green Koopa ---
   ani = new Animation(150);

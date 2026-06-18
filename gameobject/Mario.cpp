@@ -21,7 +21,8 @@
 #include <cmath>
 
 #include "../input/MarioInputHandler.h"
-#include "SukunaSlash.h"
+#include "CounterAttack.h"
+#include "LightningEffect.h"
 
 Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   isOnGround = false;
@@ -53,6 +54,9 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
   isStarInvincible = false;
   isPipeAnimating = false;
   lastShootTime = 0;
+
+  isParrying = false;
+  parryCooldownTime = 0;
 
   // Gán layer cho Mario
   layer = LAYER_PLAYER;
@@ -139,6 +143,11 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     // Bỏ qua input từ người chơi
   } else if (inputHandler != NULL) {
     inputHandler->KeyState(NULL); // Update continuous keyboard state
+  }
+
+  if (isParrying) {
+    vx = 0.0f;
+    ax = 0.0f;
   }
 
   // PHẦN VẬT LÝ DI CHUYỂN
@@ -380,7 +389,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
 
   // KIỂM TRA VA CHẠM NGANG VỚI ENEMY (AABB overlap - xử lý cả khi mario đứng yên)
   // Thực hiện sau khi đã di chuyển xong để đảm bảo chính xác
-  if (!untouchable && !isDead) {
+  if (!untouchable && !isDead && !isParrying) {
     float fl, ft, fr, fb;
     GetBoundingBox(fl, ft, fr, fb);
 
@@ -446,7 +455,10 @@ void Mario::Render() {
   }
 
   if (isSukuna) {
-    if (isCastingSkill) {
+    if (isParrying) {
+      ani = (nx > 0) ? Animations::GetInstance()->Get(710)
+                     : Animations::GetInstance()->Get(711);
+    } else if (isCastingSkill) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(708)
                      : Animations::GetInstance()->Get(709);
     } else if (!isOnGround) {
@@ -771,20 +783,56 @@ void Mario::SetSukuna(bool sukuna) {
   GameManager::GetInstance()->SetMarioSukuna(sukuna);
 }
 
-void Mario::ShootSukunaSlash() {
-  if (!isSukuna) return;
-  if (GetTickCount64() - lastShootTime < 400) return; // Cooldown 0.4s
+bool Mario::StartParry() {
+  if (!isSukuna) return false;
+  if (isParrying) return false;
+  if (GetTickCount64() < parryCooldownTime) {
+    AudioManager::GetInstance()->PlaySFX("use-failed");
+    return false;
+  }
 
   extern std::vector<GameObject*> g_objectList;
   extern void AddObjectToGrid(GameObject* obj);
 
-  float spawnX = (nx > 0) ? (x + width) : (x - 24.0f);
-  float spawnY = y + height / 2.0f - 12.0f;
+  CounterAttack* ca = new CounterAttack(this);
+  g_objectList.push_back(ca);
+  AddObjectToGrid(ca);
 
-  SukunaSlash* proj = new SukunaSlash(spawnX, spawnY, nx);
-  g_objectList.push_back(proj);
-  AddObjectToGrid(proj);
+  isParrying = true;
+  vx = 0.0f;
+  ax = 0.0f;
 
-  AudioManager::GetInstance()->PlaySFX("fireball");
-  lastShootTime = GetTickCount64();
+  return true;
+}
+
+void Mario::OnParrySuccess(GameObject* enemy) {
+  isParrying = false;
+  parryCooldownTime = 0; // Reset cooldown immediately
+
+  // Kill the enemy
+  Enemy* e = dynamic_cast<Enemy*>(enemy);
+  if (e != nullptr && !e->IsDied()) {
+    e->OnStomped(NULL); // Die reverse/flipped off-screen
+  }
+
+  // Spawn visual effect of red/black lightning at enemy location
+  extern std::vector<GameObject*> g_objectList;
+  extern void AddObjectToGrid(GameObject* obj);
+
+  float el, et, er, eb;
+  enemy->GetBoundingBox(el, et, er, eb);
+  float ecX = el + (er - el) / 2.0f;
+  float ecY = et + (eb - et) / 2.0f;
+
+  LightningEffect* le = new LightningEffect(ecX, ecY);
+  g_objectList.push_back(le);
+  AddObjectToGrid(le);
+
+  // Play sound
+  AudioManager::GetInstance()->PlaySFX("slash-sound");
+}
+
+void Mario::OnParryFailed() {
+  isParrying = false;
+  parryCooldownTime = GetTickCount64() + 3000; // 3s cooldown
 }
