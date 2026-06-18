@@ -7,6 +7,7 @@
 #include "../gameobject/Block.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
+#include "../gameobject/Koopa.h"
 
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
@@ -219,10 +220,6 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
             min_tx = t;
             nx_col = temp_nx;
           }
-        } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
-          if (!enemy->IsDied() && !enemy->IsFreezed()) {
-            TakeDamage();
-          }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
           int cardType = 2; // Default to Flower
@@ -348,13 +345,12 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
         } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
           if (!enemy->IsDied() && !enemy->IsFreezed()) {
             if (temp_ny == 1) {
+              // Mario dẫm lên đầu enemy
               vy = MARIO_JUMP_SPEED_Y * 0.5f;
               OutputDebugStringA("Enemy stomped!\n");
-              enemy->SetDied(true);
-            } else if (temp_ny == -1) {
-              OutputDebugStringA("Mario damaged by enemy\n");
-              TakeDamage();
+              enemy->OnStomped(this);
             }
+            // Lưu ý: va chạm ngang với enemy được xử lý ở phần AABB check bên dưới
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
@@ -380,6 +376,57 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
       isOnGround = true;
   } else {
     isOnGround = false;
+  }
+
+  // KIỂM TRA VA CHẠM NGANG VỚI ENEMY (AABB overlap - xử lý cả khi mario đứng yên)
+  // Thực hiện sau khi đã di chuyển xong để đảm bảo chính xác
+  if (!untouchable && !isDead) {
+    float fl, ft, fr, fb;
+    GetBoundingBox(fl, ft, fr, fb);
+
+    for (UINT i = 0; i < coObjects->size(); i++) {
+      GameObject *e = coObjects->at(i);
+      if (e == this) continue;
+
+      Enemy *enemy = dynamic_cast<Enemy *>(e);
+      if (!enemy || enemy->IsDied() || enemy->IsFreezed()) continue;
+
+      float el, et, er, eb;
+      enemy->GetBoundingBox(el, et, er, eb);
+
+      // Kiểm tra AABB overlap theo cả 2 trục
+      if (fr <= el || fl >= er || fb <= et || ft >= eb) continue;
+
+      // MTV (Minimum Translation Vector): axis có overlap nhỏ hơn = hướng va chạm
+      float actualOverlapX = min(fr, er) - max(fl, el);
+      float actualOverlapY = min(fb, eb) - max(ft, et);
+
+      Koopa *koopa = dynamic_cast<Koopa *>(enemy);
+
+      if (actualOverlapX >= actualOverlapY) {
+        // Va chạm theo chiều dọc (dẫm hoặc đập đầu) → đã được xử lý bởi swept AABB
+        continue;
+      }
+
+      // Va chạm theo chiều ngang (side hit)
+      if (koopa && (koopa->GetState() == KOOPA_STATE_SHELL ||
+                    koopa->GetState() == KOOPA_STATE_SHELL_SHAKING)) {
+        // Đá mai rùa nằm yên — chỉ kick nếu shell không mới vừa được tạo
+        if (!koopa->IsJustShelled()) {
+          int dir = ((fl + fr) / 2.0f < (el + er) / 2.0f) ? 1 : -1;
+          koopa->Kick(dir);
+        }
+      } else if (koopa && koopa->GetState() == KOOPA_STATE_SHELL_SPINNING) {
+        // Mai rùa đang xoay: chỉ damage nếu HẾT cooldown kick
+        // (tránh trường hợp Mario đá xong chạy theo bị dame ngay)
+        if (!koopa->IsKickedCooldown()) {
+          TakeDamage();
+        }
+      } else {
+        // Đụng enemy bình thường → nhận damage
+        TakeDamage();
+      }
+    }
   }
 
   if (IsDied()) {

@@ -1,8 +1,7 @@
 #include "Enemy.h"
 #include "../gameobject/Block.h"
+#include "Platform.h"
 #include "../physics/Collision.h"
-
-
 #include "../animation/Animations.h"
 
 Enemy::Enemy(float x, float y, int animationId)
@@ -19,12 +18,11 @@ Enemy::Enemy(float x, float y, int animationId)
         this->height = 16;
     }
     vx = 0.0f;
-
     vy = 0.0f;
-
     died = false;
     isFreezed = false;
     layer = LAYER_ENEMIES;
+    nx = -1; // Mặc định hướng sang trái
 }
 
 void Enemy::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -44,50 +42,86 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
         return;
     }
 
-    // Gravity
+    // Trọng lực
     vy += ENEMY_GRAVITY * dt;
 
     float dx = vx * dt;
     float dy = vy * dt;
 
-    // Move X trước
-    x += dx;
-
     float ml, mt, mr, mb;
     GetBoundingBox(ml, mt, mr, mb);
 
+    // 1. Kiểm tra va chạm trục X
+    float min_tx = 1.0f;
+    float nx_col = 0;
+
+    for (GameObject* obj : *coObjects)
+    {
+        if (obj == this || obj->IsDeleted()) continue;
+        Block* block = dynamic_cast<Block*>(obj);
+        if (block && !dynamic_cast<Platform*>(block)) // Không va chạm ngang với Platform
+        {
+            float sl, st, sr, sb;
+            block->GetBoundingBox(sl, st, sr, sb);
+            if (mb > st && mt < sb)
+            {
+                float t, temp_nx, temp_ny;
+                Collision::GetInstance()->SweptAABB(
+                    ml, mt, mr, mb,
+                    dx, 0.0f,
+                    sl, st, sr, sb,
+                    t, temp_nx, temp_ny
+                );
+                if (t < min_tx && temp_nx != 0)
+                {
+                    min_tx = t;
+                    nx_col = temp_nx;
+                }
+            }
+        }
+    }
+
+    x += min_tx * dx + nx_col * 0.01f;
+    if (nx_col != 0)
+    {
+        vx = -vx; // Đảo chiều vận tốc
+        nx = -nx; // Đảo hướng vẽ
+    }
+
+    // Cập nhật lại bounding box sau khi đã di chuyển X
+    GetBoundingBox(ml, mt, mr, mb);
+
+    // 2. Kiểm tra va chạm trục Y
     float min_ty = 1.0f;
     float ny_col = 0;
 
-    // Check collision với brick
     for (GameObject* obj : *coObjects)
     {
-        if (obj == this) continue;
+        if (obj == this || obj->IsDeleted()) continue;
         Block* block = dynamic_cast<Block*>(obj);
         if (block)
         {
             float sl, st, sr, sb;
             block->GetBoundingBox(sl, st, sr, sb);
-            //Chỉ check nếu overlap X
             if (mr > sl && ml < sr)
             {
-                float t, nx, ny;
+                float t, temp_nx, temp_ny;
                 Collision::GetInstance()->SweptAABB(
                     ml, mt, mr, mb,
-                    0, dy,
+                    0.0f, dy,
                     sl, st, sr, sb,
-                    t, nx, ny
+                    t, temp_nx, temp_ny
                 );
-                if (t < min_ty && ny != 0)
+                if (t < min_ty && temp_ny != 0)
                 {
                     min_ty = t;
-                    ny_col = ny;
+                    ny_col = temp_ny;
                 }
             }
         }
     }
-    y += min_ty * dy + ny_col * 0.1f;
-    //khi chạm đất
+
+    y += min_ty * dy + ny_col * 0.01f;
     if (ny_col != 0)
     {
         vy = 0;
