@@ -54,6 +54,7 @@ SceneManager::SceneManager() {
   rouletteCardType = 1;
   lastRouletteTick = 0;
   isRouletteDone = false;
+  hitStopTimer = 0.0f;
 }
 
 SceneManager *SceneManager::GetInstance() {
@@ -235,6 +236,11 @@ void SceneManager::ProcessTransform() {
 }
 
 void SceneManager::Update(DWORD dt) {
+  if (hitStopTimer > 0.0f) {
+    hitStopTimer -= (float)dt;
+    if (hitStopTimer < 0.0f) hitStopTimer = 0.0f;
+  }
+
   if (isMarioDying) {
     if (GetTickCount64() - deathStartTime >= 5000) {
       isMarioDying = false;
@@ -517,6 +523,11 @@ void SceneManager::Update(DWORD dt) {
       if (obj->IsDeleted())
         continue;
 
+      // During hit stop, do not update non-effects
+      if (hitStopTimer > 0.0f && obj->GetLayer() != LAYER_EFFECTS) {
+        continue;
+      }
+
       // Tối ưu: Object static ở xa Mario (ngoài 5 ô lưới = 320px) thì bỏ qua
       // Update. Object động (Mario, đạn Projectile, quái Enemy...) luôn được
       // Update bất kể khoảng cách.
@@ -611,7 +622,17 @@ void SceneManager::Render() {
 
       matFinal = matCamera * matZoom * matTranslateToCenter * matScaleRelative * matTranslateBack;
     } else {
-      matFinal = matCamera * matZoom;
+      float cameraZoom = Camera::GetInstance()->GetZoom();
+      if (cameraZoom != 1.0f) {
+        D3DXMATRIX matTranslateToCenter, matScaleRelative, matTranslateBack;
+        D3DXMatrixTranslation(&matTranslateToCenter, -320.0f, -240.0f, 0.0f);
+        D3DXMatrixScaling(&matScaleRelative, cameraZoom, cameraZoom, 1.0f);
+        D3DXMatrixTranslation(&matTranslateBack, 320.0f, 240.0f, 0.0f);
+
+        matFinal = matCamera * matZoom * matTranslateToCenter * matScaleRelative * matTranslateBack;
+      } else {
+        matFinal = matCamera * matZoom;
+      }
     }
 
     game->GetSpriteHandler()->SetViewTransform(&matFinal);

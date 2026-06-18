@@ -824,7 +824,7 @@ void Mario::OnParrySuccess(GameObject* enemy) {
   float ecX = el + (er - el) / 2.0f;
   float ecY = et + (eb - et) / 2.0f;
 
-  LightningEffect* le = new LightningEffect(ecX, ecY);
+  LightningEffect* le = new LightningEffect(ecX, ecY, this->nx);
   g_objectList.push_back(le);
   AddObjectToGrid(le);
 

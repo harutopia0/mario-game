@@ -59,6 +59,9 @@ private:
     DWORD lastRouletteTick;
     bool isRouletteDone;
 
+    // Hit stop
+    float hitStopTimer;
+
     SceneManager();
 public:
     static SceneManager* GetInstance();
@@ -66,6 +69,9 @@ public:
     void Update(DWORD dt);
     void Render();
     void Cleanup();
+
+    void StartHitStop(float durationMs) { hitStopTimer = durationMs; }
+    bool IsHitStopped() const { return hitStopTimer > 0.0f; }
 
     void ProcessMarioCastSkill(int cardType, int slot);
     bool IsCastingSkill() const { return isMarioCastingSkill; }
