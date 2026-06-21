@@ -76,6 +76,7 @@ void Goomba::OnStomped(Mario* mario)
 		flatTimeStart = GetTickCount64();
 		vx = 0.0f;
 		vy = 0.0f;
+		died = true;
 
 		// Không va chạm nữa
 		layer = LAYER_BACKGROUND;
@@ -90,6 +91,7 @@ void Goomba::OnStomped(Mario* mario)
 		vy = GOOMBA_DIE_REVERSE_FACTOR_Y;
 		vx = (nx > 0) ? -GOOMBA_WALKING_SPEED * GOOMBA_DIE_REVERSE_FACTOR_X
 		              : GOOMBA_WALKING_SPEED * GOOMBA_DIE_REVERSE_FACTOR_X;
+		died = true;
 
 		layer = LAYER_BACKGROUND;
 	}

@@ -41,7 +41,7 @@ void MarioInputHandler::KeyState(BYTE *state) {
   if (GetAsyncKeyState('Z') & 0x8000) {
     if (!isZPressed) {
       if (mario->IsSukuna()) {
-        mario->ShootSukunaSlash();
+        mario->StartParry();
       } else {
         mario->ShootFireball();
       }

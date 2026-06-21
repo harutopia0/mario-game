@@ -98,10 +98,13 @@
     <ClCompile Include="gameobject\FireBlast.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
-    <ClCompile Include="gameobject\RollingBall.cpp">
+    <ClCompile Include="gameobject\CounterAttack.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
-    <ClCompile Include="gameobject\SukunaSlash.cpp">
+    <ClCompile Include="gameobject\LightningEffect.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\RollingBall.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
 
@@ -224,10 +227,13 @@
     <ClInclude Include="gameobject\RollingBall.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
-    <ClInclude Include="gameobject\Projectile.h">
+    <ClInclude Include="gameobject\CounterAttack.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
-    <ClInclude Include="gameobject\SukunaSlash.h">
+    <ClInclude Include="gameobject\LightningEffect.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Projectile.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
 

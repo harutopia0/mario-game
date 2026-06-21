@@ -21,7 +21,7 @@ public:
 	virtual void OnStomped(Mario* mario) {}
 	
 	bool IsDied() const { return died; }
-	void SetDied(bool died) { this->died = died; }
+	void SetDied(bool died);
 	bool IsFreezed() const { return isFreezed; }
 	void SetFreezed(bool frozen) { this->isFreezed = frozen; }
 	virtual ~Enemy() {}
