@@ -46,9 +46,15 @@ SceneManager::SceneManager() {
   isMarioCastingSkill = false;
   castSkillStartTime = 0;
 
+  isMarioWorldSlashing = false;
+  worldSlashStartTime = 0;
+  worldSlashOverlayAlpha = 0.0f;
+  worldSlashEnemiesKilled = false;
+
   rouletteCardType = 1;
   lastRouletteTick = 0;
   isRouletteDone = false;
+  hitStopTimer = 0.0f;
 }
 
 SceneManager *SceneManager::GetInstance() {
@@ -230,6 +236,11 @@ void SceneManager::ProcessTransform() {
 }
 
 void SceneManager::Update(DWORD dt) {
+  if (hitStopTimer > 0.0f) {
+    hitStopTimer -= (float)dt;
+    if (hitStopTimer < 0.0f) hitStopTimer = 0.0f;
+  }
+
   if (isMarioDying) {
     if (GetTickCount64() - deathStartTime >= 5000) {
       isMarioDying = false;
@@ -304,6 +315,87 @@ void SceneManager::Update(DWORD dt) {
       // Chỉ cập nhật HUD, không update game objects
       HUD::GetInstance()->Update(dt);
       return;
+    }
+  }
+
+  // Xử lý hiệu ứng World Slash
+  if (isMarioWorldSlashing) {
+    DWORD elapsed = (DWORD)(GetTickCount64() - worldSlashStartTime);
+
+    // Phase 1: Zoom out (0-400ms) - màn hình vẫn sáng bình thường
+    if (elapsed < 400) {
+      worldSlashOverlayAlpha = 0.0f;
+      HUD::GetInstance()->Update(dt);
+      return; // freeze game
+    }
+
+    // Phase 2: Fade tối (400ms - 800ms) - giữ camera ở góc rộng 1x
+    if (elapsed >= 400 && elapsed < 800) {
+      worldSlashOverlayAlpha = (elapsed - 400.0f) / 400.0f;
+      HUD::GetInstance()->Update(dt);
+      return; // freeze game
+    }
+
+    // Phase 3: Chém quái trong màn hình góc rộng (800ms - 1200ms) - giữ tối đen
+    if (elapsed >= 800 && elapsed < 1200) {
+      worldSlashOverlayAlpha = 1.0f;
+      if (!worldSlashEnemiesKilled) {
+        AudioManager::GetInstance()->PlaySFX("slash-sound");
+
+        // Chỉ tiêu diệt quái vật nằm trong phạm vi camera góc rộng (zoom out 1x)
+        float camX = Camera::GetInstance()->GetX();
+        float camY = Camera::GetInstance()->GetY();
+        float left = camX - 160.0f;
+        float right = camX + 480.0f;
+        float top = camY - 120.0f;
+        float bottom = camY + 360.0f;
+
+        for (size_t i = 0; i < g_objectList.size(); i++) {
+          GameObject* obj = g_objectList[i];
+          Enemy* enemy = dynamic_cast<Enemy*>(obj);
+          if (enemy && !enemy->IsDied()) {
+            float el, et, er, eb;
+            enemy->GetBoundingBox(el, et, er, eb);
+            float ew = er - el;
+            float eh = eb - et;
+
+            // Kiểm tra xem enemy có nằm trong vùng nhìn thấy của camera đã zoom out không
+            if (el + ew > left && el < right && et + eh > top && et < bottom) {
+              enemy->SetDied(true);
+            }
+          }
+        }
+        worldSlashEnemiesKilled = true;
+      }
+      HUD::GetInstance()->Update(dt);
+      return; // freeze game
+    }
+
+    // Phase 4: Fade sáng lại (1200ms - 1600ms)
+    if (elapsed >= 1200 && elapsed < 1600) {
+      worldSlashOverlayAlpha = 1.0f - (elapsed - 1200.0f) / 400.0f;
+      HUD::GetInstance()->Update(dt);
+      return; // freeze game
+    }
+
+    // Phase 5: Zoom in lại (1600ms - 2000ms) - màn hình đã sáng
+    if (elapsed >= 1600 && elapsed < 2000) {
+      worldSlashOverlayAlpha = 0.0f;
+      HUD::GetInstance()->Update(dt);
+      return; // freeze game
+    }
+
+    // Phase 6: Hoàn thành (>= 2000ms)
+    if (elapsed >= 2000) {
+      isMarioWorldSlashing = false;
+      worldSlashOverlayAlpha = 0.0f;
+      AudioManager::GetInstance()->ResumeMusic();
+      if (!g_objectList.empty()) {
+        Mario *mario = dynamic_cast<Mario *>(g_objectList[0]);
+        if (mario != nullptr) {
+          mario->SetCastingSkill(false);
+        }
+      }
     }
   }
 
@@ -403,6 +495,8 @@ void SceneManager::Update(DWORD dt) {
                 if (!mario->IsSukuna()) {
                   GameManager::GetInstance()->SetLives(3);
                   mario->SetSukuna(true);
+                } else {
+                  ProcessWorldSlash();
                 }
               }
             }
@@ -428,6 +522,11 @@ void SceneManager::Update(DWORD dt) {
       GameObject *obj = g_objectList[objIndex];
       if (obj->IsDeleted())
         continue;
+
+      // During hit stop, do not update non-effects
+      if (hitStopTimer > 0.0f && obj->GetLayer() != LAYER_EFFECTS) {
+        continue;
+      }
 
       // Tối ưu: Object static ở xa Mario (ngoài 5 ô lưới = 320px) thì bỏ qua
       // Update. Object động (Mario, đạn Projectile, quái Enemy...) luôn được
@@ -498,11 +597,43 @@ void SceneManager::Render() {
     D3DXMATRIX matCamera;
     D3DXMATRIX matFinal;
 
-    D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
+    float zoomScale = 2.0f;
+    if (isMarioWorldSlashing) {
+      DWORD elapsed = (DWORD)(GetTickCount64() - worldSlashStartTime);
+      if (elapsed < 400) {
+        zoomScale = 2.0f - (elapsed / 400.0f) * 1.0f; // Smooth zoom out to 1.0f (0-400ms)
+      } else if (elapsed >= 400 && elapsed < 1600) {
+        zoomScale = 1.0f; // Stay zoomed out (400ms-1600ms)
+      } else if (elapsed >= 1600 && elapsed < 2000) {
+        zoomScale = 1.0f + ((elapsed - 1600.0f) / 400.0f) * 1.0f; // Smooth zoom in back to 2.0f (1600ms-2000ms)
+      }
+    }
 
+    D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
     matCamera = Camera::GetInstance()->GetViewMatrix();
 
-    matFinal = matCamera * matZoom;
+    if (isMarioWorldSlashing) {
+      D3DXMATRIX matTranslateToCenter, matScaleRelative, matTranslateBack;
+      float relativeScale = zoomScale / 2.0f;
+
+      D3DXMatrixTranslation(&matTranslateToCenter, -320.0f, -240.0f, 0.0f);
+      D3DXMatrixScaling(&matScaleRelative, relativeScale, relativeScale, 1.0f);
+      D3DXMatrixTranslation(&matTranslateBack, 320.0f, 240.0f, 0.0f);
+
+      matFinal = matCamera * matZoom * matTranslateToCenter * matScaleRelative * matTranslateBack;
+    } else {
+      float cameraZoom = Camera::GetInstance()->GetZoom();
+      if (cameraZoom != 1.0f) {
+        D3DXMATRIX matTranslateToCenter, matScaleRelative, matTranslateBack;
+        D3DXMatrixTranslation(&matTranslateToCenter, -320.0f, -240.0f, 0.0f);
+        D3DXMatrixScaling(&matScaleRelative, cameraZoom, cameraZoom, 1.0f);
+        D3DXMatrixTranslation(&matTranslateBack, 320.0f, 240.0f, 0.0f);
+
+        matFinal = matCamera * matZoom * matTranslateToCenter * matScaleRelative * matTranslateBack;
+      } else {
+        matFinal = matCamera * matZoom;
+      }
+    }
 
     game->GetSpriteHandler()->SetViewTransform(&matFinal);
 
@@ -560,6 +691,10 @@ void SceneManager::Render() {
     game->GetSpriteHandler()->SetViewTransform(&matUI);
 
     HUD::GetInstance()->Render();
+
+    if (isMarioWorldSlashing) {
+      RenderWorldSlashOverlay();
+    }
 
     if (isMarioDying) {
       Sprite *gameOverSprite = Sprites::GetInstance()->Get(7003);
@@ -645,3 +780,81 @@ void SceneManager::ProcessMarioCastSkill(int cardType, int slot) {
     }
   }
 }
+
+void SceneManager::ProcessWorldSlash() {
+  if (isMarioWorldSlashing) return;
+  isMarioWorldSlashing = true;
+  worldSlashStartTime = GetTickCount64();
+  worldSlashOverlayAlpha = 0.0f;
+  worldSlashEnemiesKilled = false;
+  
+  AudioManager::GetInstance()->PauseMusic();
+
+  // Generate random positions, angles, lengths, and thicknesses for the 5 slashes
+  for (int i = 0; i < 5; i++) {
+    wsX[i] = 100.0f + (float)(rand() % 440); // Center X in [100.0f, 540.0f]
+    wsY[i] = 80.0f + (float)(rand() % 320);  // Center Y in [80.0f, 400.0f]
+    wsAngle[i] = -1.5f + ((float)rand() / RAND_MAX) * 3.0f; // Angle in [-1.5, 1.5] rad
+    wsLength[i] = 450.0f + ((float)rand() / RAND_MAX) * 300.0f; // Length in [450.0f, 750.0f]
+    wsThickness[i] = 2.0f + ((float)rand() / RAND_MAX) * 2.5f;  // Thickness in [2.0f, 4.5f]
+  }
+
+  if (!g_objectList.empty()) {
+    Mario *mario = dynamic_cast<Mario *>(g_objectList[0]);
+    if (mario != nullptr) {
+      mario->SetCastingSkill(true);
+    }
+  }
+}
+
+void SceneManager::RenderWorldSlashOverlay() {
+  if (!isMarioWorldSlashing) return;
+
+  Sprites* sprites = Sprites::GetInstance();
+  // Bounding box sprite has ID 99999. Since it's a solid block texture, 
+  // modulating with black and alpha makes it a perfect overlay.
+  Sprite* blackOverlay = sprites->Get(99999);
+  if (blackOverlay) {
+    blackOverlay->Draw(0.0f, 0.0f, 640.0f, 480.0f, D3DXCOLOR(0.0f, 0.0f, 0.0f, worldSlashOverlayAlpha));
+  }
+
+  // Draw slash lines on top of the black background starting at 800ms
+  DWORD elapsed = (DWORD)(GetTickCount64() - worldSlashStartTime);
+  if (elapsed >= 800 && elapsed < 1600) {
+    float slashAlpha = 1.0f;
+    if (elapsed > 1200) {
+      slashAlpha = 1.0f - (elapsed - 1200.0f) / 400.0f;
+      if (slashAlpha < 0.0f) slashAlpha = 0.0f;
+    }
+
+    Sprite* whiteSprite = sprites->Get(99998);
+    if (whiteSprite) {
+      // Draw 5 clean, sharp white slash lines sequentially (one every 80ms)
+      
+      // Slash 1 - Appears at 800ms
+      if (elapsed >= 800) {
+        whiteSprite->DrawRotatedScaled(wsX[0] - 0.5f, wsY[0] - 0.5f, wsAngle[0], wsLength[0], wsThickness[0], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
+      }
+
+      // Slash 2 - Appears at 880ms
+      if (elapsed >= 880) {
+        whiteSprite->DrawRotatedScaled(wsX[1] - 0.5f, wsY[1] - 0.5f, wsAngle[1], wsLength[1], wsThickness[1], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
+      }
+
+      // Slash 3 - Appears at 960ms
+      if (elapsed >= 960) {
+        whiteSprite->DrawRotatedScaled(wsX[2] - 0.5f, wsY[2] - 0.5f, wsAngle[2], wsLength[2], wsThickness[2], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
+      }
+
+      // Slash 4 - Appears at 1040ms
+      if (elapsed >= 1040) {
+        whiteSprite->DrawRotatedScaled(wsX[3] - 0.5f, wsY[3] - 0.5f, wsAngle[3], wsLength[3], wsThickness[3], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
+      }
+
+      // Slash 5 - Appears at 1120ms
+      if (elapsed >= 1120) {
+        whiteSprite->DrawRotatedScaled(wsX[4] - 0.5f, wsY[4] - 0.5f, wsAngle[4], wsLength[4], wsThickness[4], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
+      }
+    }
+  }
+}

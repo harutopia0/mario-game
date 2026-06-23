@@ -239,6 +239,17 @@ void Koopa::Render()
 
 void Koopa::OnStomped(Mario* mario)
 {
+	if (mario == NULL)
+	{
+		// Bị đâm hoặc dính chiêu => chết lật ngược
+		state = KOOPA_STATE_DIE;
+		vy = KOOPA_JUMP_SPEED * 0.5f;
+		vx = (nx > 0) ? -0.05f : 0.05f;
+		layer = LAYER_BACKGROUND;
+		died = true;
+		return;
+	}
+
 	if (state == KOOPA_STATE_WALKING || state == KOOPA_STATE_JUMPING)
 	{
 		if (type == KOOPA_TYPE_GREEN_FLYING)
@@ -270,14 +281,6 @@ void Koopa::OnStomped(Mario* mario)
 		{
 			int dir = (mario->GetX() < x) ? 1 : -1;
 			Kick(dir);
-		}
-		else
-		{
-			// Bị đâm bởi mai rùa xoay khác => chết
-			state = KOOPA_STATE_DIE;
-			vy = KOOPA_JUMP_SPEED * 0.5f;
-			vx = (nx > 0) ? -0.05f : 0.05f;
-			layer = LAYER_BACKGROUND;
 		}
 	}
 	else if (state == KOOPA_STATE_SHELL_SPINNING)

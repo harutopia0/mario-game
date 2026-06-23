@@ -20,7 +20,10 @@ public:
     void Draw(float x, float y, float angle);
     void Draw(float x, float y, D3DXCOLOR color);
     void Draw(float x, float y, float drawWidth, float drawHeight, float alpha = 0.5f);
+    void Draw(float x, float y, float drawWidth, float drawHeight, D3DXCOLOR color);
     void DrawRotatedScaled(float x, float y, float angle, float scale, float alpha = 1.0f);
+    void DrawRotatedScaled(float x, float y, float angle, float scale, D3DXCOLOR color);
+    void DrawRotatedScaled(float x, float y, float angle, float scaleX, float scaleY, D3DXCOLOR color);
     int GetWidth() { return right - left + 1; }
     int GetHeight() { return bottom - top + 1; }
     ~Sprite();

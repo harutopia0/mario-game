@@ -137,3 +137,16 @@ void Enemy::Render()
 void Enemy::OnCollision(GameObject* obj)
 {
 }
+
+void Enemy::SetDied(bool died)
+{
+    if (died && !this->died)
+    {
+        this->died = true;
+        OnStomped(NULL);
+    }
+    else
+    {
+        this->died = died;
+    }
+}

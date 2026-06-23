@@ -34,6 +34,9 @@ private:
 	float pMeterValue;
 	int pMeterLevel;
 	DWORD pMeterTimer;
+
+	bool isParrying;
+	ULONGLONG parryCooldownTime;
 public:
 	DWORD deathStart;
 	bool isOnGround;
@@ -79,7 +82,12 @@ public:
 	void ShootFireball();
 	bool ShootFireBlast();
 	bool ShootRollingBall();
-	void ShootSukunaSlash();
+	
+	bool StartParry();
+	void OnParrySuccess(GameObject* enemy);
+	void OnParryFailed();
+	bool IsParrying() const { return isParrying; }
+
 	DWORD lastShootTime;
 
 	void Die();
