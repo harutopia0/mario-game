@@ -335,16 +335,39 @@ void LoadMap(LPCWSTR filePath) {
   int rows, cols;
   f >> rows >> cols;
 
+  std::vector<std::vector<int>> mapData(rows, std::vector<int>(cols, 0));
   for (int r = 0; r < rows; r++) {
     for (int c = 0; c < cols; c++) {
-      int tileID;
-      f >> tileID;
+      f >> mapData[r][c];
+    }
+  }
+
+  int currentLevel = GameManager::GetInstance()->GetLevel();
+  int animTop = 211;
+  int animBottom = 212;
+
+  if (currentLevel == 2 || currentLevel == 4 || currentLevel == 5) {
+    animTop = 213;
+    animBottom = 214;
+  } else {
+    animTop = 211;
+    animBottom = 212;
+  }
+
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < cols; c++) {
+      int tileID = mapData[r][c];
 
       float realX = c * 15.0f;
       float realY = ((rows - r - 1) * 15.0f) + 35.0f;
 
       if (tileID == 1) {
-        GroundBlock *ground = new GroundBlock(realX, realY, 201);
+        int groundAnimId = animBottom;
+        if (r == 0 || mapData[r - 1][c] != 1) {
+          groundAnimId = animTop;
+        }
+
+        GroundBlock *ground = new GroundBlock(realX, realY, groundAnimId);
         g_objectList.push_back(ground);
 
         int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -803,6 +826,27 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(15, 1000);
   animations->Add(206, ani); // Lucky Block
+
+  // Placeholders cho 2 lớp nền mặt đất (Ground)
+  // Grass (Overworld)
+  ani = new Animation(100);
+  ani->Add(10, 1000); // Tạm dùng Brick
+  animations->Add(211, ani);
+  
+  // Soil (Overworld)
+  ani = new Animation(100);
+  ani->Add(11, 1000); // Tạm dùng Platform
+  animations->Add(212, ani);
+
+  // Grass (Underground/Castle)
+  ani = new Animation(100);
+  ani->Add(12, 1000); // Tạm dùng Big Block
+  animations->Add(213, ani);
+
+  // Soil (Underground/Castle)
+  ani = new Animation(100);
+  ani->Add(14, 1000); // Tạm dùng Breakable
+  animations->Add(214, ani);
 
   // Big Mario Animations
   ani = new Animation(100);
