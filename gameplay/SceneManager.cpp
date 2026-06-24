@@ -1,6 +1,11 @@
 #include "SceneManager.h"
 #include "../audio/AudioManager.h"
 #include "../core/Game.h"
+#include "../ui/Intro.h"
+#include "../ui/WorldMap.h"
+#include "../ui/HUD.h"
+#include "../audio/AudioManager.h"
+#include "../core/Game.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
 

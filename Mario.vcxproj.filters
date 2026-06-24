@@ -107,7 +107,9 @@
     <ClCompile Include="gameobject\RollingBall.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
-
+    <ClCompile Include="gameobject\RollingBall.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
     <ClCompile Include="gameobject\Mario.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
@@ -155,6 +157,9 @@
     </ClCompile>
     <ClCompile Include="ui\WorldMap.cpp">
       <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="render\Camera.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -283,6 +288,7 @@
     <ClInclude Include="ui\WorldMap.h">
       <Filter>Source Files\ui</Filter>
     </ClInclude>
+    <ClInclude Include="render\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -69,7 +69,12 @@ enum TEXTURE_ID {
   TEX_YOU_WIN = 703,
   TEX_MAP_LEVEL = 800,
   TEX_OBTAIN_ITEM = 900,
-  TEX_WHITE = 999
+  TEX_WHITE = 999,
+	TEX_LAVA_BRICK = 1000,
+	TEX_LAVA_BRICK2 = 1001,
+	TEX_BLACK_BRICK = 1002,
+	TEX_GRASS_BRICK = 1003,
+	TEX_CLOUD_BRICK = 1004
 };
 
 #pragma endregion
@@ -346,9 +351,15 @@ void LoadMap(LPCWSTR filePath) {
   int animTop = 211;
   int animBottom = 212;
 
-  if (currentLevel == 2 || currentLevel == 4 || currentLevel == 5) {
+  if (currentLevel == 2) {
     animTop = 213;
     animBottom = 214;
+  } else if (currentLevel == 3) {
+    animTop = 217;
+    animBottom = 218;
+  } else if (currentLevel == 4 || currentLevel == 5) {
+    animTop = 215;
+    animBottom = 216;
   } else {
     animTop = 211;
     animBottom = 212;
@@ -362,20 +373,34 @@ void LoadMap(LPCWSTR filePath) {
       float realY = ((rows - r - 1) * 15.0f) + 35.0f;
 
       if (tileID == 1) {
-        int groundAnimId = animBottom;
-        if (r == 0 || mapData[r - 1][c] != 1) {
-          groundAnimId = animTop;
-        }
+        if (r >= rows - 2) { // Chỉ áp dụng 2 lớp cho 2 hàng dưới cùng (Mặt đất)
+          int groundAnimId = animBottom;
+          if (r == 0 || mapData[r - 1][c] != 1) {
+            groundAnimId = animTop;
+          }
 
-        GroundBlock *ground = new GroundBlock(realX, realY, groundAnimId);
-        g_objectList.push_back(ground);
+          GroundBlock *ground = new GroundBlock(realX, realY, groundAnimId);
+          g_objectList.push_back(ground);
 
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)(realY / GRID_CELL_SIZE);
+          int cellX = (int)(realX / GRID_CELL_SIZE);
+          int cellY = (int)(realY / GRID_CELL_SIZE);
 
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(ground);
+          if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+              cellY < MAX_CELL_ROW) {
+            AddObjectToGrid(ground);
+          }
+        } else {
+          // Các khối trên không trung trở thành Gạch (Brick) và hiển thị hình Gạch (201)
+          Brick *brick = new Brick(realX, realY, 201);
+          g_objectList.push_back(brick);
+
+          int cellX = (int)(realX / GRID_CELL_SIZE);
+          int cellY = (int)(realY / GRID_CELL_SIZE);
+
+          if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+              cellY < MAX_CELL_ROW) {
+            AddObjectToGrid(brick);
+          }
         }
       } else if (tileID == 2) {
         Brick *brick = new Brick(realX, realY, 201);
@@ -570,6 +595,17 @@ void LoadResources() {
   textures->Add(TEX_ENEMIES_1, L"assets/enemies_transparent.png");
   textures->Add(TEX_ENEMIES_2, L"assets/enemies_transparent_3.png");
 
+  // Brick
+  //lava brick
+  textures->Add(TEX_LAVA_BRICK, L"assets/lavabrick.png");
+  textures->Add(TEX_LAVA_BRICK2, L"assets/lavabrick2.png"); //phần đất phía dưới
+  //black brick
+  textures->Add(TEX_BLACK_BRICK, L"assets/blackbrick.png");
+  //grass brick
+  textures->Add(TEX_GRASS_BRICK, L"assets/grassbrick.png");
+  //cloud brick
+  textures->Add(TEX_CLOUD_BRICK, L"assets/cloudbrick.png");
+
   // ==========================================
   // 2. CẮT SPRITES
   // ==========================================
@@ -709,6 +745,21 @@ void LoadResources() {
   // Brick
   sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
 
+  //Black Brick
+  sprites->Add(110,0, 0,15, 15,TEX_BLACK_BRICK); //phần block phía trên
+  sprites->Add(111,0, 16,15, 31,TEX_BLACK_BRICK); //phần block phía dưới
+
+  //Lava Brick
+  sprites->Add(112, 0, 0, 15, 15, TEX_LAVA_BRICK); //phần block phía trên
+  sprites->Add(113, 0, 0, 15, 15, TEX_LAVA_BRICK2); //phần block phía dưới
+
+  //Grass Brick
+  sprites->Add(114, 0, 0, 15, 15, TEX_GRASS_BRICK); //phần block phía trên
+  sprites->Add(115, 0, 16, 15, 31, TEX_GRASS_BRICK); //phần block phía dưới
+
+  //Cloud Brick
+  sprites->Add(116, 0, 0, 15, 15, TEX_CLOUD_BRICK); 
+
   // Platform
   sprites->Add(11, 481, 152, 496, 167, TEX_COMMON1);
 
@@ -827,26 +878,42 @@ void LoadResources() {
   ani->Add(15, 1000);
   animations->Add(206, ani); // Lucky Block
 
-  // Placeholders cho 2 lớp nền mặt đất (Ground)
-  // Grass (Overworld)
+  // Ảnh nền mặt đất (Ground) - 2 lớp
+  // Grass (Overworld) - Top
   ani = new Animation(100);
-  ani->Add(10, 1000); // Tạm dùng Brick
+  ani->Add(114, 1000);
   animations->Add(211, ani);
-  
-  // Soil (Overworld)
+  // Grass (Overworld) - Bottom
   ani = new Animation(100);
-  ani->Add(11, 1000); // Tạm dùng Platform
+  ani->Add(115, 1000);
   animations->Add(212, ani);
 
-  // Grass (Underground/Castle)
+  // Black Brick (Underground) - Top
   ani = new Animation(100);
-  ani->Add(12, 1000); // Tạm dùng Big Block
+  ani->Add(110, 1000);
   animations->Add(213, ani);
-
-  // Soil (Underground/Castle)
+  // Black Brick (Underground) - Bottom
   ani = new Animation(100);
-  ani->Add(14, 1000); // Tạm dùng Breakable
+  ani->Add(111, 1000);
   animations->Add(214, ani);
+
+  // Lava Brick (Castle) - Top
+  ani = new Animation(100);
+  ani->Add(112, 1000);
+  animations->Add(215, ani);
+  // Lava Brick (Castle) - Bottom
+  ani = new Animation(100);
+  ani->Add(113, 1000);
+  animations->Add(216, ani);
+
+  // Cloud Brick (Athletic/Sky) - Top
+  ani = new Animation(100);
+  ani->Add(116, 1000);
+  animations->Add(217, ani);
+  // Cloud Brick (Athletic/Sky) - Bottom
+  ani = new Animation(100);
+  ani->Add(116, 1000);
+  animations->Add(218, ani);
 
   // Big Mario Animations
   ani = new Animation(100);
