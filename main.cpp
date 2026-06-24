@@ -69,7 +69,12 @@ enum TEXTURE_ID {
   TEX_YOU_WIN = 703,
   TEX_MAP_LEVEL = 800,
   TEX_OBTAIN_ITEM = 900,
-  TEX_WHITE = 999
+  TEX_WHITE = 999,
+	TEX_LAVA_BRICK = 1000,
+	TEX_LAVA_BRICK2 = 1001,
+	TEX_BLACK_BRICK = 1002,
+	TEX_GRASS_BRICK = 1003,
+	TEX_CLOUD_BRICK = 1004,
 };
 
 #pragma endregion
@@ -547,6 +552,17 @@ void LoadResources() {
   textures->Add(TEX_ENEMIES_1, L"assets/enemies_transparent.png");
   textures->Add(TEX_ENEMIES_2, L"assets/enemies_transparent_3.png");
 
+  // Brick
+  //lava brick
+  textures->Add(TEX_LAVA_BRICK, L"assets/lavabrick.png");
+  textures->Add(TEX_LAVA_BRICK2, L"assets/lavabrick2.png"); //phần đất phía dưới
+  //black brick
+  textures->Add(TEX_BLACK_BRICK, L"assets/blackbrick.png");
+  //grass brick
+  textures->Add(TEX_GRASS_BRICK, L"assets/grassbrick.png");
+  //cloud brick
+  textures->Add(TEX_CLOUD_BRICK, L"assets/cloudbrick.png");
+
   // ==========================================
   // 2. CẮT SPRITES
   // ==========================================
@@ -685,6 +701,21 @@ void LoadResources() {
 
   // Brick
   sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
+
+  //Black Brick
+  sprites->Add(20,0, 0,15, 15,TEX_BLACK_BRICK); //phần block phía trên
+  sprites->Add(21,0, 16,15, 31,TEX_BLACK_BRICK);; //phần block phía dưới
+
+  //Lava Brick
+  sprites->Add(22, 0, 0, 15, 15, TEX_LAVA_BRICK); //phần block phía trên
+  sprites->Add(23, 0, 0, 15, 15, TEX_LAVA_BRICK2); //phần block phía dưới
+
+  //Grass Brick
+  sprites->Add(24, 0, 0, 15, 15, TEX_GRASS_BRICK); //phần block phía trên
+  sprites->Add(25, 0, 16, 15, 31, TEX_GRASS_BRICK); //phần block phía dưới
+
+  //Cloud Brick
+  sprites->Add(26, 0, 0, 15, 15, TEX_CLOUD_BRICK); 
 
   // Platform
   sprites->Add(11, 481, 152, 496, 167, TEX_COMMON1);

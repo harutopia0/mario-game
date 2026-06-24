@@ -857,4 +857,4 @@ void SceneManager::RenderWorldSlashOverlay() {
       }
     }
   }
-}
+}
