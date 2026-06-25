@@ -38,7 +38,7 @@ bool Koopa::CheckCliffAhead(vector<GameObject*>* coObjects)
 	{
 		if (obj == this || obj->IsDeleted()) continue;
 		Block* block = dynamic_cast<Block*>(obj);
-		if (block && !dynamic_cast<Platform*>(block))
+		if (block && !block->IsOneWay())
 		{
 			float sl, st, sr, sb;
 			block->GetBoundingBox(sl, st, sr, sb);

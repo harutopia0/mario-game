@@ -224,7 +224,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                                           sb, t, temp_nx, temp_ny);
 
       if (t < 1.0f && temp_nx != 0) {
-        if (dynamic_cast<Block *>(e) && !dynamic_cast<Platform *>(e)) {
+        if (dynamic_cast<Block *>(e) && !e->IsOneWay()) {
           if (t < min_tx) {
             min_tx = t;
             nx_col = temp_nx;
@@ -300,7 +300,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                                           sb, t, temp_nx, temp_ny);
 
       if (t < 1.0f && temp_ny != 0) {
-        if (dynamic_cast<Block *>(e) && !dynamic_cast<Platform *>(e)) {
+        if (dynamic_cast<Block *>(e) && !e->IsOneWay()) {
           if (t < min_ty) {
             min_ty = t;
             ny_col = temp_ny;
@@ -344,7 +344,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           }
         }
 
-        else if (dynamic_cast<Platform *>(e)) {
+        else if (e->IsOneWay()) {
           if (temp_ny == 1) {
             if (t < min_ty) {
               min_ty = t;
@@ -673,7 +673,7 @@ bool Mario::ShootRollingBall() {
     GameObject* e = g_objectList[i];
     if (e == this || e->IsDeleted()) continue;
     
-    if (dynamic_cast<Block*>(e) && !dynamic_cast<Platform*>(e)) {
+    if (dynamic_cast<Block*>(e) && !e->IsOneWay()) {
       float sl, st, sr, sb;
       e->GetBoundingBox(sl, st, sr, sb);
       if (mr > sl && ml < sr && mb > st && mt < sb) {

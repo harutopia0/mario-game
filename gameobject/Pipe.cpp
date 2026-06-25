@@ -28,19 +28,20 @@ void Pipe::Render()
     Animation* defaultAni = Animations::GetInstance()->Get(204);
     Animation* suppAni = Animations::GetInstance()->Get(207);
     
-    if (pipeHeight <= 3) {
-        // Vẽ ống mặc định lún xuống đất
-        float sinkAmount = (3 - pipeHeight) * 15.0f;
-        if (defaultAni != NULL) defaultAni->Render(x, y - sinkAmount);
-    } else {
+    // Luôn vẽ phần đầu ống (miệng ống) ở trên cùng (y)
+    if (defaultAni != NULL) {
+        defaultAni->Render(x, y);
+    }
+    
+    // Nếu ống dài hơn 3 block (chiều cao > 45px), vẽ thêm các phần thân bổ sung ở dưới
+    if (pipeHeight > 3) {
         int numSupp = pipeHeight - 3;
-        // Vẽ ống mặc định ở phần ngọn TRƯỚC (nằm dưới cùng về order z-index)
-        if (defaultAni != NULL) defaultAni->Render(x, y + numSupp * 15.0f);
-        
-        // Vẽ các đốt thân bổ sung từ trên xuống dưới SAU
-        // Dùng vòng lặp ngược để đốt dưới đè lên đốt trên 1 pixel
-        for(int i = numSupp - 1; i >= 0; i--) {
-            if (suppAni != NULL) suppAni->Render(x, y + i * 15.0f);
+        for (int i = 0; i < numSupp; i++) {
+            // Phần miệng ống cao 45px (3 block 15px), nên thân bắt đầu từ y + 45
+            // Mỗi đốt thân cao 15px
+            if (suppAni != NULL) {
+                suppAni->Render(x, y + 45.0f + i * 15.0f);
+            }
         }
     }
 }

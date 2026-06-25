@@ -37,9 +37,6 @@
 #define WINDOW_HEIGHT 480
 #define FPS_LIMIT 100
 
-// Kích thước bản đồ (cần khớp với kích thước trong file map)
-#define MAP_WIDTH (125 * 15.0f) // 1875.0f
-#define MAP_HEIGHT 408.f
 #pragma endregion
 
 #pragma region GlobalVariables/GameObjects/ID_Definitions
@@ -62,7 +59,6 @@ enum TEXTURE_ID {
   TEX_INTRO = 30,
   TEX_BBOX = 99,
   TEX_ENEMY_TEST = 100,
-  TEX_POTION = 101,
 
   TEX_LEVEL_CLEAR = 701,
   TEX_GAME_OVER = 702,
@@ -70,11 +66,11 @@ enum TEXTURE_ID {
   TEX_MAP_LEVEL = 800,
   TEX_OBTAIN_ITEM = 900,
   TEX_WHITE = 999,
-	TEX_LAVA_BRICK = 1000,
-	TEX_LAVA_BRICK2 = 1001,
-	TEX_BLACK_BRICK = 1002,
-	TEX_GRASS_BRICK = 1003,
-	TEX_CLOUD_BRICK = 1004
+  TEX_LAVA_BRICK = 1000,
+  TEX_LAVA_BRICK2 = 1001,
+  TEX_BLACK_BRICK = 1002,
+  TEX_GRASS_BRICK = 1003,
+  TEX_CLOUD_BRICK = 1004
 };
 
 #pragma endregion
@@ -140,7 +136,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
   // nên chiều rộng thực tế của Camera trong thế giới game chỉ bằng một nửa
   // WINDOW_WIDTH
   Camera::GetInstance()->Init(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f,
-                              MAP_WIDTH, MAP_HEIGHT);
+                              1000.0f, 408.0f);
 
   while (msg.message != WM_QUIT) {
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -373,12 +369,44 @@ void LoadMap(LPCWSTR filePath) {
       float realY = ((rows - r - 1) * 15.0f) + 35.0f;
 
       if (tileID == 1) {
-        if (r >= rows - 2) { // Chỉ áp dụng 2 lớp cho 2 hàng dưới cùng (Mặt đất)
-          int groundAnimId = animBottom;
-          if (r == 0 || mapData[r - 1][c] != 1) {
-            groundAnimId = animTop;
-          }
+        bool hasLeft = (c > 0 && mapData[r][c - 1] == 1);
+        bool hasRight = (c < cols - 1 && mapData[r][c + 1] == 1);
+        bool isStair = (r < rows - 2);
+        bool isTop = (r == 0 || mapData[r - 1][c] != 1 || r == rows - 2);
 
+        int groundAnimId = animBottom;
+        if (isTop) {
+          groundAnimId = animTop;
+        }
+
+        if (animTop == 211) { // 211 is Grass Top
+          if (isStair) {
+            if (isTop) {
+               if (!hasLeft && !hasRight) groundAnimId = 228;
+               else if (!hasLeft) groundAnimId = 226;
+               else if (!hasRight) groundAnimId = 227;
+               else groundAnimId = 225; // Top Center
+            } else {
+               if (!hasLeft && !hasRight) groundAnimId = 232;
+               else if (!hasLeft) groundAnimId = 230;
+               else if (!hasRight) groundAnimId = 231;
+               else groundAnimId = 229; // Mid Center
+            }
+          } else {
+            // Normal Ground
+            if (isTop) {
+              if (!hasLeft && !hasRight) groundAnimId = 223;
+              else if (!hasLeft) groundAnimId = 219;
+              else if (!hasRight) groundAnimId = 220;
+            } else {
+              if (!hasLeft && !hasRight) groundAnimId = 224;
+              else if (!hasLeft) groundAnimId = 221;
+              else if (!hasRight) groundAnimId = 222;
+            }
+          }
+        }
+
+        if (!isStair) { // Chỉ áp dụng 2 lớp cho 2 hàng dưới cùng (Mặt đất)
           GroundBlock *ground = new GroundBlock(realX, realY, groundAnimId);
           g_objectList.push_back(ground);
 
@@ -390,8 +418,8 @@ void LoadMap(LPCWSTR filePath) {
             AddObjectToGrid(ground);
           }
         } else {
-          // Các khối trên không trung trở thành Gạch (Brick) và hiển thị hình Gạch (201)
-          Brick *brick = new Brick(realX, realY, 201);
+          // Các khối trên không trung trở thành Gạch (Brick) và hiển thị hình Ground Block
+          Brick *brick = new Brick(realX, realY, groundAnimId);
           g_objectList.push_back(brick);
 
           int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -522,7 +550,8 @@ void LoadMap(LPCWSTR filePath) {
       }
     }
   }
-  GameManager::GetInstance()->SetMapRightEdge(cols * 15.0f);
+    GameManager::GetInstance()->SetMapRightEdge(cols * 15.0f);
+    Camera::GetInstance()->SetMapBoundary(cols * 15.0f, rows * 15.0f);
   f.close();
 }
 
@@ -580,7 +609,6 @@ void LoadResources() {
   textures->Add(TEX_INTRO, L"assets/intro_items.png");
   textures->Add(TEX_BBOX, L"assets/bbox.png");
   textures->Add(TEX_ENEMY_TEST, L"assets/enemy.png");
-  textures->Add(TEX_POTION, L"assets/potion.png");
 
   textures->Add(TEX_LEVEL_CLEAR, L"assets/level-clear.png");
   textures->Add(TEX_YOU_WIN, L"assets/you-win.png");
@@ -596,14 +624,15 @@ void LoadResources() {
   textures->Add(TEX_ENEMIES_2, L"assets/enemies_transparent_3.png");
 
   // Brick
-  //lava brick
+  // lava brick
   textures->Add(TEX_LAVA_BRICK, L"assets/lavabrick.png");
-  textures->Add(TEX_LAVA_BRICK2, L"assets/lavabrick2.png"); //phần đất phía dưới
-  //black brick
+  textures->Add(TEX_LAVA_BRICK2, L"assets/lavabrick2.png"); // phần đất phía
+                                                            // dưới
+  // black brick
   textures->Add(TEX_BLACK_BRICK, L"assets/blackbrick.png");
-  //grass brick
-  textures->Add(TEX_GRASS_BRICK, L"assets/grassbrick.png");
-  //cloud brick
+  // grass brick
+  textures->Add(TEX_GRASS_BRICK, L"assets/grass.png");
+  // cloud brick
   textures->Add(TEX_CLOUD_BRICK, L"assets/cloudbrick.png");
 
   // ==========================================
@@ -736,29 +765,46 @@ void LoadResources() {
   sprites->Add(636, 356, 82, 371, 109, TEX_SUKUNA_MARIO);
   sprites->Add(637, 380, 83, 396, 109, TEX_SUKUNA_MARIO);
 
-      // RollingBall
-      sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
+  // RollingBall
+  sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
 
   // Death
   sprites->Add(32, 90, 53, 105, 68, TEX_MARIO);
 
   // Brick
-  sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
+  sprites->Add(10, 74, 34, 89, 49, TEX_COMMON1);
 
-  //Black Brick
-  sprites->Add(110,0, 0,15, 15,TEX_BLACK_BRICK); //phần block phía trên
-  sprites->Add(111,0, 16,15, 31,TEX_BLACK_BRICK); //phần block phía dưới
+  // Black Brick
+  sprites->Add(110, 0, 0, 15, 15, TEX_BLACK_BRICK);  // phần block phía trên
+  sprites->Add(111, 0, 16, 15, 31, TEX_BLACK_BRICK); // phần block phía dưới
 
-  //Lava Brick
-  sprites->Add(112, 0, 0, 15, 15, TEX_LAVA_BRICK); //phần block phía trên
-  sprites->Add(113, 0, 0, 15, 15, TEX_LAVA_BRICK2); //phần block phía dưới
+  // Lava Brick
+  sprites->Add(112, 0, 0, 15, 15, TEX_LAVA_BRICK);  // phần block phía trên
+  sprites->Add(113, 0, 0, 15, 15, TEX_LAVA_BRICK2); // phần block phía dưới
 
-  //Grass Brick
-  sprites->Add(114, 0, 0, 15, 15, TEX_GRASS_BRICK); //phần block phía trên
-  sprites->Add(115, 0, 16, 15, 31, TEX_GRASS_BRICK); //phần block phía dưới
+  // Grass Brick
+  sprites->Add(114, 18, 1, 33, 16, TEX_GRASS_BRICK);  // phần block phía trên
+  sprites->Add(115, 18, 18, 33, 33, TEX_GRASS_BRICK); // phần block phía dưới
+  sprites->Add(1141, 1, 1, 16, 16, TEX_GRASS_BRICK);   // Top Left
+  sprites->Add(1142, 35, 1, 50, 16, TEX_GRASS_BRICK);  // Top Right
+  sprites->Add(1151, 1, 18, 16, 33, TEX_GRASS_BRICK);  // Bottom Left
+  sprites->Add(1152, 35, 18, 50, 33, TEX_GRASS_BRICK); // Bottom Right
+  sprites->Add(1143, 52, 1, 67, 16, TEX_GRASS_BRICK);  // Top Both
+  sprites->Add(1153, 52, 18, 67, 33, TEX_GRASS_BRICK); // Bottom Both
 
-  //Cloud Brick
-  sprites->Add(116, 0, 0, 15, 15, TEX_CLOUD_BRICK); 
+  // Staircase (Grass alternative)
+  sprites->Add(1240, 18, 103, 33, 118, TEX_GRASS_BRICK);  // Top Center
+  sprites->Add(1241, 1, 103, 16, 118, TEX_GRASS_BRICK);   // Top Left
+  sprites->Add(1242, 35, 103, 50, 118, TEX_GRASS_BRICK);  // Top Right
+  sprites->Add(1243, 52, 103, 67, 118, TEX_GRASS_BRICK);  // Top Isolated
+
+  sprites->Add(1250, 18, 120, 33, 135, TEX_GRASS_BRICK);  // Middle Center
+  sprites->Add(1251, 1, 120, 16, 135, TEX_GRASS_BRICK);   // Middle Left
+  sprites->Add(1252, 35, 120, 50, 135, TEX_GRASS_BRICK);  // Middle Right
+  sprites->Add(1253, 52, 120, 67, 135, TEX_GRASS_BRICK);  // Middle Isolated
+
+  // Cloud Brick
+  sprites->Add(116, 0, 0, 15, 15, TEX_CLOUD_BRICK);
 
   // Platform
   sprites->Add(11, 481, 152, 496, 167, TEX_COMMON1);
@@ -771,10 +817,16 @@ void LoadResources() {
   sprites->Add(16, 5, 60, 36, 75, TEX_COMMON2);
 
   // Breakable
-  sprites->Add(14, 453, 152, 468, 167, TEX_COMMON1);
+  sprites->Add(14, 0, 68, 15, 83, TEX_COMMON1);
+  sprites->Add(141, 17, 68, 32, 83, TEX_COMMON1);
+  sprites->Add(142, 34, 68, 49, 83, TEX_COMMON1);
+  sprites->Add(143, 51, 68, 66, 83, TEX_COMMON1);
 
   // Lucky Block
-  sprites->Add(15, 185, 7, 200, 22, TEX_COMMON2);
+  sprites->Add(15, 74, 17, 89, 32, TEX_COMMON1);
+  sprites->Add(151, 91, 17, 106, 32, TEX_COMMON1);
+  sprites->Add(152, 108, 17, 123, 32, TEX_COMMON1);
+  sprites->Add(153, 125, 17, 140, 32, TEX_COMMON1);
 
   // Bounding Box
   sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
@@ -791,9 +843,6 @@ void LoadResources() {
   sprites->Add(30104, 176, 0, 191, 31, TEX_ENEMY_TEST);
   sprites->Add(30105, 192, 0, 207, 31, TEX_ENEMY_TEST);
   sprites->Add(30106, 208, 0, 223, 31, TEX_ENEMY_TEST);
-
-  // Potion
-  sprites->Add(101, 0, 0, 16, 16, TEX_POTION);
 
   // Level clear
   sprites->Add(7001, 0, 0, 640, 405, TEX_LEVEL_CLEAR);
@@ -872,10 +921,16 @@ void LoadResources() {
   ani->Add(16, 1000);
   animations->Add(207, ani); // Supplementary Body
   ani = new Animation(100);
-  ani->Add(14, 1000);
+  ani->Add(14, 150);
+  ani->Add(141, 150);
+  ani->Add(142, 150);
+  ani->Add(143, 150);
   animations->Add(205, ani); // Breakable
   ani = new Animation(100);
-  ani->Add(15, 1000);
+  ani->Add(15, 150);
+  ani->Add(151, 150);
+  ani->Add(152, 150);
+  ani->Add(153, 150);
   animations->Add(206, ani); // Lucky Block
 
   // Ảnh nền mặt đất (Ground) - 2 lớp
@@ -887,6 +942,25 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(115, 1000);
   animations->Add(212, ani);
+
+  // Grass Edge Animations
+  ani = new Animation(100); ani->Add(1141, 1000); animations->Add(219, ani);
+  ani = new Animation(100); ani->Add(1142, 1000); animations->Add(220, ani);
+  ani = new Animation(100); ani->Add(1151, 1000); animations->Add(221, ani);
+  ani = new Animation(100); ani->Add(1152, 1000); animations->Add(222, ani);
+  ani = new Animation(100); ani->Add(1143, 1000); animations->Add(223, ani);
+  ani = new Animation(100); ani->Add(1153, 1000); animations->Add(224, ani);
+
+  // Staircase Edge Animations
+  ani = new Animation(100); ani->Add(1240, 1000); animations->Add(225, ani); // Top Center
+  ani = new Animation(100); ani->Add(1241, 1000); animations->Add(226, ani); // Top Left
+  ani = new Animation(100); ani->Add(1242, 1000); animations->Add(227, ani); // Top Right
+  ani = new Animation(100); ani->Add(1243, 1000); animations->Add(228, ani); // Top Isolated
+  
+  ani = new Animation(100); ani->Add(1250, 1000); animations->Add(229, ani); // Mid Center
+  ani = new Animation(100); ani->Add(1251, 1000); animations->Add(230, ani); // Mid Left
+  ani = new Animation(100); ani->Add(1252, 1000); animations->Add(231, ani); // Mid Right
+  ani = new Animation(100); ani->Add(1253, 1000); animations->Add(232, ani); // Mid Isolated
 
   // Black Brick (Underground) - Top
   ani = new Animation(100);

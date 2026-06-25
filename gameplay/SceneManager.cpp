@@ -151,10 +151,6 @@ void SceneManager::SwitchTo(GameState newState) {
 
     // Spawn các objects cơ bản cho màn chơi
 
-    Buff *potion = new Buff(150.0f, 200.0f, 301);
-    g_objectList.push_back(potion);
-    AddObjectToGrid(potion);
-
 
 
     // (Ống nước giờ đã được load tự động từ file Level_1.txt qua hàm LoadMap)
@@ -589,37 +585,41 @@ void SceneManager::Render() {
   D3DXMATRIX matZoom;
 
   if (currentState == STATE_INTRO) {
+    Sprite::globalScale = 1.0f;
     D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     game->GetSpriteHandler()->SetViewTransform(&matZoom);
     if (introScene)
       introScene->Render();
   } else if (currentState == STATE_WORLD_MAP) {
+    Sprite::globalScale = 1.0f;
     D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     game->GetSpriteHandler()->SetViewTransform(&matZoom);
     if (worldMapScene)
       worldMapScene->Render();
   } else if (currentState == STATE_PLAYING) {
+    Sprite::globalScale = 2.0f;
+
     D3DXMATRIX matCamera;
     D3DXMATRIX matFinal;
 
-    float zoomScale = 2.0f;
+    float zoomScale = 1.0f;
     if (isMarioWorldSlashing) {
       DWORD elapsed = (DWORD)(GetTickCount64() - worldSlashStartTime);
       if (elapsed < 400) {
-        zoomScale = 2.0f - (elapsed / 400.0f) * 1.0f; // Smooth zoom out to 1.0f (0-400ms)
+        zoomScale = 1.0f - (elapsed / 400.0f) * 0.5f; // Smooth zoom out to 0.5f (0-400ms)
       } else if (elapsed >= 400 && elapsed < 1600) {
-        zoomScale = 1.0f; // Stay zoomed out (400ms-1600ms)
+        zoomScale = 0.5f; // Stay zoomed out (400ms-1600ms)
       } else if (elapsed >= 1600 && elapsed < 2000) {
-        zoomScale = 1.0f + ((elapsed - 1600.0f) / 400.0f) * 1.0f; // Smooth zoom in back to 2.0f (1600ms-2000ms)
+        zoomScale = 0.5f + ((elapsed - 1600.0f) / 400.0f) * 0.5f; // Smooth zoom in back to 1.0f (1600ms-2000ms)
       }
     }
 
-    D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
+    D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     matCamera = Camera::GetInstance()->GetViewMatrix();
 
     if (isMarioWorldSlashing) {
       D3DXMATRIX matTranslateToCenter, matScaleRelative, matTranslateBack;
-      float relativeScale = zoomScale / 2.0f;
+      float relativeScale = zoomScale;
 
       D3DXMatrixTranslation(&matTranslateToCenter, -320.0f, -240.0f, 0.0f);
       D3DXMatrixScaling(&matScaleRelative, relativeScale, relativeScale, 1.0f);
@@ -695,6 +695,7 @@ void SceneManager::Render() {
     D3DXMatrixScaling(&matUI, 1.0f, 1.0f, 1.0f);
     game->GetSpriteHandler()->SetViewTransform(&matUI);
 
+    Sprite::globalScale = 1.0f;
     HUD::GetInstance()->Render();
 
     if (isMarioWorldSlashing) {

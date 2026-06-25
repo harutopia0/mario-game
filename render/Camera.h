@@ -29,10 +29,9 @@ private:
         : x(0), y(0)
         , screenWidth(0), screenHeight(0)
         , mapWidth(0), mapHeight(0)
-        , smoothSpeed(1.0f)
-        , shakeX(0.0f), shakeY(0.0f)
-        , shakeIntensity(0.0f), shakeDuration(0.0f), shakeInitialDuration(0.0f)
-        , zoomScaleFactor(1.0f), zoomDuration(0.0f), zoomInitialDuration(0.0f), currentZoom(1.0f)
+        , smoothSpeed(0.1f)
+        , shakeX(0), shakeY(0), shakeIntensity(0), shakeDuration(0), shakeInitialDuration(0)
+        , zoomScaleFactor(1.0f), zoomDuration(0), zoomInitialDuration(0), currentZoom(1.0f)
     {
     }
 
@@ -49,6 +48,11 @@ public:
         mapWidth = mapW;
         mapHeight = mapH;
         smoothSpeed = smooth;
+    }
+
+    void SetMapBoundary(float mapW, float mapH) {
+        mapWidth = mapW;
+        mapHeight = mapH;
     }
 
     void Shake(float intensity, float duration) {
@@ -97,10 +101,9 @@ public:
         }
     }
 
-    // Trả về ma trận dịch chuyển theo camera có tính cả rung
     D3DXMATRIX GetViewMatrix() const {
         D3DXMATRIX matTranslate;
-        D3DXMatrixTranslation(&matTranslate, -(x + shakeX), -(y + shakeY), 0.0f);
+        D3DXMatrixTranslation(&matTranslate, -(x + shakeX) * 2.0f, -(y + shakeY) * 2.0f, 0.0f);
         return matTranslate;
     }
 

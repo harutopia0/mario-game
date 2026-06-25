@@ -59,7 +59,7 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     {
         if (obj == this || obj->IsDeleted()) continue;
         Block* block = dynamic_cast<Block*>(obj);
-        if (block && !dynamic_cast<Platform*>(block)) // Không va chạm ngang với Platform
+        if (block && !block->IsOneWay()) // Không va chạm ngang với Platform
         {
             float sl, st, sr, sb;
             block->GetBoundingBox(sl, st, sr, sb);

@@ -39,5 +39,6 @@ public:
     virtual void RenderBoundingBox();
     virtual void Delete();
     bool IsDeleted() const;
+    virtual bool IsOneWay() const { return false; }
     virtual ~GameObject() {}
 };
