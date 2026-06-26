@@ -3,7 +3,6 @@
 #include "../animation/Animations.h"
 #include "../audio/AudioManager.h"
 #include "../gameobject/Breakable.h"
-#include "../gameobject/Brick.h"
 #include "../gameobject/Block.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
@@ -107,6 +106,12 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
         AudioManager::GetInstance()->ResumeMusic();
       }
     }
+  }
+
+  // Rớt khỏi map
+  if (y < 0.0f && !isDead) {
+    Die();
+    vy = 0.45f; // Nảy cao hơn một chút khi rớt vực
   }
 
   // Mario chết
@@ -701,6 +706,8 @@ void Mario::Die() {
   isDead = true;
   vx = 0;
   vy = 0.2f;
+  pMeterLevel = 0; // Reset pMeter
+  HUD::GetInstance()->SetPMeter(0);
   deathStart = GetTickCount64();
 
   SceneManager::GetInstance()->ProcessMarioDeath();

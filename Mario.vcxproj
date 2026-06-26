@@ -138,13 +138,11 @@
     <ClCompile Include="core\GameObject.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="gameobject\Breakable.cpp" />
-    <ClCompile Include="gameobject\Brick.cpp" />
     <ClCompile Include="gameobject\Buff.cpp" />
     <ClCompile Include="gameobject\Enemy.cpp" />
     <ClCompile Include="gameobject\Goomba.cpp" />
     <ClCompile Include="gameobject\Koopa.cpp" />
     <ClCompile Include="gameobject\Fireball.cpp" />
-    <ClCompile Include="gameobject\FireBlast.cpp" />
     <ClCompile Include="gameobject\FireBlast.cpp" />
 
     <ClCompile Include="gameobject\Flower.cpp" />
@@ -181,7 +179,6 @@
     <ClInclude Include="core\GameObject.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="gameobject\Breakable.h" />
-    <ClInclude Include="gameobject\Brick.h" />
     <ClInclude Include="gameobject\Block.h" />
     <ClInclude Include="gameobject\StaticBlock.h" />
     <ClInclude Include="gameobject\DynamicBlock.h" />
@@ -191,7 +188,6 @@
     <ClInclude Include="gameobject\Goomba.h" />
     <ClInclude Include="gameobject\Koopa.h" />
     <ClInclude Include="gameobject\Fireball.h" />
-    <ClInclude Include="gameobject\FireBlast.h" />
     <ClInclude Include="gameobject\FireBlast.h" />
 
     <ClInclude Include="gameobject\Flower.h" />

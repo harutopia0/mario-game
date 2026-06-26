@@ -4,7 +4,6 @@
 #include "audio/AudioManager.h"
 #include "core/Game.h"
 #include "gameobject/Breakable.h"
-#include "gameobject/Brick.h"
 #include "gameobject/Buff.h"
 #include "gameobject/Enemy.h"
 #include "gameobject/Goomba.h"
@@ -264,11 +263,7 @@ void Update(DWORD dt) {
       isFPressed = false;
   }
 
-  extern std::vector<GameObject *> g_objectList;
-  GameObject *mario = g_objectList.empty() ? NULL : g_objectList[0];
-  if (mario && SceneManager::GetInstance()->GetState() == STATE_PLAYING) {
-    Camera::GetInstance()->Update(mario->GetX(), mario->GetY(), dt / 1000.0f);
-  }
+  // Removed redundant camera update here (now handled safely in SceneManager::Update)
 
   SceneManager::GetInstance()->Update(dt);
 }
@@ -382,26 +377,40 @@ void LoadMap(LPCWSTR filePath) {
         if (animTop == 211) { // 211 is Grass Top
           if (isStair) {
             if (isTop) {
-               if (!hasLeft && !hasRight) groundAnimId = 228;
-               else if (!hasLeft) groundAnimId = 226;
-               else if (!hasRight) groundAnimId = 227;
-               else groundAnimId = 225; // Top Center
+              if (!hasLeft && !hasRight)
+                groundAnimId = 228;
+              else if (!hasLeft)
+                groundAnimId = 226;
+              else if (!hasRight)
+                groundAnimId = 227;
+              else
+                groundAnimId = 225; // Top Center
             } else {
-               if (!hasLeft && !hasRight) groundAnimId = 232;
-               else if (!hasLeft) groundAnimId = 230;
-               else if (!hasRight) groundAnimId = 231;
-               else groundAnimId = 229; // Mid Center
+              if (!hasLeft && !hasRight)
+                groundAnimId = 232;
+              else if (!hasLeft)
+                groundAnimId = 230;
+              else if (!hasRight)
+                groundAnimId = 231;
+              else
+                groundAnimId = 229; // Mid Center
             }
           } else {
             // Normal Ground
             if (isTop) {
-              if (!hasLeft && !hasRight) groundAnimId = 223;
-              else if (!hasLeft) groundAnimId = 219;
-              else if (!hasRight) groundAnimId = 220;
+              if (!hasLeft && !hasRight)
+                groundAnimId = 223;
+              else if (!hasLeft)
+                groundAnimId = 219;
+              else if (!hasRight)
+                groundAnimId = 220;
             } else {
-              if (!hasLeft && !hasRight) groundAnimId = 224;
-              else if (!hasLeft) groundAnimId = 221;
-              else if (!hasRight) groundAnimId = 222;
+              if (!hasLeft && !hasRight)
+                groundAnimId = 224;
+              else if (!hasLeft)
+                groundAnimId = 221;
+              else if (!hasRight)
+                groundAnimId = 222;
             }
           }
         }
@@ -418,8 +427,9 @@ void LoadMap(LPCWSTR filePath) {
             AddObjectToGrid(ground);
           }
         } else {
-          // Các khối trên không trung trở thành Gạch (Brick) và hiển thị hình Ground Block
-          Brick *brick = new Brick(realX, realY, groundAnimId);
+          // Các khối trên không trung trở thành Gạch (Breakable) và hiển thị hình
+          // Ground Block
+          Breakable *brick = new Breakable(realX, realY, groundAnimId);
           g_objectList.push_back(brick);
 
           int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -429,17 +439,6 @@ void LoadMap(LPCWSTR filePath) {
               cellY < MAX_CELL_ROW) {
             AddObjectToGrid(brick);
           }
-        }
-      } else if (tileID == 2) {
-        Brick *brick = new Brick(realX, realY, 201);
-        g_objectList.push_back(brick);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)(realY / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(brick);
         }
       } else if (tileID == 3) {
         Platform *platform = new Platform(realX, realY, 202);
@@ -487,7 +486,10 @@ void LoadMap(LPCWSTR filePath) {
         }
       } else if (tileID >= 7 && tileID <= 10) {
         int pipeHeight = tileID - 5; // 7->2, 8->3, 9->4
-        Pipe *pipe = new Pipe(realX, realY, pipeHeight, false, 0, 0);
+        // Tile đánh dấu ĐỈNH ống, nhưng ống spawn từ dưới lên
+        // Cần offset y xuống để chân ống sát mặt đất
+        float pipeY = realY - (pipeHeight - 1) * 15.0f;
+        Pipe *pipe = new Pipe(realX, pipeY, pipeHeight, false, 0, 0);
         g_objectList.push_back(pipe);
 
         int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -550,8 +552,8 @@ void LoadMap(LPCWSTR filePath) {
       }
     }
   }
-    GameManager::GetInstance()->SetMapRightEdge(cols * 15.0f);
-    Camera::GetInstance()->SetMapBoundary(cols * 15.0f, rows * 15.0f);
+  GameManager::GetInstance()->SetMapRightEdge(cols * 15.0f);
+  Camera::GetInstance()->SetMapBoundary(cols * 15.0f, rows * 15.0f);
   f.close();
 }
 
@@ -783,8 +785,8 @@ void LoadResources() {
   sprites->Add(113, 0, 0, 15, 15, TEX_LAVA_BRICK2); // phần block phía dưới
 
   // Grass Brick
-  sprites->Add(114, 18, 1, 33, 16, TEX_GRASS_BRICK);  // phần block phía trên
-  sprites->Add(115, 18, 18, 33, 33, TEX_GRASS_BRICK); // phần block phía dưới
+  sprites->Add(114, 18, 1, 33, 16, TEX_GRASS_BRICK);   // phần block phía trên
+  sprites->Add(115, 18, 18, 33, 33, TEX_GRASS_BRICK);  // phần block phía dưới
   sprites->Add(1141, 1, 1, 16, 16, TEX_GRASS_BRICK);   // Top Left
   sprites->Add(1142, 35, 1, 50, 16, TEX_GRASS_BRICK);  // Top Right
   sprites->Add(1151, 1, 18, 16, 33, TEX_GRASS_BRICK);  // Bottom Left
@@ -793,15 +795,15 @@ void LoadResources() {
   sprites->Add(1153, 52, 18, 67, 33, TEX_GRASS_BRICK); // Bottom Both
 
   // Staircase (Grass alternative)
-  sprites->Add(1240, 18, 103, 33, 118, TEX_GRASS_BRICK);  // Top Center
-  sprites->Add(1241, 1, 103, 16, 118, TEX_GRASS_BRICK);   // Top Left
-  sprites->Add(1242, 35, 103, 50, 118, TEX_GRASS_BRICK);  // Top Right
-  sprites->Add(1243, 52, 103, 67, 118, TEX_GRASS_BRICK);  // Top Isolated
+  sprites->Add(1240, 18, 103, 33, 118, TEX_GRASS_BRICK); // Top Center
+  sprites->Add(1241, 1, 103, 16, 118, TEX_GRASS_BRICK);  // Top Left
+  sprites->Add(1242, 35, 103, 50, 118, TEX_GRASS_BRICK); // Top Right
+  sprites->Add(1243, 52, 103, 67, 118, TEX_GRASS_BRICK); // Top Isolated
 
-  sprites->Add(1250, 18, 120, 33, 135, TEX_GRASS_BRICK);  // Middle Center
-  sprites->Add(1251, 1, 120, 16, 135, TEX_GRASS_BRICK);   // Middle Left
-  sprites->Add(1252, 35, 120, 50, 135, TEX_GRASS_BRICK);  // Middle Right
-  sprites->Add(1253, 52, 120, 67, 135, TEX_GRASS_BRICK);  // Middle Isolated
+  sprites->Add(1250, 18, 120, 33, 135, TEX_GRASS_BRICK); // Middle Center
+  sprites->Add(1251, 1, 120, 16, 135, TEX_GRASS_BRICK);  // Middle Left
+  sprites->Add(1252, 35, 120, 50, 135, TEX_GRASS_BRICK); // Middle Right
+  sprites->Add(1253, 52, 120, 67, 135, TEX_GRASS_BRICK); // Middle Isolated
 
   // Cloud Brick
   sprites->Add(116, 0, 0, 15, 15, TEX_CLOUD_BRICK);
@@ -921,16 +923,16 @@ void LoadResources() {
   ani->Add(16, 1000);
   animations->Add(207, ani); // Supplementary Body
   ani = new Animation(100);
-  ani->Add(14, 150);
-  ani->Add(141, 150);
-  ani->Add(142, 150);
-  ani->Add(143, 150);
+  ani->Add(14, 200);
+  ani->Add(141, 200);
+  ani->Add(142, 200);
+  ani->Add(143, 200);
   animations->Add(205, ani); // Breakable
   ani = new Animation(100);
-  ani->Add(15, 150);
-  ani->Add(151, 150);
-  ani->Add(152, 150);
-  ani->Add(153, 150);
+  ani->Add(15, 200);
+  ani->Add(151, 200);
+  ani->Add(152, 200);
+  ani->Add(153, 200);
   animations->Add(206, ani); // Lucky Block
 
   // Ảnh nền mặt đất (Ground) - 2 lớp
@@ -944,23 +946,51 @@ void LoadResources() {
   animations->Add(212, ani);
 
   // Grass Edge Animations
-  ani = new Animation(100); ani->Add(1141, 1000); animations->Add(219, ani);
-  ani = new Animation(100); ani->Add(1142, 1000); animations->Add(220, ani);
-  ani = new Animation(100); ani->Add(1151, 1000); animations->Add(221, ani);
-  ani = new Animation(100); ani->Add(1152, 1000); animations->Add(222, ani);
-  ani = new Animation(100); ani->Add(1143, 1000); animations->Add(223, ani);
-  ani = new Animation(100); ani->Add(1153, 1000); animations->Add(224, ani);
+  ani = new Animation(100);
+  ani->Add(1141, 1000);
+  animations->Add(219, ani);
+  ani = new Animation(100);
+  ani->Add(1142, 1000);
+  animations->Add(220, ani);
+  ani = new Animation(100);
+  ani->Add(1151, 1000);
+  animations->Add(221, ani);
+  ani = new Animation(100);
+  ani->Add(1152, 1000);
+  animations->Add(222, ani);
+  ani = new Animation(100);
+  ani->Add(1143, 1000);
+  animations->Add(223, ani);
+  ani = new Animation(100);
+  ani->Add(1153, 1000);
+  animations->Add(224, ani);
 
   // Staircase Edge Animations
-  ani = new Animation(100); ani->Add(1240, 1000); animations->Add(225, ani); // Top Center
-  ani = new Animation(100); ani->Add(1241, 1000); animations->Add(226, ani); // Top Left
-  ani = new Animation(100); ani->Add(1242, 1000); animations->Add(227, ani); // Top Right
-  ani = new Animation(100); ani->Add(1243, 1000); animations->Add(228, ani); // Top Isolated
-  
-  ani = new Animation(100); ani->Add(1250, 1000); animations->Add(229, ani); // Mid Center
-  ani = new Animation(100); ani->Add(1251, 1000); animations->Add(230, ani); // Mid Left
-  ani = new Animation(100); ani->Add(1252, 1000); animations->Add(231, ani); // Mid Right
-  ani = new Animation(100); ani->Add(1253, 1000); animations->Add(232, ani); // Mid Isolated
+  ani = new Animation(100);
+  ani->Add(1240, 1000);
+  animations->Add(225, ani); // Top Center
+  ani = new Animation(100);
+  ani->Add(1241, 1000);
+  animations->Add(226, ani); // Top Left
+  ani = new Animation(100);
+  ani->Add(1242, 1000);
+  animations->Add(227, ani); // Top Right
+  ani = new Animation(100);
+  ani->Add(1243, 1000);
+  animations->Add(228, ani); // Top Isolated
+
+  ani = new Animation(100);
+  ani->Add(1250, 1000);
+  animations->Add(229, ani); // Mid Center
+  ani = new Animation(100);
+  ani->Add(1251, 1000);
+  animations->Add(230, ani); // Mid Left
+  ani = new Animation(100);
+  ani->Add(1252, 1000);
+  animations->Add(231, ani); // Mid Right
+  ani = new Animation(100);
+  ani->Add(1253, 1000);
+  animations->Add(232, ani); // Mid Isolated
 
   // Black Brick (Underground) - Top
   ani = new Animation(100);

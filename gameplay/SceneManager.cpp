@@ -435,7 +435,9 @@ void SceneManager::Update(DWORD dt) {
     }
   } else if (currentState == STATE_PLAYING) {
     // Cập nhật thời gian đếm ngược trong GameManager
-    GameManager::GetInstance()->UpdateTime(dt);
+    if (!isMarioDying) {
+      GameManager::GetInstance()->UpdateTime(dt);
+    }
 
     // Cập nhật HUD (nhấp nháy PMeter)
     HUD::GetInstance()->Update(dt);
@@ -692,7 +694,7 @@ void SceneManager::Render() {
     }
 
     D3DXMATRIX matUI;
-    D3DXMatrixScaling(&matUI, 1.0f, 1.0f, 1.0f);
+    D3DXMatrixTranslation(&matUI, 0.0f, -1.0f, 0.0f);
     game->GetSpriteHandler()->SetViewTransform(&matUI);
 
     Sprite::globalScale = 1.0f;

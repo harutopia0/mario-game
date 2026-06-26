@@ -2,7 +2,6 @@
 
 #include "Level.h"
 #include "Ground.h"
-#include "Brick.h"
 #include "GameObject.h"
 #include "Pipe.h"
 #include "Flower.h"
@@ -14,7 +13,6 @@
 
 #include "Level.h"
 #include "Ground.h"
-#include "Brick.h"
 #include "GameObject.h"
 #include "Pipe.h"
 #include "Flower.h"
