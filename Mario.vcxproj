@@ -157,7 +157,11 @@
     <ClCompile Include="gameobject\CounterAttack.cpp" />
     <ClCompile Include="gameobject\LightningEffect.cpp" />
     <ClCompile Include="gameobject\RollingBall.cpp" />
+    <ClCompile Include="gameobject\Prop.cpp" />
+    <ClCompile Include="gameobject\PropSpawner.cpp" />
+    <ClCompile Include="gameobject\Water.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
+    <ClCompile Include="gameplay\Map.cpp" />
     <ClCompile Include="gameplay\SceneManager.cpp" />
     <ClCompile Include="input\MarioInputHandler.cpp" />
     <ClCompile Include="main.cpp" />
@@ -198,10 +202,14 @@
     <ClInclude Include="gameobject\Pipe.h" />
     <ClInclude Include="gameobject\Platform.h" />
     <ClInclude Include="gameobject\Projectile.h" />
+    <ClInclude Include="gameobject\Prop.h" />
+    <ClInclude Include="gameobject\PropSpawner.h" />
+    <ClInclude Include="gameobject\Water.h" />
     <ClInclude Include="gameobject\CounterAttack.h" />
     <ClInclude Include="gameobject\LightningEffect.h" />
     <ClInclude Include="gameobject\RollingBall.h" />
     <ClInclude Include="gameplay\GameManager.h" />
+    <ClInclude Include="gameplay\Map.h" />
     <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />
     <ClInclude Include="input\MarioInputHandler.h" />

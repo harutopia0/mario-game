@@ -104,6 +104,11 @@
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameobject\RollingBall.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\PropSpawner.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameobject\RollingBall.cpp">
@@ -228,6 +233,11 @@
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\RollingBall.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\PropSpawner.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\CounterAttack.h">

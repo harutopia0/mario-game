@@ -6,6 +6,7 @@ using namespace std;
 
 // Hệ thống phân lớp hiển thị (Z-Index)
 // Số nhỏ vẽ trước (chìm dưới), số lớn vẽ sau (đè lên trên)
+#define LAYER_PROP       -1  // Cảnh nền (đứng sau cả ống nước)
 #define LAYER_BACKGROUND  0   // Mario lúc chui ống nước
 #define LAYER_BLOCKS      1   // Gạch, Ống, Đất, Platform, LuckyBlock, Breakable
 #define LAYER_ITEMS       2   // Nấm, Hoa, Buff

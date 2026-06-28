@@ -1,5 +1,7 @@
 #pragma region ImportLibaries
 
+#include "gameplay/Map.h"
+
 #include "animation/Animations.h"
 #include "audio/AudioManager.h"
 #include "core/Game.h"
@@ -14,6 +16,9 @@
 #include "gameobject/Mario.h"
 #include "gameobject/Pipe.h"
 #include "gameobject/Platform.h"
+#include "gameobject/Water.h"
+#include "gameobject/Prop.h"
+#include "gameobject/PropSpawner.h"
 #include "gameplay/GameManager.h"
 #include "gameplay/SceneManager.h"
 #include "render/Camera.h"
@@ -40,8 +45,7 @@
 
 #pragma region GlobalVariables/GameObjects/ID_Definitions
 
-std::vector<GameObject *> g_objectList;
-std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
+
 
 bool g_showBBox = false;
 
@@ -69,7 +73,8 @@ enum TEXTURE_ID {
   TEX_LAVA_BRICK2 = 1001,
   TEX_BLACK_BRICK = 1002,
   TEX_GRASS_BRICK = 1003,
-  TEX_CLOUD_BRICK = 1004
+  TEX_CLOUD_BRICK = 1004,
+  TEX_CLOUDS = 1005
 };
 
 #pragma endregion
@@ -77,15 +82,10 @@ enum TEXTURE_ID {
 #pragma region FunctionPrototypes
 
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-void LoadMap(LPCWSTR filePath);
 void LoadResources();
 void Update(DWORD dt);
 void Render();
 void Cleanup();
-void AddObjectToGrid(GameObject *obj);
-void RemoveObjectFromGrid(GameObject *obj);
-void UpdateObjectGrid(GameObject *obj);
-void SpawnEnemy(float x, float y);
 
 #pragma endregion
 #pragma region MainFunction
@@ -157,6 +157,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     }
   }
 
+  // Dọn dẹp
   Cleanup();
   return 0;
 }
@@ -321,275 +322,6 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam,
   return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-void LoadMap(LPCWSTR filePath) {
-  ifstream f;
-  f.open(filePath);
-
-  if (!f.is_open())
-    return;
-
-  int rows, cols;
-  f >> rows >> cols;
-
-  std::vector<std::vector<int>> mapData(rows, std::vector<int>(cols, 0));
-  for (int r = 0; r < rows; r++) {
-    for (int c = 0; c < cols; c++) {
-      f >> mapData[r][c];
-    }
-  }
-
-  int currentLevel = GameManager::GetInstance()->GetLevel();
-  int animTop = 211;
-  int animBottom = 212;
-
-  if (currentLevel == 2) {
-    animTop = 213;
-    animBottom = 214;
-  } else if (currentLevel == 3) {
-    animTop = 217;
-    animBottom = 218;
-  } else if (currentLevel == 4 || currentLevel == 5) {
-    animTop = 215;
-    animBottom = 216;
-  } else {
-    animTop = 211;
-    animBottom = 212;
-  }
-
-  for (int r = 0; r < rows; r++) {
-    for (int c = 0; c < cols; c++) {
-      int tileID = mapData[r][c];
-
-      float realX = c * 15.0f;
-      float realY = ((rows - r - 1) * 15.0f) + 35.0f;
-
-      if (tileID == 1) {
-        bool hasLeft = (c > 0 && mapData[r][c - 1] == 1);
-        bool hasRight = (c < cols - 1 && mapData[r][c + 1] == 1);
-        bool isStair = (r < rows - 2);
-        bool isTop = (r == 0 || mapData[r - 1][c] != 1 || r == rows - 2);
-
-        int groundAnimId = animBottom;
-        if (isTop) {
-          groundAnimId = animTop;
-        }
-
-        if (animTop == 211) { // 211 is Grass Top
-          if (isStair) {
-            if (isTop) {
-              if (!hasLeft && !hasRight)
-                groundAnimId = 228;
-              else if (!hasLeft)
-                groundAnimId = 226;
-              else if (!hasRight)
-                groundAnimId = 227;
-              else
-                groundAnimId = 225; // Top Center
-            } else {
-              if (!hasLeft && !hasRight)
-                groundAnimId = 232;
-              else if (!hasLeft)
-                groundAnimId = 230;
-              else if (!hasRight)
-                groundAnimId = 231;
-              else
-                groundAnimId = 229; // Mid Center
-            }
-          } else {
-            // Normal Ground
-            if (isTop) {
-              if (!hasLeft && !hasRight)
-                groundAnimId = 223;
-              else if (!hasLeft)
-                groundAnimId = 219;
-              else if (!hasRight)
-                groundAnimId = 220;
-            } else {
-              if (!hasLeft && !hasRight)
-                groundAnimId = 224;
-              else if (!hasLeft)
-                groundAnimId = 221;
-              else if (!hasRight)
-                groundAnimId = 222;
-            }
-          }
-        }
-
-        if (!isStair) { // Chỉ áp dụng 2 lớp cho 2 hàng dưới cùng (Mặt đất)
-          GroundBlock *ground = new GroundBlock(realX, realY, groundAnimId);
-          g_objectList.push_back(ground);
-
-          int cellX = (int)(realX / GRID_CELL_SIZE);
-          int cellY = (int)(realY / GRID_CELL_SIZE);
-
-          if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-              cellY < MAX_CELL_ROW) {
-            AddObjectToGrid(ground);
-          }
-        } else {
-          // Các khối trên không trung trở thành Gạch (Breakable) và hiển thị hình
-          // Ground Block
-          Breakable *brick = new Breakable(realX, realY, groundAnimId);
-          g_objectList.push_back(brick);
-
-          int cellX = (int)(realX / GRID_CELL_SIZE);
-          int cellY = (int)(realY / GRID_CELL_SIZE);
-
-          if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-              cellY < MAX_CELL_ROW) {
-            AddObjectToGrid(brick);
-          }
-        }
-      } else if (tileID == 3) {
-        Platform *platform = new Platform(realX, realY, 202);
-        g_objectList.push_back(platform);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)(realY / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(platform);
-        }
-      } else if (tileID == 4) {
-        Platform *platform = new Platform(realX, realY, 203);
-        g_objectList.push_back(platform);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)(realY / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(platform);
-        }
-      } else if (tileID == 5) {
-        Breakable *breakableBlock = new Breakable(realX, realY, 205);
-        g_objectList.push_back(breakableBlock);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)(realY / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(breakableBlock);
-        }
-      } else if (tileID == 6) {
-        LuckyBlock *lucky = new LuckyBlock(realX, realY, 206, 201);
-        g_objectList.push_back(lucky);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)(realY / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(lucky);
-        }
-      } else if (tileID >= 7 && tileID <= 10) {
-        int pipeHeight = tileID - 5; // 7->2, 8->3, 9->4
-        // Tile đánh dấu ĐỈNH ống, nhưng ống spawn từ dưới lên
-        // Cần offset y xuống để chân ống sát mặt đất
-        float pipeY = realY - (pipeHeight - 1) * 15.0f;
-        Pipe *pipe = new Pipe(realX, pipeY, pipeHeight, false, 0, 0);
-        g_objectList.push_back(pipe);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)(realY / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(pipe);
-          // Ống nước có thể cao nhiều grid cells
-          for (int i = 1; i <= pipeHeight / 4 + 1; i++) {
-            if (cellY + i < MAX_CELL_ROW) {
-              grid[cellY + i][cellX].push_back(pipe);
-            }
-          }
-        }
-      } else if (tileID == 11) {
-        Goomba *goomba = new Goomba(realX, realY + 2.0f, GOOMBA_TYPE_NORMAL);
-        g_objectList.push_back(goomba);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(goomba);
-        }
-      } else if (tileID == 12) {
-        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_GREEN);
-        g_objectList.push_back(koopa);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(koopa);
-        }
-      } else if (tileID == 13) {
-        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_RED);
-        g_objectList.push_back(koopa);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(koopa);
-        }
-      } else if (tileID == 14) {
-        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_GREEN_FLYING);
-        g_objectList.push_back(koopa);
-
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(koopa);
-        }
-      }
-    }
-  }
-  GameManager::GetInstance()->SetMapRightEdge(cols * 15.0f);
-  Camera::GetInstance()->SetMapBoundary(cols * 15.0f, rows * 15.0f);
-  f.close();
-}
-
-void AddObjectToGrid(GameObject *obj) {
-  int col = (int)(obj->GetX() / GRID_CELL_SIZE);
-  int row = (int)(obj->GetY() / GRID_CELL_SIZE);
-  if (col < 0 || col >= MAX_CELL_COL || row < 0 || row >= MAX_CELL_ROW)
-    return;
-  grid[row][col].push_back(obj);
-
-  obj->gridRow = row;
-  obj->gridCol = col;
-}
-
-void RemoveObjectFromGrid(GameObject *obj) {
-  if (obj->gridRow < 0 || obj->gridCol < 0)
-    return;
-  auto &cell = grid[obj->gridRow][obj->gridCol];
-  cell.erase(std::remove(cell.begin(), cell.end(), obj), cell.end());
-}
-
-void UpdateObjectGrid(GameObject *obj) {
-  int newCol = (int)(obj->GetX() / GRID_CELL_SIZE);
-  int newRow = (int)(obj->GetY() / GRID_CELL_SIZE);
-
-  if (newCol == obj->gridCol && newRow == obj->gridRow)
-    return;
-  RemoveObjectFromGrid(obj);
-  if (newCol < 0 || newCol >= MAX_CELL_COL || newRow < 0 ||
-      newRow >= MAX_CELL_ROW)
-    return;
-  grid[newRow][newCol].push_back(obj);
-
-  obj->gridRow = newRow;
-  obj->gridCol = newCol;
-}
 
 void LoadResources() {
   Textures *textures = Textures::GetInstance();
@@ -636,6 +368,7 @@ void LoadResources() {
   textures->Add(TEX_GRASS_BRICK, L"assets/grass.png");
   // cloud brick
   textures->Add(TEX_CLOUD_BRICK, L"assets/cloudbrick.png");
+  textures->Add(TEX_CLOUDS, L"assets/clouds.png");
 
   // ==========================================
   // 2. CẮT SPRITES
@@ -800,6 +533,12 @@ void LoadResources() {
   sprites->Add(1242, 35, 103, 50, 118, TEX_GRASS_BRICK); // Top Right
   sprites->Add(1243, 52, 103, 67, 118, TEX_GRASS_BRICK); // Top Isolated
 
+  // Floating Grass Platform
+  sprites->Add(1244, 1, 52, 16, 67, TEX_GRASS_BRICK);  // Floating Left
+  sprites->Add(1245, 18, 52, 33, 67, TEX_GRASS_BRICK); // Floating Center
+  sprites->Add(1246, 35, 52, 50, 67, TEX_GRASS_BRICK); // Floating Right
+  sprites->Add(1247, 52, 52, 67, 67, TEX_GRASS_BRICK); // Floating Isolated
+
   sprites->Add(1250, 18, 120, 33, 135, TEX_GRASS_BRICK); // Middle Center
   sprites->Add(1251, 1, 120, 16, 135, TEX_GRASS_BRICK);  // Middle Left
   sprites->Add(1252, 35, 120, 50, 135, TEX_GRASS_BRICK); // Middle Right
@@ -864,9 +603,29 @@ void LoadResources() {
   // White line drawing block sprite
   sprites->Add(99998, 0, 0, 1, 1, TEX_WHITE);
 
+  // Water Sprites
+  sprites->Add(80011, 264, 634, 279, 663, TEX_COMMON2);
+  sprites->Add(80012, 298, 634, 313, 663, TEX_COMMON2);
+  sprites->Add(80013, 332, 634, 347, 663, TEX_COMMON2);
+
+  // Jungle Props
+  sprites->Add(81001, 55, 7, 70, 22, TEX_COMMON2); // Bush
+  sprites->Add(81002, 3, 80, 130, 143, TEX_COMMON2); // Cliff
+  sprites->Add(81003, 59, 27, 121, 74, TEX_COMMON2); // Small cliff
+  
+  // Clouds
+  sprites->Add(81004, 52, 3, 83, 26, TEX_CLOUDS); // Single cloud
+  sprites->Add(81005, 1, 3, 48, 26, TEX_CLOUDS);  // Double cloud
+
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION
   // ==========================================
+
+  // Water Animation
+  ani = new Animation(200);
+  ani->Add(80011);
+  ani->Add(80012);
+  animations->Add(8001, ani);
 
   // Small Mario Animations
   ani = new Animation(100);
@@ -978,6 +737,19 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(1243, 1000);
   animations->Add(228, ani); // Top Isolated
+
+  ani = new Animation(100);
+  ani->Add(1244, 1000);
+  animations->Add(236, ani); // Floating Left
+  ani = new Animation(100);
+  ani->Add(1245, 1000);
+  animations->Add(235, ani); // Floating Center
+  ani = new Animation(100);
+  ani->Add(1246, 1000);
+  animations->Add(237, ani); // Floating Right
+  ani = new Animation(100);
+  ani->Add(1247, 1000);
+  animations->Add(238, ani); // Floating Isolated
 
   ani = new Animation(100);
   ani->Add(1250, 1000);
@@ -1389,9 +1161,7 @@ void LoadResources() {
 }
 
 void Cleanup() {
-  for (GameObject *obj : g_objectList)
-    delete obj;
-  g_objectList.clear();
+  Map::GetInstance()->Clear();
 
   // Dọn dẹp Scene Manager
   SceneManager::GetInstance()->Cleanup();
@@ -1401,12 +1171,6 @@ void Cleanup() {
   AudioManager::GetInstance()->CleanUp();
 
   Game::GetInstance()->ReleaseDirectX();
-}
-
-void SpawnEnemy(float x, float y) {
-  Goomba *enemy = new Goomba(x, y, GOOMBA_TYPE_NORMAL);
-  g_objectList.push_back(enemy);
-  AddObjectToGrid(enemy);
 }
 
 #pragma endregion

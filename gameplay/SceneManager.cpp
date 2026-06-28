@@ -1,4 +1,5 @@
 #include "SceneManager.h"
+#include "Map.h"
 #include "../audio/AudioManager.h"
 #include "../core/Game.h"
 #include "../ui/Intro.h"
@@ -26,14 +27,12 @@
 
 SceneManager *SceneManager::instance = nullptr;
 
-extern std::vector<GameObject *> g_objectList;
-extern std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
+auto& g_objectList = Map::GetInstance()->GetObjects();
+
 extern bool g_showBBox;
-extern void LoadMap(LPCWSTR filePath);
-extern void RemoveObjectFromGrid(GameObject *obj);
-extern void UpdateObjectGrid(GameObject *obj);
-extern void AddObjectToGrid(GameObject *obj);
-extern void SpawnEnemy(float x, float y);
+
+
+
 
 SceneManager::SceneManager() {
   currentState = STATE_INTRO;
@@ -81,19 +80,7 @@ void SceneManager::Init() {
 
 // Hàm dọn sạch toàn bộ game objects và grid
 static void ClearAllGameObjects() {
-  extern std::vector<GameObject *> g_objectList;
-  extern std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
-
-  for (GameObject *obj : g_objectList) {
-    delete obj;
-  }
-  g_objectList.clear();
-
-  for (int r = 0; r < MAX_CELL_ROW; r++) {
-    for (int c = 0; c < MAX_CELL_COL; c++) {
-      grid[r][c].clear();
-    }
-  }
+  Map::GetInstance()->Clear();
 }
 
 void SceneManager::SwitchTo(GameState newState) {
@@ -419,15 +406,15 @@ void SceneManager::Update(DWORD dt) {
           GameManager::GetInstance()->SetLevel(levelToLoad);
 
           if (levelToLoad == 5) {
-            LoadMap(L"levels/Level_5.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_5.txt");
           } else if (levelToLoad == 4) {
-            LoadMap(L"levels/Level_4.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_4.txt");
           } else if (levelToLoad == 3) {
-            LoadMap(L"levels/Level_3.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_3.txt");
           } else if (levelToLoad == 2) {
-            LoadMap(L"levels/Level_2.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_2.txt");
           } else {
-            LoadMap(L"levels/Level_1.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_1.txt");
           }
           SwitchTo(STATE_PLAYING);
         }
@@ -544,7 +531,7 @@ void SceneManager::Update(DWORD dt) {
         obj->Update(dt, NULL);
         continue;
       }
-      UpdateObjectGrid(obj);
+      Map::GetInstance()->UpdateObjectGrid(obj);
       int currentCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
       int currentCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
 
@@ -557,7 +544,7 @@ void SceneManager::Update(DWORD dt) {
 
           if (checkRow >= 0 && checkRow < MAX_CELL_ROW && checkCol >= 0 &&
               checkCol < MAX_CELL_COL) {
-            for (GameObject *g : grid[checkRow][checkCol]) {
+            for (GameObject *g : Map::GetInstance()->GetGrid()[checkRow][checkCol]) {
               if (std::find(nearbyObjects.begin(), nearbyObjects.end(), g) ==
                   nearbyObjects.end()) {
                 nearbyObjects.push_back(g);
@@ -572,7 +559,7 @@ void SceneManager::Update(DWORD dt) {
     g_objectList.erase(std::remove_if(g_objectList.begin(), g_objectList.end(),
                                       [](GameObject *obj) {
                                         if (obj->IsDeleted()) {
-                                          RemoveObjectFromGrid(obj);
+                                          Map::GetInstance()->RemoveObjectFromGrid(obj);
                                           delete obj;
                                           return true;
                                         }
@@ -654,7 +641,7 @@ void SceneManager::Render() {
       realMario = dynamic_cast<Mario *>(g_objectList[0]);
     }
 
-    for (int l = LAYER_BACKGROUND; l <= LAYER_EFFECTS; l++) {
+    for (int l = LAYER_PROP; l <= LAYER_EFFECTS; l++) {
       for (size_t i = 0; i < g_objectList.size(); i++) {
         GameObject *obj = g_objectList[i];
         if (obj->IsDeleted())
@@ -865,4 +852,4 @@ void SceneManager::RenderWorldSlashOverlay() {
       }
     }
   }
-}
+}

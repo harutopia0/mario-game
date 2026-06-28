@@ -1,4 +1,5 @@
 #include "RollingBall.h"
+#include "../gameplay/Map.h"
 #include "../animation/Animations.h"
 #include "../physics/Collision.h"
 #include "../gameobject/Platform.h"
@@ -39,7 +40,7 @@ void RollingBall::Update(DWORD dt, vector<GameObject*>* coObjects) {
         return;
     }
 
-    extern std::vector<GameObject*> g_objectList;
+    auto& g_objectList = Map::GetInstance()->GetObjects();
     if (!g_objectList.empty() && g_objectList[0] != nullptr) {
         float marioX = g_objectList[0]->GetX();
         // Camera (màn hình) rộng khoảng 320px (khi zoom 2x), nếu cách Mario > 350px là ngoài tầm camera.
