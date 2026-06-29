@@ -15,7 +15,7 @@
 #define MARIO_FRICTION			0.0004f
 
 // Thời gian bất tử
-#define MARIO_UNTOUCHABLE_TIME 5000
+#define MARIO_UNTOUCHABLE_TIME 3000
 
 // ĐỊNH NGHĨA STEP THỜI GIAN GIỮA CÁC MỨC PMETER (mili-giây)
 #define PMETER_STEP_UP_TIME     150
@@ -103,4 +103,5 @@ public:
 	bool untouchable;
 	bool isStarInvincible;
 	void TakeDamage();
+	void ResolveOverlap();
 };

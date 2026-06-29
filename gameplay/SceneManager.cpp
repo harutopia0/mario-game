@@ -1,4 +1,10 @@
 #include "SceneManager.h"
+#include "Map.h"
+#include "../audio/AudioManager.h"
+#include "../core/Game.h"
+#include "../ui/Intro.h"
+#include "../ui/WorldMap.h"
+#include "../ui/HUD.h"
 #include "../audio/AudioManager.h"
 #include "../core/Game.h"
 #include "../gameobject/Buff.h"
@@ -21,14 +27,12 @@
 
 SceneManager *SceneManager::instance = nullptr;
 
-extern std::vector<GameObject *> g_objectList;
-extern std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
+auto& g_objectList = Map::GetInstance()->GetObjects();
+
 extern bool g_showBBox;
-extern void LoadMap(LPCWSTR filePath);
-extern void RemoveObjectFromGrid(GameObject *obj);
-extern void UpdateObjectGrid(GameObject *obj);
-extern void AddObjectToGrid(GameObject *obj);
-extern void SpawnEnemy(float x, float y);
+
+
+
 
 SceneManager::SceneManager() {
   currentState = STATE_INTRO;
@@ -76,19 +80,7 @@ void SceneManager::Init() {
 
 // Hàm dọn sạch toàn bộ game objects và grid
 static void ClearAllGameObjects() {
-  extern std::vector<GameObject *> g_objectList;
-  extern std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
-
-  for (GameObject *obj : g_objectList) {
-    delete obj;
-  }
-  g_objectList.clear();
-
-  for (int r = 0; r < MAX_CELL_ROW; r++) {
-    for (int c = 0; c < MAX_CELL_COL; c++) {
-      grid[r][c].clear();
-    }
-  }
+  Map::GetInstance()->Clear();
 }
 
 void SceneManager::SwitchTo(GameState newState) {
@@ -145,10 +137,6 @@ void SceneManager::SwitchTo(GameState newState) {
     g_objectList.insert(g_objectList.begin(), mario);
 
     // Spawn các objects cơ bản cho màn chơi
-
-    Buff *potion = new Buff(150.0f, 200.0f, 301);
-    g_objectList.push_back(potion);
-    AddObjectToGrid(potion);
 
 
 
@@ -418,15 +406,15 @@ void SceneManager::Update(DWORD dt) {
           GameManager::GetInstance()->SetLevel(levelToLoad);
 
           if (levelToLoad == 5) {
-            LoadMap(L"levels/Level_5.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_5.txt");
           } else if (levelToLoad == 4) {
-            LoadMap(L"levels/Level_4.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_4.txt");
           } else if (levelToLoad == 3) {
-            LoadMap(L"levels/Level_3.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_3.txt");
           } else if (levelToLoad == 2) {
-            LoadMap(L"levels/Level_2.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_2.txt");
           } else {
-            LoadMap(L"levels/Level_1.txt");
+            Map::GetInstance()->LoadMap(L"levels/Level_1.txt");
           }
           SwitchTo(STATE_PLAYING);
         }
@@ -434,7 +422,9 @@ void SceneManager::Update(DWORD dt) {
     }
   } else if (currentState == STATE_PLAYING) {
     // Cập nhật thời gian đếm ngược trong GameManager
-    GameManager::GetInstance()->UpdateTime(dt);
+    if (!isMarioDying) {
+      GameManager::GetInstance()->UpdateTime(dt);
+    }
 
     // Cập nhật HUD (nhấp nháy PMeter)
     HUD::GetInstance()->Update(dt);
@@ -541,7 +531,7 @@ void SceneManager::Update(DWORD dt) {
         obj->Update(dt, NULL);
         continue;
       }
-      UpdateObjectGrid(obj);
+      Map::GetInstance()->UpdateObjectGrid(obj);
       int currentCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
       int currentCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
 
@@ -554,7 +544,7 @@ void SceneManager::Update(DWORD dt) {
 
           if (checkRow >= 0 && checkRow < MAX_CELL_ROW && checkCol >= 0 &&
               checkCol < MAX_CELL_COL) {
-            for (GameObject *g : grid[checkRow][checkCol]) {
+            for (GameObject *g : Map::GetInstance()->GetGrid()[checkRow][checkCol]) {
               if (std::find(nearbyObjects.begin(), nearbyObjects.end(), g) ==
                   nearbyObjects.end()) {
                 nearbyObjects.push_back(g);
@@ -569,7 +559,7 @@ void SceneManager::Update(DWORD dt) {
     g_objectList.erase(std::remove_if(g_objectList.begin(), g_objectList.end(),
                                       [](GameObject *obj) {
                                         if (obj->IsDeleted()) {
-                                          RemoveObjectFromGrid(obj);
+                                          Map::GetInstance()->RemoveObjectFromGrid(obj);
                                           delete obj;
                                           return true;
                                         }
@@ -584,37 +574,41 @@ void SceneManager::Render() {
   D3DXMATRIX matZoom;
 
   if (currentState == STATE_INTRO) {
+    Sprite::globalScale = 1.0f;
     D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     game->GetSpriteHandler()->SetViewTransform(&matZoom);
     if (introScene)
       introScene->Render();
   } else if (currentState == STATE_WORLD_MAP) {
+    Sprite::globalScale = 1.0f;
     D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     game->GetSpriteHandler()->SetViewTransform(&matZoom);
     if (worldMapScene)
       worldMapScene->Render();
   } else if (currentState == STATE_PLAYING) {
+    Sprite::globalScale = 2.0f;
+
     D3DXMATRIX matCamera;
     D3DXMATRIX matFinal;
 
-    float zoomScale = 2.0f;
+    float zoomScale = 1.0f;
     if (isMarioWorldSlashing) {
       DWORD elapsed = (DWORD)(GetTickCount64() - worldSlashStartTime);
       if (elapsed < 400) {
-        zoomScale = 2.0f - (elapsed / 400.0f) * 1.0f; // Smooth zoom out to 1.0f (0-400ms)
+        zoomScale = 1.0f - (elapsed / 400.0f) * 0.5f; // Smooth zoom out to 0.5f (0-400ms)
       } else if (elapsed >= 400 && elapsed < 1600) {
-        zoomScale = 1.0f; // Stay zoomed out (400ms-1600ms)
+        zoomScale = 0.5f; // Stay zoomed out (400ms-1600ms)
       } else if (elapsed >= 1600 && elapsed < 2000) {
-        zoomScale = 1.0f + ((elapsed - 1600.0f) / 400.0f) * 1.0f; // Smooth zoom in back to 2.0f (1600ms-2000ms)
+        zoomScale = 0.5f + ((elapsed - 1600.0f) / 400.0f) * 0.5f; // Smooth zoom in back to 1.0f (1600ms-2000ms)
       }
     }
 
-    D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
+    D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     matCamera = Camera::GetInstance()->GetViewMatrix();
 
     if (isMarioWorldSlashing) {
       D3DXMATRIX matTranslateToCenter, matScaleRelative, matTranslateBack;
-      float relativeScale = zoomScale / 2.0f;
+      float relativeScale = zoomScale;
 
       D3DXMatrixTranslation(&matTranslateToCenter, -320.0f, -240.0f, 0.0f);
       D3DXMatrixScaling(&matScaleRelative, relativeScale, relativeScale, 1.0f);
@@ -647,7 +641,7 @@ void SceneManager::Render() {
       realMario = dynamic_cast<Mario *>(g_objectList[0]);
     }
 
-    for (int l = LAYER_BACKGROUND; l <= LAYER_EFFECTS; l++) {
+    for (int l = LAYER_PROP; l <= LAYER_EFFECTS; l++) {
       for (size_t i = 0; i < g_objectList.size(); i++) {
         GameObject *obj = g_objectList[i];
         if (obj->IsDeleted())
@@ -687,9 +681,10 @@ void SceneManager::Render() {
     }
 
     D3DXMATRIX matUI;
-    D3DXMatrixScaling(&matUI, 1.0f, 1.0f, 1.0f);
+    D3DXMatrixTranslation(&matUI, 0.0f, -1.0f, 0.0f);
     game->GetSpriteHandler()->SetViewTransform(&matUI);
 
+    Sprite::globalScale = 1.0f;
     HUD::GetInstance()->Render();
 
     if (isMarioWorldSlashing) {
@@ -857,4 +852,4 @@ void SceneManager::RenderWorldSlashOverlay() {
       }
     }
   }
-}
+}

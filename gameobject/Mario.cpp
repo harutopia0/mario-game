@@ -1,9 +1,9 @@
 #include "Mario.h"
+#include "../gameplay/Map.h"
 #include "../render/Camera.h"
 #include "../animation/Animations.h"
 #include "../audio/AudioManager.h"
 #include "../gameobject/Breakable.h"
-#include "../gameobject/Brick.h"
 #include "../gameobject/Block.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
@@ -107,6 +107,12 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
         AudioManager::GetInstance()->ResumeMusic();
       }
     }
+  }
+
+  // Rớt khỏi map
+  if (y < 0.0f && !isDead) {
+    Die();
+    vy = 0.45f; // Nảy cao hơn một chút khi rớt vực
   }
 
   // Mario chết
@@ -224,7 +230,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                                           sb, t, temp_nx, temp_ny);
 
       if (t < 1.0f && temp_nx != 0) {
-        if (dynamic_cast<Block *>(e) && !dynamic_cast<Platform *>(e)) {
+        if (dynamic_cast<Block *>(e) && !e->IsOneWay()) {
           if (t < min_tx) {
             min_tx = t;
             nx_col = temp_nx;
@@ -300,7 +306,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                                           sb, t, temp_nx, temp_ny);
 
       if (t < 1.0f && temp_ny != 0) {
-        if (dynamic_cast<Block *>(e) && !dynamic_cast<Platform *>(e)) {
+        if (dynamic_cast<Block *>(e) && !e->IsOneWay()) {
           if (t < min_ty) {
             min_ty = t;
             ny_col = temp_ny;
@@ -344,7 +350,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           }
         }
 
-        else if (dynamic_cast<Platform *>(e)) {
+        else if (e->IsOneWay()) {
           if (temp_ny == 1) {
             if (t < min_ty) {
               min_ty = t;
@@ -389,7 +395,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
 
   // KIỂM TRA VA CHẠM NGANG VỚI ENEMY (AABB overlap - xử lý cả khi mario đứng yên)
   // Thực hiện sau khi đã di chuyển xong để đảm bảo chính xác
-  if (!untouchable && !isDead && !isParrying) {
+  if (!isDead && !isParrying) {
     float fl, ft, fr, fb;
     GetBoundingBox(fl, ft, fr, fb);
 
@@ -409,6 +415,15 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
       // MTV (Minimum Translation Vector): axis có overlap nhỏ hơn = hướng va chạm
       float actualOverlapX = min(fr, er) - max(fl, el);
       float actualOverlapY = min(fb, eb) - max(ft, et);
+
+      // Star Invincible: giết quái ngay khi chạm vào
+      if (isStarInvincible) {
+        enemy->SetDied(true);
+        continue;
+      }
+
+      // Nếu đang untouchable (nhưng không star), bỏ qua damage
+      if (untouchable) continue;
 
       Koopa *koopa = dynamic_cast<Koopa *>(enemy);
 
@@ -591,6 +606,54 @@ void Mario::SetBig(bool big) {
     GameManager::GetInstance()->SetMarioFire(false);
     GameManager::GetInstance()->SetMarioSukuna(false);
   }
+
+  // Đẩy Mario ra khỏi các block nếu bounding box mới bị overlap
+  ResolveOverlap();
+}
+
+void Mario::ResolveOverlap() {
+  auto& g_objectList = Map::GetInstance()->GetObjects();
+
+  float ml, mt, mr, mb;
+  GetBoundingBox(ml, mt, mr, mb);
+
+  for (UINT i = 0; i < g_objectList.size(); i++) {
+    GameObject* obj = g_objectList[i];
+    if (obj == this || obj->IsDeleted()) continue;
+
+    Block* block = dynamic_cast<Block*>(obj);
+    if (!block || block->IsOneWay()) continue;
+
+    float bl, bt, br, bb;
+    block->GetBoundingBox(bl, bt, br, bb);
+
+    // Kiểm tra AABB overlap
+    if (mr > bl && ml < br && mb > bt && mt < bb) {
+      // Tính khoảng xâm nhập ở mỗi hướng
+      float overlapLeft = mr - bl;
+      float overlapRight = br - ml;
+      float overlapTop = mb - bt;
+      float overlapBottom = bb - mt;
+
+      // Tìm hướng xâm nhập nhỏ nhất để đẩy ra
+      float minOverlap = overlapLeft;
+      int dir = 0; // 0=left, 1=right, 2=up, 3=down
+
+      if (overlapRight < minOverlap) { minOverlap = overlapRight; dir = 1; }
+      if (overlapTop < minOverlap) { minOverlap = overlapTop; dir = 2; }
+      if (overlapBottom < minOverlap) { minOverlap = overlapBottom; dir = 3; }
+
+      switch (dir) {
+        case 0: x -= overlapLeft; break;   // Đẩy sang trái
+        case 1: x += overlapRight; break;  // Đẩy sang phải
+        case 2: y += overlapTop; break;    // Đẩy lên trên (hệ tọa độ Y ngược)
+        case 3: y -= overlapBottom; break; // Đẩy xuống dưới
+      }
+
+      // Cập nhật lại bounding box sau khi đẩy
+      GetBoundingBox(ml, mt, mr, mb);
+    }
+  }
 }
 
 void Mario::SetFire(bool fire) {
@@ -618,8 +681,8 @@ void Mario::ShootFireball() {
   if (!isFire) return;
   if (GetTickCount64() - lastShootTime < 500) return; // Cooldown 0.5s
 
-  extern std::vector<GameObject*> g_objectList;
-  extern void AddObjectToGrid(GameObject* obj);
+  auto& g_objectList = Map::GetInstance()->GetObjects();
+  
 
   // Vị trí xuất phát của fireball (dời vào giữa người Mario để tránh lún tường)
   float spawnX = x + width / 2.0f - FIREBALL_WIDTH / 2.0f;
@@ -627,7 +690,7 @@ void Mario::ShootFireball() {
 
   Fireball* fb = new Fireball(spawnX, spawnY, nx > 0 ? 1 : -1);
   g_objectList.push_back(fb);
-  AddObjectToGrid(fb);
+  Map::GetInstance()->AddObjectToGrid(fb);
 
   AudioManager::GetInstance()->PlaySFX("fireball");
   lastShootTime = GetTickCount64();
@@ -638,8 +701,8 @@ void Mario::ShootFireball() {
 bool Mario::ShootFireBlast() {
   if (!isFire) return false;
 
-  extern std::vector<GameObject*> g_objectList;
-  extern void AddObjectToGrid(GameObject* obj);
+  auto& g_objectList = Map::GetInstance()->GetObjects();
+  
 
   float spawnX = (nx > 0) ? (x + width) : (x - FIREBLAST_WIDTH);
   float spawnY = y + (height / 2.0f) - (FIREBLAST_HEIGHT / 2.0f);
@@ -648,7 +711,7 @@ bool Mario::ShootFireBlast() {
 
   FireBlast* fb = new FireBlast(spawnX, spawnY, nx > 0 ? 1 : -1);
   g_objectList.push_back(fb);
-  AddObjectToGrid(fb);
+  Map::GetInstance()->AddObjectToGrid(fb);
 
   lastShootTime = GetTickCount64();
   return true;
@@ -657,8 +720,8 @@ bool Mario::ShootFireBlast() {
 bool Mario::ShootRollingBall() {
   if (!isBig) return false;
 
-  extern std::vector<GameObject*> g_objectList;
-  extern void AddObjectToGrid(GameObject* obj);
+  auto& g_objectList = Map::GetInstance()->GetObjects();
+  
 
   float spawnX = (nx > 0) ? (x + width) : (x - ROLLINGBALL_WIDTH);
   float spawnY = y + 2.0f;
@@ -673,7 +736,7 @@ bool Mario::ShootRollingBall() {
     GameObject* e = g_objectList[i];
     if (e == this || e->IsDeleted()) continue;
     
-    if (dynamic_cast<Block*>(e) && !dynamic_cast<Platform*>(e)) {
+    if (dynamic_cast<Block*>(e) && !e->IsOneWay()) {
       float sl, st, sr, sb;
       e->GetBoundingBox(sl, st, sr, sb);
       if (mr > sl && ml < sr && mb > st && mt < sb) {
@@ -687,7 +750,7 @@ bool Mario::ShootRollingBall() {
 
   RollingBall* rb = new RollingBall(spawnX, spawnY, nx);
   g_objectList.push_back(rb);
-  AddObjectToGrid(rb);
+  Map::GetInstance()->AddObjectToGrid(rb);
 
   lastShootTime = GetTickCount64();
   return true;
@@ -701,6 +764,8 @@ void Mario::Die() {
   isDead = true;
   vx = 0;
   vy = 0.2f;
+  pMeterLevel = 0; // Reset pMeter
+  HUD::GetInstance()->SetPMeter(0);
   deathStart = GetTickCount64();
 
   SceneManager::GetInstance()->ProcessMarioDeath();
@@ -791,12 +856,12 @@ bool Mario::StartParry() {
     return false;
   }
 
-  extern std::vector<GameObject*> g_objectList;
-  extern void AddObjectToGrid(GameObject* obj);
+  auto& g_objectList = Map::GetInstance()->GetObjects();
+  
 
   CounterAttack* ca = new CounterAttack(this);
   g_objectList.push_back(ca);
-  AddObjectToGrid(ca);
+  Map::GetInstance()->AddObjectToGrid(ca);
 
   isParrying = true;
   vx = 0.0f;
@@ -816,8 +881,8 @@ void Mario::OnParrySuccess(GameObject* enemy) {
   }
 
   // Spawn visual effect of red/black lightning at enemy location
-  extern std::vector<GameObject*> g_objectList;
-  extern void AddObjectToGrid(GameObject* obj);
+  auto& g_objectList = Map::GetInstance()->GetObjects();
+  
 
   float el, et, er, eb;
   enemy->GetBoundingBox(el, et, er, eb);
@@ -826,7 +891,7 @@ void Mario::OnParrySuccess(GameObject* enemy) {
 
   LightningEffect* le = new LightningEffect(ecX, ecY, this->nx);
   g_objectList.push_back(le);
-  AddObjectToGrid(le);
+  Map::GetInstance()->AddObjectToGrid(le);
 
   // Play sound
   AudioManager::GetInstance()->PlaySFX("slash-sound");

@@ -74,7 +74,6 @@
     <ClCompile Include="core\GameObject.cpp">
       <Filter>Source Files\core</Filter>
     </ClCompile>
-    <ClCompile Include="gameobject\Brick.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameobject\Buff.cpp">
@@ -105,9 +104,16 @@
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameobject\RollingBall.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\PropSpawner.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
-
+    <ClCompile Include="gameobject\RollingBall.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
     <ClCompile Include="gameobject\Mario.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
@@ -156,6 +162,9 @@
     <ClCompile Include="ui\WorldMap.cpp">
       <Filter>Source Files\ui</Filter>
     </ClCompile>
+    <ClCompile Include="render\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation\Animation.h">
@@ -191,7 +200,6 @@
     <ClInclude Include="core\GameObject.h">
       <Filter>Source Files\core</Filter>
     </ClInclude>
-    <ClInclude Include="gameobject\Brick.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\Block.h">
@@ -225,6 +233,11 @@
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\RollingBall.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\PropSpawner.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\CounterAttack.h">
@@ -283,6 +296,7 @@
     <ClInclude Include="ui\WorldMap.h">
       <Filter>Source Files\ui</Filter>
     </ClInclude>
+    <ClInclude Include="render\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

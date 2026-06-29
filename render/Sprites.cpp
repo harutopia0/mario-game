@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "../render/Sprites.h"
 
 Sprites* Sprites::__instance = NULL;
@@ -11,6 +12,11 @@ Sprites* Sprites::GetInstance()
 void Sprites::Add(int id, int left, int top, int right, int bottom, int textureId)
 {
     LPDIRECT3DTEXTURE tex = Textures::GetInstance()->Get(textureId);
+    if (tex == NULL) {
+        char buf[256];
+        sprintf(buf, "WARNING: Sprite ID %d has NULL texture (textureId %d)\n", id, textureId);
+        OutputDebugStringA(buf);
+    }
 
     Sprite* sprite = new Sprite(id, left, top, right, bottom, tex);
     sprites[id] = sprite;
