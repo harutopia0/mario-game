@@ -617,6 +617,30 @@ void LoadResources() {
   sprites->Add(81004, 52, 3, 83, 26, TEX_CLOUDS); // Single cloud
   sprites->Add(81005, 1, 3, 48, 26, TEX_CLOUDS);  // Double cloud
 
+  // Piranha Plant
+  sprites->Add(30001, 15, 349, 30, 373, TEX_ENEMIES_2);
+  sprites->Add(30002, 65, 350, 80, 373, TEX_ENEMIES_2);
+
+  // Venus Fire Trap (Bottom-Up)
+  sprites->Add(30011, 164, 399, 180, 423, TEX_ENEMIES_2); // Trái lên ngậm
+  sprites->Add(30012, 64, 399, 80, 423, TEX_ENEMIES_2);   // Trái lên mở
+  sprites->Add(30013, 215, 399, 230, 423, TEX_ENEMIES_2); // Phải lên ngậm
+  sprites->Add(30014, 315, 399, 330, 423, TEX_ENEMIES_2); // Phải lên mở
+  sprites->Add(30015, 115, 399, 130, 423, TEX_ENEMIES_2); // Trái xuống ngậm
+  sprites->Add(30016, 15, 399, 30, 423, TEX_ENEMIES_2);   // Trái xuống mở
+  sprites->Add(30017, 264, 399, 279, 423, TEX_ENEMIES_2); // Phải xuống ngậm
+  sprites->Add(30018, 364, 399, 379, 423, TEX_ENEMIES_2); // Phải xuống mở
+
+  // Venus Fire Trap (Top-Down)
+  sprites->Add(30021, 115, 449, 130, 473, TEX_ENEMIES_2); // Trái lên ngậm
+  sprites->Add(30022, 15, 449, 30, 473, TEX_ENEMIES_2);   // Trái lên mở
+  sprites->Add(30023, 264, 449, 279, 473, TEX_ENEMIES_2); // Phải lên ngậm
+  sprites->Add(30024, 364, 449, 379, 473, TEX_ENEMIES_2); // Phải lên mở
+  sprites->Add(30025, 164, 449, 180, 473, TEX_ENEMIES_2); // Trái xuống ngậm
+  sprites->Add(30026, 64, 449, 80, 473, TEX_ENEMIES_2);   // Trái xuống mở
+  sprites->Add(30027, 214, 449, 230, 473, TEX_ENEMIES_2); // Phải xuống ngậm
+  sprites->Add(30028, 314, 449, 330, 473, TEX_ENEMIES_2); // Phải xuống mở
+
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION
   // ==========================================
@@ -663,6 +687,24 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(32, 1000);
   animations->Add(108, ani); // Death
+
+  // Piranha Plant
+  ani = new Animation(150);
+  ani->Add(30001);
+  ani->Add(30002);
+  animations->Add(5000, ani);
+
+  // Venus Fire Trap (Bottom-Up)
+  ani = new Animation(150); ani->Add(30011); ani->Add(30012); animations->Add(5001, ani);
+  ani = new Animation(150); ani->Add(30013); ani->Add(30014); animations->Add(5002, ani);
+  ani = new Animation(150); ani->Add(30015); ani->Add(30016); animations->Add(5003, ani);
+  ani = new Animation(150); ani->Add(30017); ani->Add(30018); animations->Add(5004, ani);
+
+  // Venus Fire Trap (Top-Down)
+  ani = new Animation(150); ani->Add(30021); ani->Add(30022); animations->Add(5011, ani);
+  ani = new Animation(150); ani->Add(30023); ani->Add(30024); animations->Add(5012, ani);
+  ani = new Animation(150); ani->Add(30025); ani->Add(30026); animations->Add(5013, ani);
+  ani = new Animation(150); ani->Add(30027); ani->Add(30028); animations->Add(5014, ani);
 
   // Common Objects Animations
   ani = new Animation(100);

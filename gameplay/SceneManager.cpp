@@ -131,7 +131,7 @@ void SceneManager::SwitchTo(GameState newState) {
 
     // Tạo Mario mới và khôi phục form từ GameManager
     Mario *mario =
-        new Mario(100.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire());
+        new Mario(30.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire());
     mario->SetSukuna(gm->IsMarioSukuna());
 
     g_objectList.insert(g_objectList.begin(), mario);

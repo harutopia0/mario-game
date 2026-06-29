@@ -142,6 +142,9 @@
     <ClCompile Include="gameobject\Enemy.cpp" />
     <ClCompile Include="gameobject\Goomba.cpp" />
     <ClCompile Include="gameobject\Koopa.cpp" />
+    <ClCompile Include="gameobject\PiranhaPlant.cpp" />
+    <ClCompile Include="gameobject\EnemyFireball.cpp" />
+    <ClCompile Include="gameobject\VenusFireTrap.cpp" />
     <ClCompile Include="gameobject\Fireball.cpp" />
     <ClCompile Include="gameobject\FireBlast.cpp" />
 
@@ -191,6 +194,9 @@
     <ClInclude Include="gameobject\Enemy.h" />
     <ClInclude Include="gameobject\Goomba.h" />
     <ClInclude Include="gameobject\Koopa.h" />
+    <ClInclude Include="gameobject\PiranhaPlant.h" />
+    <ClInclude Include="gameobject\EnemyFireball.h" />
+    <ClInclude Include="gameobject\VenusFireTrap.h" />
     <ClInclude Include="gameobject\Fireball.h" />
     <ClInclude Include="gameobject\FireBlast.h" />
 

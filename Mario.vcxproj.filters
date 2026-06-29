@@ -88,6 +88,9 @@
     <ClCompile Include="gameobject\Koopa.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
+    <ClCompile Include="gameobject\PiranhaPlant.cpp">
+      <Filter>Source Files\gameobject</Filter>
+    </ClCompile>
     <ClCompile Include="gameobject\Fireball.cpp">
       <Filter>Source Files\gameobject</Filter>
     </ClCompile>
@@ -224,6 +227,9 @@
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\Koopa.h">
+      <Filter>Source Files\gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\PiranhaPlant.h">
       <Filter>Source Files\gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\Fireball.h">
