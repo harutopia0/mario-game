@@ -131,8 +131,7 @@ void SceneManager::SwitchTo(GameState newState) {
 
     // Tạo Mario mới và khôi phục form từ GameManager
     Mario *mario =
-        new Mario(100.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire());
-    mario->SetSukuna(gm->IsMarioSukuna());
+        new Mario(100.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire(), gm->IsMarioScissors());
 
     g_objectList.insert(g_objectList.begin(), mario);
 
@@ -169,7 +168,7 @@ void SceneManager::ProcessLevelClear() {
   if (mario != nullptr) {
     GameManager::GetInstance()->SetMarioBig(mario->IsBig());
     GameManager::GetInstance()->SetMarioFire(mario->IsFire());
-    GameManager::GetInstance()->SetMarioSukuna(mario->IsSukuna());
+    GameManager::GetInstance()->SetMarioScissors(mario->IsScissors());
   }
 
   isMarioLevelClearing = true;
@@ -199,7 +198,7 @@ void SceneManager::ProcessGameWin() {
   if (mario != nullptr) {
     GameManager::GetInstance()->SetMarioBig(mario->IsBig());
     GameManager::GetInstance()->SetMarioFire(mario->IsFire());
-    GameManager::GetInstance()->SetMarioSukuna(mario->IsSukuna());
+    GameManager::GetInstance()->SetMarioScissors(mario->IsScissors());
   }
 
   isMarioGameWinning = true;
@@ -242,11 +241,11 @@ void SceneManager::Update(DWORD dt) {
 
     if (holdingTime < 4000) {
       if (GetTickCount64() - lastRouletteTick >= 30) {
-        rouletteCardType = (rand() % 3) + 1;
+        rouletteCardType = (rand() % 4) + 1;
         lastRouletteTick = GetTickCount64();
       }
     } else if (!isRouletteDone) {
-      rouletteCardType = (rand() % 3) + 1;
+      rouletteCardType = (rand() % 4) + 1;
       isRouletteDone = true;
 
       // Chỉ thêm card vào GameManager (HUD đọc trực tiếp từ đó)
@@ -421,6 +420,15 @@ void SceneManager::Update(DWORD dt) {
       }
     }
   } else if (currentState == STATE_PLAYING) {
+    if (GetAsyncKeyState(VK_F1) & 0x8000) {
+      int currentLevel = GameManager::GetInstance()->GetLevel();
+      if (currentLevel == 5) {
+        ProcessGameWin();
+      } else {
+        ProcessLevelClear();
+      }
+    }
+
     // Cập nhật thời gian đếm ngược trong GameManager
     if (!isMarioDying) {
       GameManager::GetInstance()->UpdateTime(dt);
@@ -461,18 +469,24 @@ void SceneManager::Update(DWORD dt) {
                 mario->isStarInvincible = true;
                 AudioManager::GetInstance()->PauseMusic();
                 AudioManager::GetInstance()->PlayEventMusic("star_theme", true);
-              } else if (cardType ==
-                         1) // CARD_MUSHROOM: Biến lớn / Hoặc bắn FireBlast
+              } else if (cardType == 1) // CARD_MUSHROOM (Nấm): Item đa dụng
               {
-                if (!mario->IsBig() && !mario->IsFire()) {
+                if (!mario->IsBig()) {
                   GameManager::GetInstance()->SetLives(2);
                   mario->SetBig(true);
                 } else if (mario->IsFire()) {
                   ProcessMarioCastSkill(cardType, slot);
-                } else if (mario->IsBig() && !mario->IsFire()) {
+                } else if (mario->IsScissors()) {
+                  if (isMarioWorldSlashing) {
+                    GameManager::GetInstance()->GetHoldingCards()[slot] = cardType;
+                    AudioManager::GetInstance()->PlaySFX("use-failed");
+                  } else {
+                    ProcessWorldSlash();
+                  }
+                } else {
                   ProcessMarioCastSkill(cardType, slot);
                 }
-              } else if (cardType == 2) // CARD_JOGO: Bắn lửa
+              } else if (cardType == 2) // CARD_FLOWER (Hoa): Lửa
               {
                 if (!mario->IsFire()) {
                   GameManager::GetInstance()->SetLives(3);
@@ -480,13 +494,18 @@ void SceneManager::Update(DWORD dt) {
                 } else {
                   ProcessMarioCastSkill(cardType, slot);
                 }
-              } else if (cardType == 4) // CARD_SUKUNA: Trạng thái Sukuna
+              } else if (cardType == 4) // CARD_SCISSORS (Kéo): Người kéo
               {
-                if (!mario->IsSukuna()) {
+                if (!mario->IsScissors()) {
                   GameManager::GetInstance()->SetLives(3);
-                  mario->SetSukuna(true);
+                  mario->SetScissors(true);
                 } else {
-                  ProcessWorldSlash();
+                  if (isMarioWorldSlashing) {
+                    GameManager::GetInstance()->GetHoldingCards()[slot] = cardType;
+                    AudioManager::GetInstance()->PlaySFX("use-failed");
+                  } else {
+                    ProcessWorldSlash();
+                  }
                 }
               }
             }
@@ -710,10 +729,15 @@ void SceneManager::Render() {
       }
 
       // 3. Vẽ thẻ bài roulette
-      int cardSpriteId = 3013 + rouletteCardType;
+      int cardSpriteId = 0;
+      if (rouletteCardType == 1) cardSpriteId = 3018;
+      else if (rouletteCardType == 2) cardSpriteId = 3019;
+      else if (rouletteCardType == 3) cardSpriteId = 3020;
+      else if (rouletteCardType == 4) cardSpriteId = 3021;
+
       Sprite *cardSprite = Sprites::GetInstance()->Get(cardSpriteId);
       if (cardSprite) {
-        cardSprite->Draw(480.0f, 320.0f);
+        cardSprite->Draw(470.0f, 310.0f);
       }
     } else if (isMarioGameWinning) {
       Sprite *winGameSprite = Sprites::GetInstance()->Get(7002);

@@ -29,7 +29,7 @@ private:
 	float width, height;
 	bool isBig;
 	bool isFire;
-	bool isSukuna;
+	bool isScissors;
 	bool isDead;
 	float pMeterValue;
 	int pMeterLevel;
@@ -57,7 +57,7 @@ public:
 	float ax;
 	MarioInputHandler* inputHandler;
 
-	Mario(float x, float y, bool isBig = false, bool isFire = false);
+	Mario(float x, float y, bool isBig = false, bool isFire = false, bool isScissors = false);
 	~Mario();
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 	void Update(DWORD dt, vector<GameObject*>* coObjects);
@@ -76,8 +76,8 @@ public:
 	void SetFire(bool fire);
 	bool IsFire() const { return isFire; }
 	
-	void SetSukuna(bool sukuna);
-	bool IsSukuna() const { return isSukuna; }
+	void SetScissors(bool scissors);
+	bool IsScissors() const { return isScissors; }
 
 	void ShootFireball();
 	bool ShootFireBlast();
