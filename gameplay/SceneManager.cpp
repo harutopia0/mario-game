@@ -1,10 +1,4 @@
 #include "SceneManager.h"
-#include "Map.h"
-#include "../audio/AudioManager.h"
-#include "../core/Game.h"
-#include "../ui/Intro.h"
-#include "../ui/WorldMap.h"
-#include "../ui/HUD.h"
 #include "../audio/AudioManager.h"
 #include "../core/Game.h"
 #include "../gameobject/Buff.h"
@@ -27,12 +21,14 @@
 
 SceneManager *SceneManager::instance = nullptr;
 
-auto& g_objectList = Map::GetInstance()->GetObjects();
-
+extern std::vector<GameObject *> g_objectList;
+extern std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
 extern bool g_showBBox;
-
-
-
+extern void LoadMap(LPCWSTR filePath);
+extern void RemoveObjectFromGrid(GameObject *obj);
+extern void UpdateObjectGrid(GameObject *obj);
+extern void AddObjectToGrid(GameObject *obj);
+extern void SpawnEnemy(float x, float y);
 
 SceneManager::SceneManager() {
   currentState = STATE_INTRO;
@@ -50,10 +46,10 @@ SceneManager::SceneManager() {
   isMarioCastingSkill = false;
   castSkillStartTime = 0;
 
-  isMarioScissorsAttacking = false;
-  scissorsAttackStartTime = 0;
-  scissorsAttackOverlayAlpha = 0.0f;
-  scissorsAttackEnemiesKilled = false;
+  isMarioWorldSlashing = false;
+  worldSlashStartTime = 0;
+  worldSlashOverlayAlpha = 0.0f;
+  worldSlashEnemiesKilled = false;
 
   rouletteCardType = 1;
   lastRouletteTick = 0;
@@ -80,7 +76,19 @@ void SceneManager::Init() {
 
 // Hàm dọn sạch toàn bộ game objects và grid
 static void ClearAllGameObjects() {
-  Map::GetInstance()->Clear();
+  extern std::vector<GameObject *> g_objectList;
+  extern std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
+
+  for (GameObject *obj : g_objectList) {
+    delete obj;
+  }
+  g_objectList.clear();
+
+  for (int r = 0; r < MAX_CELL_ROW; r++) {
+    for (int c = 0; c < MAX_CELL_COL; c++) {
+      grid[r][c].clear();
+    }
+  }
 }
 
 void SceneManager::SwitchTo(GameState newState) {
@@ -131,13 +139,16 @@ void SceneManager::SwitchTo(GameState newState) {
 
     // Tạo Mario mới và khôi phục form từ GameManager
     Mario *mario =
-        new Mario(30.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire());
-    mario->SetScissors(gm->IsMarioScissors());
-        new Mario(100.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire(), gm->IsMarioScissors());
+        new Mario(100.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire());
+    mario->SetSukuna(gm->IsMarioSukuna());
 
     g_objectList.insert(g_objectList.begin(), mario);
 
     // Spawn các objects cơ bản cho màn chơi
+
+    Buff *potion = new Buff(150.0f, 200.0f, 301);
+    g_objectList.push_back(potion);
+    AddObjectToGrid(potion);
 
 
 
@@ -170,7 +181,7 @@ void SceneManager::ProcessLevelClear() {
   if (mario != nullptr) {
     GameManager::GetInstance()->SetMarioBig(mario->IsBig());
     GameManager::GetInstance()->SetMarioFire(mario->IsFire());
-    GameManager::GetInstance()->SetMarioScissors(mario->IsScissors());
+    GameManager::GetInstance()->SetMarioSukuna(mario->IsSukuna());
   }
 
   isMarioLevelClearing = true;
@@ -200,7 +211,7 @@ void SceneManager::ProcessGameWin() {
   if (mario != nullptr) {
     GameManager::GetInstance()->SetMarioBig(mario->IsBig());
     GameManager::GetInstance()->SetMarioFire(mario->IsFire());
-    GameManager::GetInstance()->SetMarioScissors(mario->IsScissors());
+    GameManager::GetInstance()->SetMarioSukuna(mario->IsSukuna());
   }
 
   isMarioGameWinning = true;
@@ -243,11 +254,11 @@ void SceneManager::Update(DWORD dt) {
 
     if (holdingTime < 4000) {
       if (GetTickCount64() - lastRouletteTick >= 30) {
-        rouletteCardType = (rand() % 4) + 1;
+        rouletteCardType = (rand() % 3) + 1;
         lastRouletteTick = GetTickCount64();
       }
     } else if (!isRouletteDone) {
-      rouletteCardType = (rand() % 4) + 1;
+      rouletteCardType = (rand() % 3) + 1;
       isRouletteDone = true;
 
       // Chỉ thêm card vào GameManager (HUD đọc trực tiếp từ đó)
@@ -308,27 +319,27 @@ void SceneManager::Update(DWORD dt) {
   }
 
   // Xử lý hiệu ứng World Slash
-  if (isMarioScissorsAttacking) {
-    DWORD elapsed = (DWORD)(GetTickCount64() - scissorsAttackStartTime);
+  if (isMarioWorldSlashing) {
+    DWORD elapsed = (DWORD)(GetTickCount64() - worldSlashStartTime);
 
     // Phase 1: Zoom out (0-400ms) - màn hình vẫn sáng bình thường
     if (elapsed < 400) {
-      scissorsAttackOverlayAlpha = 0.0f;
+      worldSlashOverlayAlpha = 0.0f;
       HUD::GetInstance()->Update(dt);
       return; // freeze game
     }
 
     // Phase 2: Fade tối (400ms - 800ms) - giữ camera ở góc rộng 1x
     if (elapsed >= 400 && elapsed < 800) {
-      scissorsAttackOverlayAlpha = (elapsed - 400.0f) / 400.0f;
+      worldSlashOverlayAlpha = (elapsed - 400.0f) / 400.0f;
       HUD::GetInstance()->Update(dt);
       return; // freeze game
     }
 
     // Phase 3: Chém quái trong màn hình góc rộng (800ms - 1200ms) - giữ tối đen
     if (elapsed >= 800 && elapsed < 1200) {
-      scissorsAttackOverlayAlpha = 1.0f;
-      if (!scissorsAttackEnemiesKilled) {
+      worldSlashOverlayAlpha = 1.0f;
+      if (!worldSlashEnemiesKilled) {
         AudioManager::GetInstance()->PlaySFX("slash-sound");
 
         // Chỉ tiêu diệt quái vật nằm trong phạm vi camera góc rộng (zoom out 1x)
@@ -354,7 +365,7 @@ void SceneManager::Update(DWORD dt) {
             }
           }
         }
-        scissorsAttackEnemiesKilled = true;
+        worldSlashEnemiesKilled = true;
       }
       HUD::GetInstance()->Update(dt);
       return; // freeze game
@@ -362,22 +373,22 @@ void SceneManager::Update(DWORD dt) {
 
     // Phase 4: Fade sáng lại (1200ms - 1600ms)
     if (elapsed >= 1200 && elapsed < 1600) {
-      scissorsAttackOverlayAlpha = 1.0f - (elapsed - 1200.0f) / 400.0f;
+      worldSlashOverlayAlpha = 1.0f - (elapsed - 1200.0f) / 400.0f;
       HUD::GetInstance()->Update(dt);
       return; // freeze game
     }
 
     // Phase 5: Zoom in lại (1600ms - 2000ms) - màn hình đã sáng
     if (elapsed >= 1600 && elapsed < 2000) {
-      scissorsAttackOverlayAlpha = 0.0f;
+      worldSlashOverlayAlpha = 0.0f;
       HUD::GetInstance()->Update(dt);
       return; // freeze game
     }
 
     // Phase 6: Hoàn thành (>= 2000ms)
     if (elapsed >= 2000) {
-      isMarioScissorsAttacking = false;
-      scissorsAttackOverlayAlpha = 0.0f;
+      isMarioWorldSlashing = false;
+      worldSlashOverlayAlpha = 0.0f;
       AudioManager::GetInstance()->ResumeMusic();
       if (!g_objectList.empty()) {
         Mario *mario = dynamic_cast<Mario *>(g_objectList[0]);
@@ -407,34 +418,23 @@ void SceneManager::Update(DWORD dt) {
           GameManager::GetInstance()->SetLevel(levelToLoad);
 
           if (levelToLoad == 5) {
-            Map::GetInstance()->LoadMap(L"levels/Level_5.txt");
+            LoadMap(L"levels/Level_5.txt");
           } else if (levelToLoad == 4) {
-            Map::GetInstance()->LoadMap(L"levels/Level_4.txt");
+            LoadMap(L"levels/Level_4.txt");
           } else if (levelToLoad == 3) {
-            Map::GetInstance()->LoadMap(L"levels/Level_3.txt");
+            LoadMap(L"levels/Level_3.txt");
           } else if (levelToLoad == 2) {
-            Map::GetInstance()->LoadMap(L"levels/Level_2.txt");
+            LoadMap(L"levels/Level_2.txt");
           } else {
-            Map::GetInstance()->LoadMap(L"levels/Level_1.txt");
+            LoadMap(L"levels/Level_1.txt");
           }
           SwitchTo(STATE_PLAYING);
         }
       }
     }
   } else if (currentState == STATE_PLAYING) {
-    if (GetAsyncKeyState(VK_F1) & 0x8000) {
-      int currentLevel = GameManager::GetInstance()->GetLevel();
-      if (currentLevel == 5) {
-        ProcessGameWin();
-      } else {
-        ProcessLevelClear();
-      }
-    }
-
     // Cập nhật thời gian đếm ngược trong GameManager
-    if (!isMarioDying) {
-      GameManager::GetInstance()->UpdateTime(dt);
-    }
+    GameManager::GetInstance()->UpdateTime(dt);
 
     // Cập nhật HUD (nhấp nháy PMeter)
     HUD::GetInstance()->Update(dt);
@@ -471,24 +471,18 @@ void SceneManager::Update(DWORD dt) {
                 mario->isStarInvincible = true;
                 AudioManager::GetInstance()->PauseMusic();
                 AudioManager::GetInstance()->PlayEventMusic("star_theme", true);
-              } else if (cardType == 1) // CARD_MUSHROOM (Nấm): Item đa dụng
+              } else if (cardType ==
+                         1) // CARD_MUSHROOM: Biến lớn / Hoặc bắn FireBlast
               {
-                if (!mario->IsBig()) {
+                if (!mario->IsBig() && !mario->IsFire()) {
                   GameManager::GetInstance()->SetLives(2);
                   mario->SetBig(true);
                 } else if (mario->IsFire()) {
                   ProcessMarioCastSkill(cardType, slot);
-                } else if (mario->IsScissors()) {
-                  if (isMarioScissorsAttacking) {
-                    GameManager::GetInstance()->GetHoldingCards()[slot] = cardType;
-                    AudioManager::GetInstance()->PlaySFX("use-failed");
-                  } else {
-                    ProcessScissorsAttack();
-                  }
-                } else {
+                } else if (mario->IsBig() && !mario->IsFire()) {
                   ProcessMarioCastSkill(cardType, slot);
                 }
-              } else if (cardType == 2) // CARD_FLOWER (Hoa): Lửa
+              } else if (cardType == 2) // CARD_JOGO: Bắn lửa
               {
                 if (!mario->IsFire()) {
                   GameManager::GetInstance()->SetLives(3);
@@ -496,18 +490,13 @@ void SceneManager::Update(DWORD dt) {
                 } else {
                   ProcessMarioCastSkill(cardType, slot);
                 }
-              } else if (cardType == 4) // CARD_SCISSORS (Kéo): Người kéo
+              } else if (cardType == 4) // CARD_SUKUNA: Trạng thái Sukuna
               {
-                if (!mario->IsScissors()) {
+                if (!mario->IsSukuna()) {
                   GameManager::GetInstance()->SetLives(3);
-                  mario->SetScissors(true);
+                  mario->SetSukuna(true);
                 } else {
-                  if (isMarioScissorsAttacking) {
-                    GameManager::GetInstance()->GetHoldingCards()[slot] = cardType;
-                    AudioManager::GetInstance()->PlaySFX("use-failed");
-                  } else {
-                    ProcessScissorsAttack();
-                  }
+                  ProcessWorldSlash();
                 }
               }
             }
@@ -552,7 +541,7 @@ void SceneManager::Update(DWORD dt) {
         obj->Update(dt, NULL);
         continue;
       }
-      Map::GetInstance()->UpdateObjectGrid(obj);
+      UpdateObjectGrid(obj);
       int currentCellX = (int)(obj->GetX() / GRID_CELL_SIZE);
       int currentCellY = (int)(obj->GetY() / GRID_CELL_SIZE);
 
@@ -565,7 +554,7 @@ void SceneManager::Update(DWORD dt) {
 
           if (checkRow >= 0 && checkRow < MAX_CELL_ROW && checkCol >= 0 &&
               checkCol < MAX_CELL_COL) {
-            for (GameObject *g : Map::GetInstance()->GetGrid()[checkRow][checkCol]) {
+            for (GameObject *g : grid[checkRow][checkCol]) {
               if (std::find(nearbyObjects.begin(), nearbyObjects.end(), g) ==
                   nearbyObjects.end()) {
                 nearbyObjects.push_back(g);
@@ -580,7 +569,7 @@ void SceneManager::Update(DWORD dt) {
     g_objectList.erase(std::remove_if(g_objectList.begin(), g_objectList.end(),
                                       [](GameObject *obj) {
                                         if (obj->IsDeleted()) {
-                                          Map::GetInstance()->RemoveObjectFromGrid(obj);
+                                          RemoveObjectFromGrid(obj);
                                           delete obj;
                                           return true;
                                         }
@@ -595,41 +584,37 @@ void SceneManager::Render() {
   D3DXMATRIX matZoom;
 
   if (currentState == STATE_INTRO) {
-    Sprite::globalScale = 1.0f;
     D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     game->GetSpriteHandler()->SetViewTransform(&matZoom);
     if (introScene)
       introScene->Render();
   } else if (currentState == STATE_WORLD_MAP) {
-    Sprite::globalScale = 1.0f;
     D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     game->GetSpriteHandler()->SetViewTransform(&matZoom);
     if (worldMapScene)
       worldMapScene->Render();
   } else if (currentState == STATE_PLAYING) {
-    Sprite::globalScale = 2.0f;
-
     D3DXMATRIX matCamera;
     D3DXMATRIX matFinal;
 
-    float zoomScale = 1.0f;
-    if (isMarioScissorsAttacking) {
-      DWORD elapsed = (DWORD)(GetTickCount64() - scissorsAttackStartTime);
+    float zoomScale = 2.0f;
+    if (isMarioWorldSlashing) {
+      DWORD elapsed = (DWORD)(GetTickCount64() - worldSlashStartTime);
       if (elapsed < 400) {
-        zoomScale = 1.0f - (elapsed / 400.0f) * 0.5f; // Smooth zoom out to 0.5f (0-400ms)
+        zoomScale = 2.0f - (elapsed / 400.0f) * 1.0f; // Smooth zoom out to 1.0f (0-400ms)
       } else if (elapsed >= 400 && elapsed < 1600) {
-        zoomScale = 0.5f; // Stay zoomed out (400ms-1600ms)
+        zoomScale = 1.0f; // Stay zoomed out (400ms-1600ms)
       } else if (elapsed >= 1600 && elapsed < 2000) {
-        zoomScale = 0.5f + ((elapsed - 1600.0f) / 400.0f) * 0.5f; // Smooth zoom in back to 1.0f (1600ms-2000ms)
+        zoomScale = 1.0f + ((elapsed - 1600.0f) / 400.0f) * 1.0f; // Smooth zoom in back to 2.0f (1600ms-2000ms)
       }
     }
 
-    D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
+    D3DXMatrixScaling(&matZoom, 2.0f, 2.0f, 1.0f);
     matCamera = Camera::GetInstance()->GetViewMatrix();
 
-    if (isMarioScissorsAttacking) {
+    if (isMarioWorldSlashing) {
       D3DXMATRIX matTranslateToCenter, matScaleRelative, matTranslateBack;
-      float relativeScale = zoomScale;
+      float relativeScale = zoomScale / 2.0f;
 
       D3DXMatrixTranslation(&matTranslateToCenter, -320.0f, -240.0f, 0.0f);
       D3DXMatrixScaling(&matScaleRelative, relativeScale, relativeScale, 1.0f);
@@ -662,7 +647,7 @@ void SceneManager::Render() {
       realMario = dynamic_cast<Mario *>(g_objectList[0]);
     }
 
-    for (int l = LAYER_PROP; l <= LAYER_EFFECTS; l++) {
+    for (int l = LAYER_BACKGROUND; l <= LAYER_EFFECTS; l++) {
       for (size_t i = 0; i < g_objectList.size(); i++) {
         GameObject *obj = g_objectList[i];
         if (obj->IsDeleted())
@@ -702,14 +687,13 @@ void SceneManager::Render() {
     }
 
     D3DXMATRIX matUI;
-    D3DXMatrixTranslation(&matUI, 0.0f, -1.0f, 0.0f);
+    D3DXMatrixScaling(&matUI, 1.0f, 1.0f, 1.0f);
     game->GetSpriteHandler()->SetViewTransform(&matUI);
 
-    Sprite::globalScale = 1.0f;
     HUD::GetInstance()->Render();
 
-    if (isMarioScissorsAttacking) {
-      RenderScissorsAttackOverlay();
+    if (isMarioWorldSlashing) {
+      RenderWorldSlashOverlay();
     }
 
     if (isMarioDying) {
@@ -731,15 +715,10 @@ void SceneManager::Render() {
       }
 
       // 3. Vẽ thẻ bài roulette
-      int cardSpriteId = 0;
-      if (rouletteCardType == 1) cardSpriteId = 3018;
-      else if (rouletteCardType == 2) cardSpriteId = 3019;
-      else if (rouletteCardType == 3) cardSpriteId = 3020;
-      else if (rouletteCardType == 4) cardSpriteId = 3021;
-
+      int cardSpriteId = 3013 + rouletteCardType;
       Sprite *cardSprite = Sprites::GetInstance()->Get(cardSpriteId);
       if (cardSprite) {
-        cardSprite->Draw(470.0f, 310.0f);
+        cardSprite->Draw(480.0f, 320.0f);
       }
     } else if (isMarioGameWinning) {
       Sprite *winGameSprite = Sprites::GetInstance()->Get(7002);
@@ -775,7 +754,7 @@ void SceneManager::ProcessMarioCastSkill(int cardType, int slot) {
       bool skillSuccess = false;
 
       // Tung chiêu ngay lập tức
-      if (cardType == 1 || cardType == 2) { // Mushroom or Flower Card -> Skill
+      if (cardType == 1 || cardType == 2) { // Mushroom or Jogo Card -> Skill
         if (mario->IsFire()) {
           skillSuccess = mario->ShootFireBlast();
           if (skillSuccess)
@@ -802,12 +781,12 @@ void SceneManager::ProcessMarioCastSkill(int cardType, int slot) {
   }
 }
 
-void SceneManager::ProcessScissorsAttack() {
-  if (isMarioScissorsAttacking) return;
-  isMarioScissorsAttacking = true;
-  scissorsAttackStartTime = GetTickCount64();
-  scissorsAttackOverlayAlpha = 0.0f;
-  scissorsAttackEnemiesKilled = false;
+void SceneManager::ProcessWorldSlash() {
+  if (isMarioWorldSlashing) return;
+  isMarioWorldSlashing = true;
+  worldSlashStartTime = GetTickCount64();
+  worldSlashOverlayAlpha = 0.0f;
+  worldSlashEnemiesKilled = false;
   
   AudioManager::GetInstance()->PauseMusic();
 
@@ -828,19 +807,19 @@ void SceneManager::ProcessScissorsAttack() {
   }
 }
 
-void SceneManager::RenderScissorsAttackOverlay() {
-  if (!isMarioScissorsAttacking) return;
+void SceneManager::RenderWorldSlashOverlay() {
+  if (!isMarioWorldSlashing) return;
 
   Sprites* sprites = Sprites::GetInstance();
   // Bounding box sprite has ID 99999. Since it's a solid block texture, 
   // modulating with black and alpha makes it a perfect overlay.
   Sprite* blackOverlay = sprites->Get(99999);
   if (blackOverlay) {
-    blackOverlay->Draw(0.0f, 0.0f, 640.0f, 480.0f, D3DXCOLOR(0.0f, 0.0f, 0.0f, scissorsAttackOverlayAlpha));
+    blackOverlay->Draw(0.0f, 0.0f, 640.0f, 480.0f, D3DXCOLOR(0.0f, 0.0f, 0.0f, worldSlashOverlayAlpha));
   }
 
   // Draw slash lines on top of the black background starting at 800ms
-  DWORD elapsed = (DWORD)(GetTickCount64() - scissorsAttackStartTime);
+  DWORD elapsed = (DWORD)(GetTickCount64() - worldSlashStartTime);
   if (elapsed >= 800 && elapsed < 1600) {
     float slashAlpha = 1.0f;
     if (elapsed > 1200) {
@@ -878,4 +857,4 @@ void SceneManager::RenderScissorsAttackOverlay() {
       }
     }
   }
-}
+}

@@ -3,7 +3,6 @@
 #include "../gameobject/DynamicBlock.h"
 #include "../gameobject/Enemy.h"
 #include "../physics/Collision.h"
-#include "../render/Camera.h"
 
 
 FireBlast::FireBlast(float x, float y, int direction)
@@ -23,12 +22,9 @@ void FireBlast::Update(DWORD dt, vector<GameObject *> *coObjects) {
   x += vx * dt;
   y += vy * dt;
 
-  Camera* camera = Camera::GetInstance();
-  if (camera) {
-      if (!camera->IsVisible(x - 32.0f, y - 32.0f, width + 64.0f, height + 64.0f)) {
-          Delete();
-          return;
-      }
+  if (x - startX > 400 || startX - x > 400) {
+    Delete();
+    return;
   }
 
   float l, t, r, b;

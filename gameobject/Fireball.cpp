@@ -61,7 +61,7 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                         return;
                     }
                 }
-                else if (dynamic_cast<Block*>(e) && !e->IsOneWay()) {
+                else if (dynamic_cast<Block*>(e) && !dynamic_cast<Platform*>(e)) {
                     if (t < min_tx) {
                         min_tx = t;
                         nx_col = temp_nx;
@@ -109,7 +109,7 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                     }
                 }
                 else if (dynamic_cast<Block*>(e)) {
-                    if (e->IsOneWay() && temp_ny != 1) continue;
+                    if (dynamic_cast<Platform*>(e) && temp_ny != 1) continue;
 
                     if (t < min_ty) {
                         min_ty = t;

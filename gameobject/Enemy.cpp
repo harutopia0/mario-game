@@ -59,7 +59,7 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     {
         if (obj == this || obj->IsDeleted()) continue;
         Block* block = dynamic_cast<Block*>(obj);
-        if (block && !block->IsOneWay()) // Không va chạm ngang với Platform
+        if (block && !dynamic_cast<Platform*>(block)) // Không va chạm ngang với Platform
         {
             float sl, st, sr, sb;
             block->GetBoundingBox(sl, st, sr, sb);
@@ -122,53 +122,9 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     }
 
     y += min_ty * dy + ny_col * 0.01f;
-    bool isOnGround = false;
     if (ny_col != 0)
     {
         vy = 0;
-        if (ny_col == 1) isOnGround = true;
-    }
-
-    // Xử lý rớt khỏi map
-    if (y < 0.0f) {
-        SetDied(true);
-        return;
-    }
-
-    // Ledge Detection (Quay đầu khi đến mép vực)
-    if (isOnGround)
-    {
-        bool hasGroundAhead = false;
-        
-        // Tạo một bounding box nhỏ (feeler) phía trước và ngay dưới chân enemy
-        float feelerL = (vx > 0) ? (x + width) : (x - 2.0f);
-        float feelerR = feelerL + 2.0f;
-        float feelerT = y - 2.0f; // Ngay dưới chân (y hướng lên nên trừ đi)
-        float feelerB = y;
-
-        for (GameObject* obj : *coObjects)
-        {
-            if (obj == this || obj->IsDeleted()) continue;
-            Block* block = dynamic_cast<Block*>(obj);
-            if (block)
-            {
-                float sl, st, sr, sb;
-                block->GetBoundingBox(sl, st, sr, sb);
-                
-                // Kiểm tra xem feeler có chạm vào block nào không
-                if (feelerL < sr && feelerR > sl && feelerT < sb && feelerB > st)
-                {
-                    hasGroundAhead = true;
-                    break;
-                }
-            }
-        }
-
-        if (!hasGroundAhead)
-        {
-            vx = -vx; // Đảo chiều
-            nx = -nx;
-        }
     }
 }
 

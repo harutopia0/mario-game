@@ -10,6 +10,6 @@ public:
     }
     virtual ~DynamicBlock() {}
 
-    // Phương thức chung để gọi khi khối bị phá hủy (bởi FireBlast, ScissorsSlash...)
+    // Phương thức chung để gọi khi khối bị phá hủy (bởi FireBlast, SukunaSlash...)
     virtual void Break(bool dropItem = true) = 0;
 };

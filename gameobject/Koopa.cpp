@@ -38,7 +38,7 @@ bool Koopa::CheckCliffAhead(vector<GameObject*>* coObjects)
 	{
 		if (obj == this || obj->IsDeleted()) continue;
 		Block* block = dynamic_cast<Block*>(obj);
-		if (block && !block->IsOneWay())
+		if (block && !dynamic_cast<Platform*>(block))
 		{
 			float sl, st, sr, sb;
 			block->GetBoundingBox(sl, st, sr, sb);
@@ -123,24 +123,8 @@ void Koopa::Update(DWORD dt, vector<GameObject*>* coObjects)
 				enemy->GetBoundingBox(l2, t2, r2, b2);
 				if (r1 > l2 && l1 < r2 && b1 > t2 && t1 < b2)
 				{
-					Koopa* otherKoopa = dynamic_cast<Koopa*>(enemy);
-					if (otherKoopa && otherKoopa->GetState() == KOOPA_STATE_SHELL_SPINNING)
-					{
-						// Hai mai rùa đang lăn đụng nhau -> Đổi hướng
-						if ((this->vx > 0 && l2 > l1) || (this->vx < 0 && l2 < l1))
-						{
-							this->vx = -this->vx;
-							this->nx = -this->nx;
-							
-							otherKoopa->vx = -otherKoopa->vx;
-							otherKoopa->nx = -otherKoopa->nx;
-						}
-					}
-					else
-					{
-						// Đâm quái khác - chết lật ngược
-						enemy->OnStomped(NULL);
-					}
+					// Đâm quái khác - chết lật ngược
+					enemy->OnStomped(NULL);
 				}
 			}
 		}

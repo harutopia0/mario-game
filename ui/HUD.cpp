@@ -5,9 +5,9 @@
 // Định nghĩa các giá trị của CardType
 #define CARD_NONE 0
 #define CARD_MUSHROOM 1
-#define CARD_FLOWER 2
+#define CARD_JOGO 2
 #define CARD_STAR 3
-#define CARD_SCISSORS 4
+#define CARD_SUKUNA 4
 
 // Định nghĩa ID texture và tọa độ của các phần tử trên HUD
 #define TEX_HUD 20
@@ -83,18 +83,10 @@ void HUD::LoadSprites()
 
     // Sprites thẻ bài
     sprites->Add(3014, 1025, 83, 1068, 130, TEX_HUD); // 3014: Nấm
-    sprites->Add(3015, 1081, 83, 1124, 130, TEX_HUD); // 3015: Flower
+    sprites->Add(3015, 1081, 83, 1124, 130, TEX_HUD); // 3015: Jogo
     sprites->Add(3016, 1137, 83, 1180, 130, TEX_HUD); // 3016: Sao
-	sprites->Add(3017, 1025, 149, 1068, 196, TEX_HUD); // 3017: Scissors
-
-
-    // Sprites cho roulette
-    sprites->Add(3018, 1019, 74, 1074, 139, TEX_HUD); // 3018: Nấm
-    sprites->Add(3019, 1075, 74, 1130, 139, TEX_HUD); // 3019: Flower
-    sprites->Add(3020, 1131, 74, 1186, 139, TEX_HUD); // 3020: Sao
-    sprites->Add(3021, 1019, 140, 1074, 205, TEX_HUD); // 3021: Scissors
+	sprites->Add(3017, 1025, 149, 1068, 196, TEX_HUD); // 3017: Sukuna
 }
-
 
 void HUD::Update(DWORD dt)
 {
@@ -235,9 +227,9 @@ void HUD::DrawCards()
         int spriteId = 0;
 
         if (cards[i] == CARD_MUSHROOM) spriteId = 3014;
-        else if (cards[i] == CARD_FLOWER) spriteId = 3015;
+        else if (cards[i] == CARD_JOGO) spriteId = 3015;
         else if (cards[i] == CARD_STAR) spriteId = 3016;
-        else if (cards[i] == CARD_SCISSORS) spriteId = 3017;
+        else if (cards[i] == CARD_SUKUNA) spriteId = 3017;
 
         if (spriteId != 0 && sprites->Get(spriteId))
         {

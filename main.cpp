@@ -1,11 +1,10 @@
 #pragma region ImportLibaries
 
-#include "gameplay/Map.h"
-
 #include "animation/Animations.h"
 #include "audio/AudioManager.h"
 #include "core/Game.h"
 #include "gameobject/Breakable.h"
+#include "gameobject/Brick.h"
 #include "gameobject/Buff.h"
 #include "gameobject/Enemy.h"
 #include "gameobject/Goomba.h"
@@ -16,9 +15,6 @@
 #include "gameobject/Mario.h"
 #include "gameobject/Pipe.h"
 #include "gameobject/Platform.h"
-#include "gameobject/Water.h"
-#include "gameobject/Prop.h"
-#include "gameobject/PropSpawner.h"
 #include "gameplay/GameManager.h"
 #include "gameplay/SceneManager.h"
 #include "render/Camera.h"
@@ -41,11 +37,15 @@
 #define WINDOW_HEIGHT 480
 #define FPS_LIMIT 100
 
+// Kích thước bản đồ (cần khớp với kích thước trong file map)
+#define MAP_WIDTH (125 * 15.0f) // 1875.0f
+#define MAP_HEIGHT 408.f
 #pragma endregion
 
 #pragma region GlobalVariables/GameObjects/ID_Definitions
 
-
+std::vector<GameObject *> g_objectList;
+std::vector<GameObject *> grid[MAX_CELL_ROW][MAX_CELL_COL];
 
 bool g_showBBox = false;
 
@@ -54,7 +54,7 @@ enum TEXTURE_ID {
   TEX_COMMON1 = 1,
   TEX_COMMON2 = 2,
   TEX_FIRE_MARIO = 3,
-  TEX_SCISSORS_MARIO = 4,
+  TEX_SUKUNA_MARIO = 4,
   TEX_ENEMIES_1 = 10, // enemies_transparent.png (Goomba, Green Koopa walk)
   TEX_ENEMIES_2 =
       15, // enemies_transparent_3.png (Koopa shell, Red Koopa, Flying Koopa)
@@ -62,6 +62,7 @@ enum TEXTURE_ID {
   TEX_INTRO = 30,
   TEX_BBOX = 99,
   TEX_ENEMY_TEST = 100,
+  TEX_POTION = 101,
 
   TEX_LEVEL_CLEAR = 701,
   TEX_GAME_OVER = 702,
@@ -69,12 +70,11 @@ enum TEXTURE_ID {
   TEX_MAP_LEVEL = 800,
   TEX_OBTAIN_ITEM = 900,
   TEX_WHITE = 999,
-  TEX_LAVA_BRICK = 1000,
-  TEX_LAVA_BRICK2 = 1001,
-  TEX_BLACK_BRICK = 1002,
-  TEX_GRASS_BRICK = 1003,
-  TEX_CLOUD_BRICK = 1004,
-  TEX_CLOUDS = 1005
+	TEX_LAVA_BRICK = 1000,
+	TEX_LAVA_BRICK2 = 1001,
+	TEX_BLACK_BRICK = 1002,
+	TEX_GRASS_BRICK = 1003,
+	TEX_CLOUD_BRICK = 1004,
 };
 
 #pragma endregion
@@ -82,10 +82,15 @@ enum TEXTURE_ID {
 #pragma region FunctionPrototypes
 
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+void LoadMap(LPCWSTR filePath);
 void LoadResources();
 void Update(DWORD dt);
 void Render();
 void Cleanup();
+void AddObjectToGrid(GameObject *obj);
+void RemoveObjectFromGrid(GameObject *obj);
+void UpdateObjectGrid(GameObject *obj);
+void SpawnEnemy(float x, float y);
 
 #pragma endregion
 #pragma region MainFunction
@@ -135,7 +140,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
   // nên chiều rộng thực tế của Camera trong thế giới game chỉ bằng một nửa
   // WINDOW_WIDTH
   Camera::GetInstance()->Init(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f,
-                              1000.0f, 408.0f);
+                              MAP_WIDTH, MAP_HEIGHT);
 
   while (msg.message != WM_QUIT) {
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -157,7 +162,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     }
   }
 
-  // Dọn dẹp
   Cleanup();
   return 0;
 }
@@ -264,7 +268,11 @@ void Update(DWORD dt) {
       isFPressed = false;
   }
 
-  // Removed redundant camera update here (now handled safely in SceneManager::Update)
+  extern std::vector<GameObject *> g_objectList;
+  GameObject *mario = g_objectList.empty() ? NULL : g_objectList[0];
+  if (mario && SceneManager::GetInstance()->GetState() == STATE_PLAYING) {
+    Camera::GetInstance()->Update(mario->GetX(), mario->GetY(), dt / 1000.0f);
+  }
 
   SceneManager::GetInstance()->Update(dt);
 }
@@ -322,6 +330,192 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam,
   return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+void LoadMap(LPCWSTR filePath) {
+  ifstream f;
+  f.open(filePath);
+
+  if (!f.is_open())
+    return;
+
+  int rows, cols;
+  f >> rows >> cols;
+
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < cols; c++) {
+      int tileID;
+      f >> tileID;
+
+      float realX = c * 15.0f;
+      float realY = ((rows - r - 1) * 15.0f) + 35.0f;
+
+      if (tileID == 1) {
+        GroundBlock *ground = new GroundBlock(realX, realY, 201);
+        g_objectList.push_back(ground);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(ground);
+        }
+      } else if (tileID == 2) {
+        Brick *brick = new Brick(realX, realY, 201);
+        g_objectList.push_back(brick);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(brick);
+        }
+      } else if (tileID == 3) {
+        Platform *platform = new Platform(realX, realY, 202);
+        g_objectList.push_back(platform);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(platform);
+        }
+      } else if (tileID == 4) {
+        Platform *platform = new Platform(realX, realY, 203);
+        g_objectList.push_back(platform);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(platform);
+        }
+      } else if (tileID == 5) {
+        Breakable *breakableBlock = new Breakable(realX, realY, 205);
+        g_objectList.push_back(breakableBlock);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(breakableBlock);
+        }
+      } else if (tileID == 6) {
+        LuckyBlock *lucky = new LuckyBlock(realX, realY, 206, 201);
+        g_objectList.push_back(lucky);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(lucky);
+        }
+      } else if (tileID >= 7 && tileID <= 10) {
+        int pipeHeight = tileID - 5; // 7->2, 8->3, 9->4
+        Pipe *pipe = new Pipe(realX, realY, pipeHeight, false, 0, 0);
+        g_objectList.push_back(pipe);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(pipe);
+          // Ống nước có thể cao nhiều grid cells
+          for (int i = 1; i <= pipeHeight / 4 + 1; i++) {
+            if (cellY + i < MAX_CELL_ROW) {
+              grid[cellY + i][cellX].push_back(pipe);
+            }
+          }
+        }
+      } else if (tileID == 11) {
+        Goomba *goomba = new Goomba(realX, realY + 2.0f, GOOMBA_TYPE_NORMAL);
+        g_objectList.push_back(goomba);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(goomba);
+        }
+      } else if (tileID == 12) {
+        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_GREEN);
+        g_objectList.push_back(koopa);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(koopa);
+        }
+      } else if (tileID == 13) {
+        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_RED);
+        g_objectList.push_back(koopa);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(koopa);
+        }
+      } else if (tileID == 14) {
+        Koopa *koopa = new Koopa(realX, realY + 2.0f, KOOPA_TYPE_GREEN_FLYING);
+        g_objectList.push_back(koopa);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)((realY + 2.0f) / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(koopa);
+        }
+      }
+    }
+  }
+  GameManager::GetInstance()->SetMapRightEdge(cols * 15.0f);
+  f.close();
+}
+
+void AddObjectToGrid(GameObject *obj) {
+  int col = (int)(obj->GetX() / GRID_CELL_SIZE);
+  int row = (int)(obj->GetY() / GRID_CELL_SIZE);
+  if (col < 0 || col >= MAX_CELL_COL || row < 0 || row >= MAX_CELL_ROW)
+    return;
+  grid[row][col].push_back(obj);
+
+  obj->gridRow = row;
+  obj->gridCol = col;
+}
+
+void RemoveObjectFromGrid(GameObject *obj) {
+  if (obj->gridRow < 0 || obj->gridCol < 0)
+    return;
+  auto &cell = grid[obj->gridRow][obj->gridCol];
+  cell.erase(std::remove(cell.begin(), cell.end(), obj), cell.end());
+}
+
+void UpdateObjectGrid(GameObject *obj) {
+  int newCol = (int)(obj->GetX() / GRID_CELL_SIZE);
+  int newRow = (int)(obj->GetY() / GRID_CELL_SIZE);
+
+  if (newCol == obj->gridCol && newRow == obj->gridRow)
+    return;
+  RemoveObjectFromGrid(obj);
+  if (newCol < 0 || newCol >= MAX_CELL_COL || newRow < 0 ||
+      newRow >= MAX_CELL_ROW)
+    return;
+  grid[newRow][newCol].push_back(obj);
+
+  obj->gridRow = newRow;
+  obj->gridCol = newCol;
+}
 
 void LoadResources() {
   Textures *textures = Textures::GetInstance();
@@ -337,12 +531,13 @@ void LoadResources() {
   textures->Add(TEX_COMMON1, L"assets/CommonObjects1.png");
   textures->Add(TEX_COMMON2, L"assets/CommonObjects2.png");
   textures->Add(TEX_FIRE_MARIO, L"assets/fireMario.png");
-  textures->Add(TEX_SCISSORS_MARIO, L"assets/sukunaMario.png");
+  textures->Add(TEX_SUKUNA_MARIO, L"assets/sukunaMario.png");
 
   textures->Add(TEX_HUD, L"assets/hud.png");
   textures->Add(TEX_INTRO, L"assets/intro_items.png");
   textures->Add(TEX_BBOX, L"assets/bbox.png");
   textures->Add(TEX_ENEMY_TEST, L"assets/enemy.png");
+  textures->Add(TEX_POTION, L"assets/potion.png");
 
   textures->Add(TEX_LEVEL_CLEAR, L"assets/level-clear.png");
   textures->Add(TEX_YOU_WIN, L"assets/you-win.png");
@@ -356,6 +551,17 @@ void LoadResources() {
   // Enemy sprite sheets
   textures->Add(TEX_ENEMIES_1, L"assets/enemies_transparent.png");
   textures->Add(TEX_ENEMIES_2, L"assets/enemies_transparent_3.png");
+
+  // Brick
+  //lava brick
+  textures->Add(TEX_LAVA_BRICK, L"assets/lavabrick.png");
+  textures->Add(TEX_LAVA_BRICK2, L"assets/lavabrick2.png"); //phần đất phía dưới
+  //black brick
+  textures->Add(TEX_BLACK_BRICK, L"assets/blackbrick.png");
+  //grass brick
+  textures->Add(TEX_GRASS_BRICK, L"assets/grassbrick.png");
+  //cloud brick
+  textures->Add(TEX_CLOUD_BRICK, L"assets/cloudbrick.png");
 
   // ==========================================
   // 2. CẮT SPRITES
@@ -449,90 +655,52 @@ void LoadResources() {
   sprites->Add(612, 85, 106, 156, 129, TEX_FIRE_MARIO);
 
   // ==========================================
-  // SCISSORS MARIO SPRITES
+  // SUKUNA MARIO SPRITES
   // ==========================================
   // Idle
-  sprites->Add(60, 216, 2, 229, 28, TEX_SCISSORS_MARIO); // Phải
-  sprites->Add(61, 176, 2, 189, 28, TEX_SCISSORS_MARIO); // Trái
+  sprites->Add(60, 216, 2, 229, 28, TEX_SUKUNA_MARIO); // Phải
+  sprites->Add(61, 176, 2, 189, 28, TEX_SUKUNA_MARIO); // Trái
 
   // Run
-  sprites->Add(62, 255, 2, 270, 28, TEX_SCISSORS_MARIO); // Phải 1
-  sprites->Add(63, 295, 3, 310, 28, TEX_SCISSORS_MARIO); // Phải 2
-  sprites->Add(64, 135, 2, 150, 28, TEX_SCISSORS_MARIO); // Trái 1
-  sprites->Add(65, 95, 3, 110, 28, TEX_SCISSORS_MARIO);  // Trái 2
+  sprites->Add(62, 255, 2, 270, 28, TEX_SUKUNA_MARIO); // Phải 1
+  sprites->Add(63, 295, 3, 310, 28, TEX_SUKUNA_MARIO); // Phải 2
+  sprites->Add(64, 135, 2, 150, 28, TEX_SUKUNA_MARIO); // Trái 1
+  sprites->Add(65, 95, 3, 110, 28, TEX_SUKUNA_MARIO);  // Trái 2
 
   // Jump
-  sprites->Add(66, 335, 3, 350, 28, TEX_SCISSORS_MARIO); // Phải
-  sprites->Add(67, 55, 3, 70, 28, TEX_SCISSORS_MARIO);   // Trái
+  sprites->Add(66, 335, 3, 350, 28, TEX_SUKUNA_MARIO); // Phải
+  sprites->Add(67, 55, 3, 70, 28, TEX_SUKUNA_MARIO);   // Trái
 
   // Skid
-  sprites->Add(68, 215, 42, 230, 69, TEX_SCISSORS_MARIO); // Mặt trái (Skid Right)
-  sprites->Add(69, 175, 42, 190, 69, TEX_SCISSORS_MARIO); // Mặt phải (Skid Left)
+  sprites->Add(68, 215, 42, 230, 69, TEX_SUKUNA_MARIO); // Mặt trái (Skid Right)
+  sprites->Add(69, 175, 42, 190, 69, TEX_SUKUNA_MARIO); // Mặt phải (Skid Left)
 
   // Cast
-  sprites->Add(70, 252, 42, 272, 68, TEX_SCISSORS_MARIO); // Phải
-  sprites->Add(71, 133, 42, 153, 68, TEX_SCISSORS_MARIO); // Trái
+  sprites->Add(70, 252, 42, 272, 68, TEX_SUKUNA_MARIO); // Phải
+  sprites->Add(71, 133, 42, 153, 68, TEX_SUKUNA_MARIO); // Trái
 
   // Slash
-  sprites->Add(630, 25, 85, 53, 106, TEX_SCISSORS_MARIO);  // short slash
-  sprites->Add(631, 72, 75, 117, 106, TEX_SCISSORS_MARIO); // long slash
+  sprites->Add(630, 25, 85, 53, 106, TEX_SUKUNA_MARIO);  // short slash
+  sprites->Add(631, 72, 75, 117, 106, TEX_SUKUNA_MARIO); // long slash
 
   // Parry Left
-  sprites->Add(632, 382, 113, 396, 140, TEX_SCISSORS_MARIO);
-  sprites->Add(633, 356, 113, 371, 140, TEX_SCISSORS_MARIO);
-  sprites->Add(634, 331, 114, 347, 140, TEX_SCISSORS_MARIO);
+  sprites->Add(632, 382, 113, 396, 140, TEX_SUKUNA_MARIO);
+  sprites->Add(633, 356, 113, 371, 140, TEX_SUKUNA_MARIO);
+  sprites->Add(634, 331, 114, 347, 140, TEX_SUKUNA_MARIO);
 
   // Parry Right
-  sprites->Add(635, 331, 82, 345, 109, TEX_SCISSORS_MARIO);
-  sprites->Add(636, 356, 82, 371, 109, TEX_SCISSORS_MARIO);
-  sprites->Add(637, 380, 83, 396, 109, TEX_SCISSORS_MARIO);
+  sprites->Add(635, 331, 82, 345, 109, TEX_SUKUNA_MARIO);
+  sprites->Add(636, 356, 82, 371, 109, TEX_SUKUNA_MARIO);
+  sprites->Add(637, 380, 83, 396, 109, TEX_SUKUNA_MARIO);
 
-  // RollingBall
-  sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
+      // RollingBall
+      sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
 
   // Death
   sprites->Add(32, 90, 53, 105, 68, TEX_MARIO);
 
   // Brick
-  sprites->Add(10, 74, 34, 89, 49, TEX_COMMON1);
-
-  // Black Brick
-  sprites->Add(110, 0, 0, 15, 15, TEX_BLACK_BRICK);  // phần block phía trên
-  sprites->Add(111, 0, 16, 15, 31, TEX_BLACK_BRICK); // phần block phía dưới
-
-  // Lava Brick
-  sprites->Add(112, 0, 0, 15, 15, TEX_LAVA_BRICK);  // phần block phía trên
-  sprites->Add(113, 0, 0, 15, 15, TEX_LAVA_BRICK2); // phần block phía dưới
-
-  // Grass Brick
-  sprites->Add(114, 18, 1, 33, 16, TEX_GRASS_BRICK);   // phần block phía trên
-  sprites->Add(115, 18, 18, 33, 33, TEX_GRASS_BRICK);  // phần block phía dưới
-  sprites->Add(1141, 1, 1, 16, 16, TEX_GRASS_BRICK);   // Top Left
-  sprites->Add(1142, 35, 1, 50, 16, TEX_GRASS_BRICK);  // Top Right
-  sprites->Add(1151, 1, 18, 16, 33, TEX_GRASS_BRICK);  // Bottom Left
-  sprites->Add(1152, 35, 18, 50, 33, TEX_GRASS_BRICK); // Bottom Right
-  sprites->Add(1143, 52, 1, 67, 16, TEX_GRASS_BRICK);  // Top Both
-  sprites->Add(1153, 52, 18, 67, 33, TEX_GRASS_BRICK); // Bottom Both
-
-  // Staircase (Grass alternative)
-  sprites->Add(1240, 18, 103, 33, 118, TEX_GRASS_BRICK); // Top Center
-  sprites->Add(1241, 1, 103, 16, 118, TEX_GRASS_BRICK);  // Top Left
-  sprites->Add(1242, 35, 103, 50, 118, TEX_GRASS_BRICK); // Top Right
-  sprites->Add(1243, 52, 103, 67, 118, TEX_GRASS_BRICK); // Top Isolated
-
-  // Floating Grass Platform
-  sprites->Add(1244, 1, 52, 16, 67, TEX_GRASS_BRICK);  // Floating Left
-  sprites->Add(1245, 18, 52, 33, 67, TEX_GRASS_BRICK); // Floating Center
-  sprites->Add(1246, 35, 52, 50, 67, TEX_GRASS_BRICK); // Floating Right
-  sprites->Add(1247, 52, 52, 67, 67, TEX_GRASS_BRICK); // Floating Isolated
-
-  sprites->Add(1250, 18, 120, 33, 135, TEX_GRASS_BRICK); // Middle Center
-  sprites->Add(1251, 1, 120, 16, 135, TEX_GRASS_BRICK);  // Middle Left
-  sprites->Add(1252, 35, 120, 50, 135, TEX_GRASS_BRICK); // Middle Right
-  sprites->Add(1253, 52, 120, 67, 135, TEX_GRASS_BRICK); // Middle Isolated
-
-  // Cloud Brick
-  sprites->Add(116, 0, 0, 15, 15, TEX_CLOUD_BRICK);
+  sprites->Add(10, 435, 152, 450, 167, TEX_COMMON1);
 
   //Black Brick
   sprites->Add(20,0, 0,15, 15,TEX_BLACK_BRICK); //phần block phía trên
@@ -560,16 +728,10 @@ void LoadResources() {
   sprites->Add(16, 5, 60, 36, 75, TEX_COMMON2);
 
   // Breakable
-  sprites->Add(14, 0, 68, 15, 83, TEX_COMMON1);
-  sprites->Add(141, 17, 68, 32, 83, TEX_COMMON1);
-  sprites->Add(142, 34, 68, 49, 83, TEX_COMMON1);
-  sprites->Add(143, 51, 68, 66, 83, TEX_COMMON1);
+  sprites->Add(14, 453, 152, 468, 167, TEX_COMMON1);
 
   // Lucky Block
-  sprites->Add(15, 74, 17, 89, 32, TEX_COMMON1);
-  sprites->Add(151, 91, 17, 106, 32, TEX_COMMON1);
-  sprites->Add(152, 108, 17, 123, 32, TEX_COMMON1);
-  sprites->Add(153, 125, 17, 140, 32, TEX_COMMON1);
+  sprites->Add(15, 185, 7, 200, 22, TEX_COMMON2);
 
   // Bounding Box
   sprites->Add(99999, 0, 0, 9, 9, TEX_BBOX);
@@ -586,6 +748,9 @@ void LoadResources() {
   sprites->Add(30104, 176, 0, 191, 31, TEX_ENEMY_TEST);
   sprites->Add(30105, 192, 0, 207, 31, TEX_ENEMY_TEST);
   sprites->Add(30106, 208, 0, 223, 31, TEX_ENEMY_TEST);
+
+  // Potion
+  sprites->Add(101, 0, 0, 16, 16, TEX_POTION);
 
   // Level clear
   sprites->Add(7001, 0, 0, 640, 405, TEX_LEVEL_CLEAR);
@@ -605,53 +770,9 @@ void LoadResources() {
   // White line drawing block sprite
   sprites->Add(99998, 0, 0, 1, 1, TEX_WHITE);
 
-  // Water Sprites
-  sprites->Add(80011, 264, 634, 279, 663, TEX_COMMON2);
-  sprites->Add(80012, 298, 634, 313, 663, TEX_COMMON2);
-  sprites->Add(80013, 332, 634, 347, 663, TEX_COMMON2);
-
-  // Jungle Props
-  sprites->Add(81001, 55, 7, 70, 22, TEX_COMMON2); // Bush
-  sprites->Add(81002, 3, 80, 130, 143, TEX_COMMON2); // Cliff
-  sprites->Add(81003, 59, 27, 121, 74, TEX_COMMON2); // Small cliff
-  
-  // Clouds
-  sprites->Add(81004, 52, 3, 83, 26, TEX_CLOUDS); // Single cloud
-  sprites->Add(81005, 1, 3, 48, 26, TEX_CLOUDS);  // Double cloud
-
-  // Piranha Plant
-  sprites->Add(30001, 15, 349, 30, 373, TEX_ENEMIES_2);
-  sprites->Add(30002, 65, 350, 80, 373, TEX_ENEMIES_2);
-
-  // Venus Fire Trap (Bottom-Up)
-  sprites->Add(30011, 164, 399, 180, 423, TEX_ENEMIES_2); // Trái lên ngậm
-  sprites->Add(30012, 64, 399, 80, 423, TEX_ENEMIES_2);   // Trái lên mở
-  sprites->Add(30013, 215, 399, 230, 423, TEX_ENEMIES_2); // Phải lên ngậm
-  sprites->Add(30014, 315, 399, 330, 423, TEX_ENEMIES_2); // Phải lên mở
-  sprites->Add(30015, 115, 399, 130, 423, TEX_ENEMIES_2); // Trái xuống ngậm
-  sprites->Add(30016, 15, 399, 30, 423, TEX_ENEMIES_2);   // Trái xuống mở
-  sprites->Add(30017, 264, 399, 279, 423, TEX_ENEMIES_2); // Phải xuống ngậm
-  sprites->Add(30018, 364, 399, 379, 423, TEX_ENEMIES_2); // Phải xuống mở
-
-  // Venus Fire Trap (Top-Down)
-  sprites->Add(30021, 115, 449, 130, 473, TEX_ENEMIES_2); // Trái lên ngậm
-  sprites->Add(30022, 15, 449, 30, 473, TEX_ENEMIES_2);   // Trái lên mở
-  sprites->Add(30023, 264, 449, 279, 473, TEX_ENEMIES_2); // Phải lên ngậm
-  sprites->Add(30024, 364, 449, 379, 473, TEX_ENEMIES_2); // Phải lên mở
-  sprites->Add(30025, 164, 449, 180, 473, TEX_ENEMIES_2); // Trái xuống ngậm
-  sprites->Add(30026, 64, 449, 80, 473, TEX_ENEMIES_2);   // Trái xuống mở
-  sprites->Add(30027, 214, 449, 230, 473, TEX_ENEMIES_2); // Phải xuống ngậm
-  sprites->Add(30028, 314, 449, 330, 473, TEX_ENEMIES_2); // Phải xuống mở
-
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION
   // ==========================================
-
-  // Water Animation
-  ani = new Animation(200);
-  ani->Add(80011);
-  ani->Add(80012);
-  animations->Add(8001, ani);
 
   // Small Mario Animations
   ani = new Animation(100);
@@ -690,24 +811,6 @@ void LoadResources() {
   ani->Add(32, 1000);
   animations->Add(108, ani); // Death
 
-  // Piranha Plant
-  ani = new Animation(150);
-  ani->Add(30001);
-  ani->Add(30002);
-  animations->Add(5000, ani);
-
-  // Venus Fire Trap (Bottom-Up)
-  ani = new Animation(150); ani->Add(30011); ani->Add(30012); animations->Add(5001, ani);
-  ani = new Animation(150); ani->Add(30013); ani->Add(30014); animations->Add(5002, ani);
-  ani = new Animation(150); ani->Add(30015); ani->Add(30016); animations->Add(5003, ani);
-  ani = new Animation(150); ani->Add(30017); ani->Add(30018); animations->Add(5004, ani);
-
-  // Venus Fire Trap (Top-Down)
-  ani = new Animation(150); ani->Add(30021); ani->Add(30022); animations->Add(5011, ani);
-  ani = new Animation(150); ani->Add(30023); ani->Add(30024); animations->Add(5012, ani);
-  ani = new Animation(150); ani->Add(30025); ani->Add(30026); animations->Add(5013, ani);
-  ani = new Animation(150); ani->Add(30027); ani->Add(30028); animations->Add(5014, ani);
-
   // Common Objects Animations
   ani = new Animation(100);
   ani->Add(10, 1000);
@@ -726,114 +829,11 @@ void LoadResources() {
   ani->Add(16, 1000);
   animations->Add(207, ani); // Supplementary Body
   ani = new Animation(100);
-  ani->Add(14, 200);
-  ani->Add(141, 200);
-  ani->Add(142, 200);
-  ani->Add(143, 200);
+  ani->Add(14, 1000);
   animations->Add(205, ani); // Breakable
   ani = new Animation(100);
-  ani->Add(15, 200);
-  ani->Add(151, 200);
-  ani->Add(152, 200);
-  ani->Add(153, 200);
+  ani->Add(15, 1000);
   animations->Add(206, ani); // Lucky Block
-
-  // Ảnh nền mặt đất (Ground) - 2 lớp
-  // Grass (Overworld) - Top
-  ani = new Animation(100);
-  ani->Add(114, 1000);
-  animations->Add(211, ani);
-  // Grass (Overworld) - Bottom
-  ani = new Animation(100);
-  ani->Add(115, 1000);
-  animations->Add(212, ani);
-
-  // Grass Edge Animations
-  ani = new Animation(100);
-  ani->Add(1141, 1000);
-  animations->Add(219, ani);
-  ani = new Animation(100);
-  ani->Add(1142, 1000);
-  animations->Add(220, ani);
-  ani = new Animation(100);
-  ani->Add(1151, 1000);
-  animations->Add(221, ani);
-  ani = new Animation(100);
-  ani->Add(1152, 1000);
-  animations->Add(222, ani);
-  ani = new Animation(100);
-  ani->Add(1143, 1000);
-  animations->Add(223, ani);
-  ani = new Animation(100);
-  ani->Add(1153, 1000);
-  animations->Add(224, ani);
-
-  // Staircase Edge Animations
-  ani = new Animation(100);
-  ani->Add(1240, 1000);
-  animations->Add(225, ani); // Top Center
-  ani = new Animation(100);
-  ani->Add(1241, 1000);
-  animations->Add(226, ani); // Top Left
-  ani = new Animation(100);
-  ani->Add(1242, 1000);
-  animations->Add(227, ani); // Top Right
-  ani = new Animation(100);
-  ani->Add(1243, 1000);
-  animations->Add(228, ani); // Top Isolated
-
-  ani = new Animation(100);
-  ani->Add(1244, 1000);
-  animations->Add(236, ani); // Floating Left
-  ani = new Animation(100);
-  ani->Add(1245, 1000);
-  animations->Add(235, ani); // Floating Center
-  ani = new Animation(100);
-  ani->Add(1246, 1000);
-  animations->Add(237, ani); // Floating Right
-  ani = new Animation(100);
-  ani->Add(1247, 1000);
-  animations->Add(238, ani); // Floating Isolated
-
-  ani = new Animation(100);
-  ani->Add(1250, 1000);
-  animations->Add(229, ani); // Mid Center
-  ani = new Animation(100);
-  ani->Add(1251, 1000);
-  animations->Add(230, ani); // Mid Left
-  ani = new Animation(100);
-  ani->Add(1252, 1000);
-  animations->Add(231, ani); // Mid Right
-  ani = new Animation(100);
-  ani->Add(1253, 1000);
-  animations->Add(232, ani); // Mid Isolated
-
-  // Black Brick (Underground) - Top
-  ani = new Animation(100);
-  ani->Add(110, 1000);
-  animations->Add(213, ani);
-  // Black Brick (Underground) - Bottom
-  ani = new Animation(100);
-  ani->Add(111, 1000);
-  animations->Add(214, ani);
-
-  // Lava Brick (Castle) - Top
-  ani = new Animation(100);
-  ani->Add(112, 1000);
-  animations->Add(215, ani);
-  // Lava Brick (Castle) - Bottom
-  ani = new Animation(100);
-  ani->Add(113, 1000);
-  animations->Add(216, ani);
-
-  // Cloud Brick (Athletic/Sky) - Top
-  ani = new Animation(100);
-  ani->Add(116, 1000);
-  animations->Add(217, ani);
-  // Cloud Brick (Athletic/Sky) - Bottom
-  ani = new Animation(100);
-  ani->Add(116, 1000);
-  animations->Add(218, ani);
 
   // Big Mario Animations
   ani = new Animation(100);
@@ -912,7 +912,7 @@ void LoadResources() {
   ani->Add(51, 1000);
   animations->Add(509, ani); // Cast Left
 
-  // Scissors Mario Animations
+  // Sukuna Mario Animations
   ani = new Animation(100);
   ani->Add(60, 1000);
   animations->Add(700, ani); // Idle Phải
@@ -1067,32 +1067,6 @@ void LoadResources() {
   sprites->Add(71502, 334, 147, 351, 176, TEX_ENEMIES_2);
 
   // ==========================================
-  // HAMMER BRO & HAMMER SPRITES
-  // ==========================================
-  // Hammer Bro Walk Right
-  sprites->Add(50001, 165, 850, 180, 873, TEX_ENEMIES_2); 
-  sprites->Add(50002, 215, 850, 230, 873, TEX_ENEMIES_2); 
-  // Hammer Bro Throw Right
-  sprites->Add(50003, 265, 850, 280, 873, TEX_ENEMIES_2); 
-  
-  // Hammer Bro Walk Left
-  sprites->Add(50011, 115, 850, 130, 873, TEX_ENEMIES_2); 
-  sprites->Add(50012, 65, 850, 80, 873, TEX_ENEMIES_2);   
-  // Hammer Bro Throw Left
-  sprites->Add(50013, 15, 850, 30, 873, TEX_ENEMIES_2);   
-
-  // Hammer
-  sprites->Add(51001, 305, 842, 320, 855, TEX_ENEMIES_2);
-  sprites->Add(51002, 329, 840, 342, 855, TEX_ENEMIES_2);
-  sprites->Add(51003, 353, 840, 366, 855, TEX_ENEMIES_2);
-  sprites->Add(51004, 375, 842, 390, 855, TEX_ENEMIES_2);
-  sprites->Add(51005, 305, 869, 320, 882, TEX_ENEMIES_2);
-  sprites->Add(51006, 329, 867, 342, 882, TEX_ENEMIES_2);
-  sprites->Add(51007, 353, 867, 366, 882, TEX_ENEMIES_2);
-  sprites->Add(51008, 375, 869, 390, 882, TEX_ENEMIES_2);
-
-
-  // ==========================================
   // GOOMBA & KOOPA ANIMATIONS
   // ==========================================
 
@@ -1179,37 +1153,6 @@ void LoadResources() {
   ani->Add(71502);
   animations->Add(351, ani); // Flying Koopa jump right
 
-  // --- Hammer Bro & Hammer ---
-  ani = new Animation(50);
-  ani->Add(51001);
-  ani->Add(51002);
-  ani->Add(51003);
-  ani->Add(51004);
-  ani->Add(51008);
-  ani->Add(51007);
-  ani->Add(51006);
-  ani->Add(51005);
-  animations->Add(11000, ani); // Hammer spinning
-
-  ani = new Animation(150);
-  ani->Add(50011);
-  ani->Add(50012);
-  animations->Add(11001, ani); // Hammer Bro walk left
-
-  ani = new Animation(150);
-  ani->Add(50001);
-  ani->Add(50002);
-  animations->Add(11002, ani); // Hammer Bro walk right
-
-  ani = new Animation(150);
-  ani->Add(50013);
-  animations->Add(11003, ani); // Hammer Bro throw left
-
-  ani = new Animation(150);
-  ani->Add(50003);
-  animations->Add(11004, ani); // Hammer Bro throw right
-
-
   ani = new Animation(100);
   ani->Add(900, 1000);
 
@@ -1262,7 +1205,9 @@ void LoadResources() {
 }
 
 void Cleanup() {
-  Map::GetInstance()->Clear();
+  for (GameObject *obj : g_objectList)
+    delete obj;
+  g_objectList.clear();
 
   // Dọn dẹp Scene Manager
   SceneManager::GetInstance()->Cleanup();
@@ -1272,6 +1217,12 @@ void Cleanup() {
   AudioManager::GetInstance()->CleanUp();
 
   Game::GetInstance()->ReleaseDirectX();
+}
+
+void SpawnEnemy(float x, float y) {
+  Goomba *enemy = new Goomba(x, y, GOOMBA_TYPE_NORMAL);
+  g_objectList.push_back(enemy);
+  AddObjectToGrid(enemy);
 }
 
 #pragma endregion

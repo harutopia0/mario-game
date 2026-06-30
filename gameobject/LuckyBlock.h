@@ -19,7 +19,5 @@ public:
     void Hit();
     bool IsHit() { return isHit; }
 
-    bool IsOneWay() const override { return isHit; }
-
     virtual void Break(bool dropItem = true);
 };
