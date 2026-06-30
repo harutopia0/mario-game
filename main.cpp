@@ -617,6 +617,30 @@ void LoadResources() {
   sprites->Add(81004, 52, 3, 83, 26, TEX_CLOUDS); // Single cloud
   sprites->Add(81005, 1, 3, 48, 26, TEX_CLOUDS);  // Double cloud
 
+  // Piranha Plant
+  sprites->Add(30001, 15, 349, 30, 373, TEX_ENEMIES_2);
+  sprites->Add(30002, 65, 350, 80, 373, TEX_ENEMIES_2);
+
+  // Venus Fire Trap (Bottom-Up)
+  sprites->Add(30011, 164, 399, 180, 423, TEX_ENEMIES_2); // Trái lên ngậm
+  sprites->Add(30012, 64, 399, 80, 423, TEX_ENEMIES_2);   // Trái lên mở
+  sprites->Add(30013, 215, 399, 230, 423, TEX_ENEMIES_2); // Phải lên ngậm
+  sprites->Add(30014, 315, 399, 330, 423, TEX_ENEMIES_2); // Phải lên mở
+  sprites->Add(30015, 115, 399, 130, 423, TEX_ENEMIES_2); // Trái xuống ngậm
+  sprites->Add(30016, 15, 399, 30, 423, TEX_ENEMIES_2);   // Trái xuống mở
+  sprites->Add(30017, 264, 399, 279, 423, TEX_ENEMIES_2); // Phải xuống ngậm
+  sprites->Add(30018, 364, 399, 379, 423, TEX_ENEMIES_2); // Phải xuống mở
+
+  // Venus Fire Trap (Top-Down)
+  sprites->Add(30021, 115, 449, 130, 473, TEX_ENEMIES_2); // Trái lên ngậm
+  sprites->Add(30022, 15, 449, 30, 473, TEX_ENEMIES_2);   // Trái lên mở
+  sprites->Add(30023, 264, 449, 279, 473, TEX_ENEMIES_2); // Phải lên ngậm
+  sprites->Add(30024, 364, 449, 379, 473, TEX_ENEMIES_2); // Phải lên mở
+  sprites->Add(30025, 164, 449, 180, 473, TEX_ENEMIES_2); // Trái xuống ngậm
+  sprites->Add(30026, 64, 449, 80, 473, TEX_ENEMIES_2);   // Trái xuống mở
+  sprites->Add(30027, 214, 449, 230, 473, TEX_ENEMIES_2); // Phải xuống ngậm
+  sprites->Add(30028, 314, 449, 330, 473, TEX_ENEMIES_2); // Phải xuống mở
+
   // ==========================================
   // 3. GOM SPRITES TẠO ANIMATION
   // ==========================================
@@ -663,6 +687,24 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(32, 1000);
   animations->Add(108, ani); // Death
+
+  // Piranha Plant
+  ani = new Animation(150);
+  ani->Add(30001);
+  ani->Add(30002);
+  animations->Add(5000, ani);
+
+  // Venus Fire Trap (Bottom-Up)
+  ani = new Animation(150); ani->Add(30011); ani->Add(30012); animations->Add(5001, ani);
+  ani = new Animation(150); ani->Add(30013); ani->Add(30014); animations->Add(5002, ani);
+  ani = new Animation(150); ani->Add(30015); ani->Add(30016); animations->Add(5003, ani);
+  ani = new Animation(150); ani->Add(30017); ani->Add(30018); animations->Add(5004, ani);
+
+  // Venus Fire Trap (Top-Down)
+  ani = new Animation(150); ani->Add(30021); ani->Add(30022); animations->Add(5011, ani);
+  ani = new Animation(150); ani->Add(30023); ani->Add(30024); animations->Add(5012, ani);
+  ani = new Animation(150); ani->Add(30025); ani->Add(30026); animations->Add(5013, ani);
+  ani = new Animation(150); ani->Add(30027); ani->Add(30028); animations->Add(5014, ani);
 
   // Common Objects Animations
   ani = new Animation(100);
@@ -868,7 +910,7 @@ void LoadResources() {
   ani->Add(51, 1000);
   animations->Add(509, ani); // Cast Left
 
-  // Sukuna Mario Animations
+  // Scissors Mario Animations
   ani = new Animation(100);
   ani->Add(60, 1000);
   animations->Add(700, ani); // Idle Phải
@@ -1023,6 +1065,32 @@ void LoadResources() {
   sprites->Add(71502, 334, 147, 351, 176, TEX_ENEMIES_2);
 
   // ==========================================
+  // HAMMER BRO & HAMMER SPRITES
+  // ==========================================
+  // Hammer Bro Walk Right
+  sprites->Add(50001, 165, 850, 180, 873, TEX_ENEMIES_2); 
+  sprites->Add(50002, 215, 850, 230, 873, TEX_ENEMIES_2); 
+  // Hammer Bro Throw Right
+  sprites->Add(50003, 265, 850, 280, 873, TEX_ENEMIES_2); 
+  
+  // Hammer Bro Walk Left
+  sprites->Add(50011, 115, 850, 130, 873, TEX_ENEMIES_2); 
+  sprites->Add(50012, 65, 850, 80, 873, TEX_ENEMIES_2);   
+  // Hammer Bro Throw Left
+  sprites->Add(50013, 15, 850, 30, 873, TEX_ENEMIES_2);   
+
+  // Hammer
+  sprites->Add(51001, 305, 842, 320, 855, TEX_ENEMIES_2);
+  sprites->Add(51002, 329, 840, 342, 855, TEX_ENEMIES_2);
+  sprites->Add(51003, 353, 840, 366, 855, TEX_ENEMIES_2);
+  sprites->Add(51004, 375, 842, 390, 855, TEX_ENEMIES_2);
+  sprites->Add(51005, 305, 869, 320, 882, TEX_ENEMIES_2);
+  sprites->Add(51006, 329, 867, 342, 882, TEX_ENEMIES_2);
+  sprites->Add(51007, 353, 867, 366, 882, TEX_ENEMIES_2);
+  sprites->Add(51008, 375, 869, 390, 882, TEX_ENEMIES_2);
+
+
+  // ==========================================
   // GOOMBA & KOOPA ANIMATIONS
   // ==========================================
 
@@ -1108,6 +1176,37 @@ void LoadResources() {
   ani->Add(71501);
   ani->Add(71502);
   animations->Add(351, ani); // Flying Koopa jump right
+
+  // --- Hammer Bro & Hammer ---
+  ani = new Animation(50);
+  ani->Add(51001);
+  ani->Add(51002);
+  ani->Add(51003);
+  ani->Add(51004);
+  ani->Add(51008);
+  ani->Add(51007);
+  ani->Add(51006);
+  ani->Add(51005);
+  animations->Add(11000, ani); // Hammer spinning
+
+  ani = new Animation(150);
+  ani->Add(50011);
+  ani->Add(50012);
+  animations->Add(11001, ani); // Hammer Bro walk left
+
+  ani = new Animation(150);
+  ani->Add(50001);
+  ani->Add(50002);
+  animations->Add(11002, ani); // Hammer Bro walk right
+
+  ani = new Animation(150);
+  ani->Add(50013);
+  animations->Add(11003, ani); // Hammer Bro throw left
+
+  ani = new Animation(150);
+  ani->Add(50003);
+  animations->Add(11004, ani); // Hammer Bro throw right
+
 
   ani = new Animation(100);
   ani->Add(900, 1000);

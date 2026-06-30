@@ -5,6 +5,7 @@
 #include "../gameobject/Platform.h"
 #include "../gameobject/Enemy.h"
 #include "../gameobject/Block.h"
+#include "../render/Camera.h"
 
 RollingBall::RollingBall(float x, float y, int direction) : Projectile(x, y, direction) {
     width = ROLLINGBALL_WIDTH;
@@ -40,11 +41,9 @@ void RollingBall::Update(DWORD dt, vector<GameObject*>* coObjects) {
         return;
     }
 
-    auto& g_objectList = Map::GetInstance()->GetObjects();
-    if (!g_objectList.empty() && g_objectList[0] != nullptr) {
-        float marioX = g_objectList[0]->GetX();
-        // Camera (màn hình) rộng khoảng 320px (khi zoom 2x), nếu cách Mario > 350px là ngoài tầm camera.
-        if (std::abs(this->x - marioX) > 350.0f) {
+    Camera* camera = Camera::GetInstance();
+    if (camera) {
+        if (!camera->IsVisible(x - 32.0f, y - 32.0f, width + 64.0f, height + 64.0f)) {
             this->Delete();
             return;
         }

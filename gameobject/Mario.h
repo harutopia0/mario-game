@@ -3,7 +3,7 @@
 #include "../gameobject/Platform.h"
 
 #define MARIO_SMALL_WIDTH 13.0f
-#define MARIO_SMALL_HEIGHT 16.0f
+#define MARIO_SMALL_HEIGHT 13.0f
 #define MARIO_BIG_WIDTH 15.0f
 #define MARIO_BIG_HEIGHT 27.0f
 

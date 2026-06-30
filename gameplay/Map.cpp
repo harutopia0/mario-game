@@ -9,6 +9,10 @@
 #include "../gameobject/Pipe.h"
 #include "../gameobject/Goomba.h"
 #include "../gameobject/Koopa.h"
+#include "../gameobject/PiranhaPlant.h"
+#include "../gameobject/HammerBro.h"
+#include "../gameobject/Fireball.h"
+#include "../gameobject/VenusFireTrap.h"
 #include "../gameobject/PropSpawner.h"
 #include "../gameplay/GameManager.h"
 #include "../render/Camera.h"
@@ -319,6 +323,60 @@ void Map::LoadMap(LPCWSTR filePath) {
         if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
             cellY < MAX_CELL_ROW) {
           AddObjectToGrid(koopa);
+        }
+      } else if (tileID == 15 || tileID == 16) {
+        int pipeTile = 0;
+        if (r + 1 < rows) pipeTile = mapData[r + 1][c];
+        
+        float plantY = realY + 16.0f; // Default (chuẩn cho ống ngắn)
+        if (pipeTile >= 7 && pipeTile <= 10) {
+            int pipeHeight = pipeTile - 5;
+            float pipeRealY = realY - 15.0f; // Toạ độ gạch đỉnh ống
+            float pipeBottomY = pipeRealY - (pipeHeight - 1) * 15.0f; // Đáy ống
+            float pipeRenderHeight = (pipeHeight <= 3) ? 46.0f : ((pipeHeight - 3) * 15.0f + 46.0f);
+            plantY = pipeBottomY + pipeRenderHeight; // Đỉnh ống thực sự
+        }
+
+        plantY -= 1.0f; // Dời xuống 1 pixel theo yêu cầu
+
+        Enemy *plant = NULL;
+        if (tileID == 15) {
+            plant = new PiranhaPlant(realX + 8.0f, plantY);
+        } else {
+            plant = new VenusFireTrap(realX + 8.0f, plantY, false);
+        }
+        objects.push_back(plant);
+
+        int cellX = (int)((realX + 8.0f) / GRID_CELL_SIZE);
+        int cellY = (int)(plantY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(plant);
+        }
+      } else if (tileID == 17) {
+        // Venus lộn ngược, mặc định đặt ngay dưới miệng ống lộn ngược
+        float plantY = realY + 15.0f; // Tạm thời dùng realY + 15 làm miệng ống
+        VenusFireTrap *venus = new VenusFireTrap(realX + 8.0f, plantY, true);
+        objects.push_back(venus);
+
+        int cellX = (int)((realX + 8.0f) / GRID_CELL_SIZE);
+        int cellY = (int)(plantY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(venus);
+        }
+      } else if (tileID == 18) {
+        HammerBro *hammerBro = new HammerBro(realX, realY + 2.0f);
+        objects.push_back(hammerBro);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(hammerBro);
         }
       }
     }
