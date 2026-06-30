@@ -318,6 +318,17 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam,
   case WM_DESTROY:
     PostQuitMessage(0);
     break;
+  case WM_KEYDOWN:
+    {
+      bool isRepeat = (lParam & (1 << 30)) != 0;
+      if (!isRepeat) {
+        SceneManager::GetInstance()->OnKeyDown(wParam);
+      }
+    }
+    break;
+  case WM_KEYUP:
+    SceneManager::GetInstance()->OnKeyUp(wParam);
+    break;
   }
   return DefWindowProc(hWnd, message, wParam, lParam);
 }

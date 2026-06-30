@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Windows.h>
 #include <math.h>
 #include "../render/Sprites.h"
@@ -26,6 +26,8 @@ public:
     void LoadSprites();
     void Update(DWORD dt);
     void Render();
+    void OnKeyDown(int KeyCode);
+    void OnKeyUp(int KeyCode);
     bool IsDone() { return isDone; }
     int GetSelectedOption() { return 1; } // Mặc định trả về 1 (Game Start) cho các hệ thống khác nếu cần
 };

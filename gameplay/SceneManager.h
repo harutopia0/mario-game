@@ -60,8 +60,6 @@ private:
     LPD3DX10SPRITE spriteHandler;
     
     // Input Handling
-    void OnKeyDown(int KeyCode);
-    void OnKeyUp(int KeyCode);
     void KeyState(BYTE *states);
     
     void InitializeScene();
@@ -76,6 +74,8 @@ private:
 
     SceneManager();
 public:
+    void OnKeyDown(int KeyCode);
+    void OnKeyUp(int KeyCode);
     static SceneManager* GetInstance();
     void Init();
     void Update(DWORD dt);
