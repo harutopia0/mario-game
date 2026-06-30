@@ -48,6 +48,15 @@ void HammerBro::Update(DWORD dt, vector<GameObject*>* coObjects) {
         return;
     }
     
+    if (state == HAMMERBRO_STATE_FLAT) {
+        vx = 0.0f;
+        vy = 0.0f;
+        if (GetTickCount64() - flatTimeStart > 500) {
+            Delete();
+        }
+        return;
+    }
+    
     Camera* camera = Camera::GetInstance();
     if (camera) {
         if (!camera->IsVisible(x - 16.0f, y - 16.0f, width + 32.0f, height + 32.0f)) {
@@ -207,6 +216,16 @@ void HammerBro::Render() {
         }
         return;
     }
+
+    if (state == HAMMERBRO_STATE_FLAT) {
+        int aniId = (nx > 0) ? HAMMERBRO_ANI_WALK_RIGHT : HAMMERBRO_ANI_WALK_LEFT;
+        Animation* ani = Animations::GetInstance()->Get(aniId);
+        if (ani) {
+            float shiftY = -height * 0.4f; // Align feet with ground (y increases upwards, so shift down is negative)
+            ani->RenderScaled(x, y + shiftY, 1.0f, 0.2f);
+        }
+        return;
+    }
     
     Animation* ani = Animations::GetInstance()->Get(animationId);
     if (ani) {
@@ -215,13 +234,23 @@ void HammerBro::Render() {
 }
 
 void HammerBro::OnStomped(Mario* mario) {
-    if (state == HAMMERBRO_STATE_DIE) return;
+    if (state == HAMMERBRO_STATE_DIE || state == HAMMERBRO_STATE_FLAT) return;
 
-    state = HAMMERBRO_STATE_DIE;
     died = true;
-    vy = HAMMERBRO_JUMP_SPEED * 0.5f; // Jump upward slightly
-    vx = (nx > 0) ? -0.05f : 0.05f; // Move slightly in the opposite horizontal direction
-    layer = LAYER_BACKGROUND; // Do not collide with other elements
+    layer = LAYER_BACKGROUND; // No collision anymore
+
+    if (mario != NULL) {
+        // Bị dẫm -> Xẹp xuống
+        state = HAMMERBRO_STATE_FLAT;
+        flatTimeStart = GetTickCount64();
+        vx = 0.0f;
+        vy = 0.0f;
+    } else {
+        // Bị đòn khác -> Lật ngược rơi đi
+        state = HAMMERBRO_STATE_DIE;
+        vy = HAMMERBRO_JUMP_SPEED * 0.5f; // Jump upward slightly
+        vx = (nx > 0) ? -0.05f : 0.05f; // Move slightly in the opposite horizontal direction
+    }
 
     AudioManager::GetInstance()->PlaySFX("stomp");
 }

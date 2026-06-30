@@ -12,6 +12,7 @@
 #define HAMMERBRO_STATE_WALKING 100
 #define HAMMERBRO_STATE_JUMPING 200
 #define HAMMERBRO_STATE_DIE 300
+#define HAMMERBRO_STATE_FLAT 400
 
 // Animations
 #define HAMMERBRO_ANI_WALK_LEFT 11001
@@ -28,6 +29,7 @@ private:
     bool isThrowing;
     ULONGLONG throwStart;
     ULONGLONG throwCooldownStart;
+    ULONGLONG flatTimeStart;
     
     ULONGLONG jumpCooldownStart;
     bool isOnGround;
