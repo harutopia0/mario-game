@@ -115,8 +115,18 @@ void SceneManager::SwitchTo(GameState newState) {
     // Dọn game objects (Mario, enemies, bricks...)
     ClearAllGameObjects();
 
-    if (worldMapScene != nullptr) {
-      worldMapScene->Reset();
+    if (GameManager::GetInstance()->IsGameOver()) {
+      // Nếu là Game Over, reset GameManager và tạo lại WorldMap
+      GameManager::DestroyInstance();
+      if (worldMapScene != nullptr) {
+        delete worldMapScene;
+      }
+      worldMapScene = new WorldMap();
+      worldMapScene->LoadSprites();
+    } else {
+      if (worldMapScene != nullptr) {
+        worldMapScene->Reset();
+      }
     }
 
     AudioManager::GetInstance()->PlayMusic("level_theme", true);
@@ -131,9 +141,7 @@ void SceneManager::SwitchTo(GameState newState) {
 
     // Tạo Mario mới và khôi phục form từ GameManager
     Mario *mario =
-        new Mario(30.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire());
-    mario->SetScissors(gm->IsMarioScissors());
-        new Mario(100.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire(), gm->IsMarioScissors());
+        new Mario(30.0f, 200.0f, gm->IsMarioBig(), gm->IsMarioFire(), gm->IsMarioScissors());
 
     g_objectList.insert(g_objectList.begin(), mario);
 
@@ -233,7 +241,7 @@ void SceneManager::Update(DWORD dt) {
   if (isMarioDying) {
     if (GetTickCount64() - deathStartTime >= 5000) {
       isMarioDying = false;
-      SwitchTo(STATE_INTRO);
+      SwitchTo(STATE_WORLD_MAP);
       return;
     }
   }
@@ -876,6 +884,22 @@ void SceneManager::RenderScissorsAttackOverlay() {
       if (elapsed >= 1120) {
         whiteSprite->DrawRotatedScaled(wsX[4] - 0.5f, wsY[4] - 0.5f, wsAngle[4], wsLength[4], wsThickness[4], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
       }
+    }
+  }
+}
+
+void SceneManager::OnKeyDown(int KeyCode) {
+  if (currentState == STATE_INTRO) {
+    if (introScene) {
+      introScene->OnKeyDown(KeyCode);
+    }
+  }
+}
+
+void SceneManager::OnKeyUp(int KeyCode) {
+  if (currentState == STATE_INTRO) {
+    if (introScene) {
+      introScene->OnKeyUp(KeyCode);
     }
   }
 }

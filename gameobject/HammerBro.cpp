@@ -1,6 +1,7 @@
 #include "HammerBro.h"
 #include "Hammer.h"
 #include "Mario.h"
+#include "../audio/AudioManager.h"
 #include "../gameplay/Map.h"
 #include "../render/Camera.h"
 #include "../animation/Animations.h"
@@ -35,7 +36,26 @@ void HammerBro::GetBoundingBox(float& left, float& top, float& right, float& bot
 }
 
 void HammerBro::Update(DWORD dt, vector<GameObject*>* coObjects) {
-    if (died) return;
+    if (isDeleted) return;
+    
+    if (state == HAMMERBRO_STATE_DIE) {
+        vy -= HAMMERBRO_GRAVITY * dt;
+        x += vx * dt;
+        y += vy * dt;
+        if (y < -100.0f) {
+            Delete();
+        }
+        return;
+    }
+    
+    if (state == HAMMERBRO_STATE_FLAT) {
+        vx = 0.0f;
+        vy = 0.0f;
+        if (GetTickCount64() - flatTimeStart > 500) {
+            Delete();
+        }
+        return;
+    }
     
     Camera* camera = Camera::GetInstance();
     if (camera) {
@@ -186,7 +206,27 @@ void HammerBro::Update(DWORD dt, vector<GameObject*>* coObjects) {
 }
 
 void HammerBro::Render() {
-    if (died) return;
+    if (isDeleted) return;
+    
+    if (state == HAMMERBRO_STATE_DIE) {
+        int aniId = (nx > 0) ? HAMMERBRO_ANI_WALK_RIGHT : HAMMERBRO_ANI_WALK_LEFT;
+        Animation* ani = Animations::GetInstance()->Get(aniId);
+        if (ani) {
+            ani->Render(x, y, 0, 1); // nx = 0, ny = 1 (vertical flip)
+        }
+        return;
+    }
+
+    if (state == HAMMERBRO_STATE_FLAT) {
+        int aniId = (nx > 0) ? HAMMERBRO_ANI_WALK_RIGHT : HAMMERBRO_ANI_WALK_LEFT;
+        Animation* ani = Animations::GetInstance()->Get(aniId);
+        if (ani) {
+            float shiftY = -height * 0.4f; // Align feet with ground (y increases upwards, so shift down is negative)
+            ani->RenderScaled(x, y + shiftY, 1.0f, 0.2f);
+        }
+        return;
+    }
+    
     Animation* ani = Animations::GetInstance()->Get(animationId);
     if (ani) {
         ani->Render(x, y);
@@ -194,6 +234,23 @@ void HammerBro::Render() {
 }
 
 void HammerBro::OnStomped(Mario* mario) {
+    if (state == HAMMERBRO_STATE_DIE || state == HAMMERBRO_STATE_FLAT) return;
+
     died = true;
-    Delete(); // Sử dụng Delete() thay vì deleted = true
+    layer = LAYER_BACKGROUND; // No collision anymore
+
+    if (mario != NULL) {
+        // Bị dẫm -> Xẹp xuống
+        state = HAMMERBRO_STATE_FLAT;
+        flatTimeStart = GetTickCount64();
+        vx = 0.0f;
+        vy = 0.0f;
+    } else {
+        // Bị đòn khác -> Lật ngược rơi đi
+        state = HAMMERBRO_STATE_DIE;
+        vy = HAMMERBRO_JUMP_SPEED * 0.5f; // Jump upward slightly
+        vx = (nx > 0) ? -0.05f : 0.05f; // Move slightly in the opposite horizontal direction
+    }
+
+    AudioManager::GetInstance()->PlaySFX("stomp");
 }
