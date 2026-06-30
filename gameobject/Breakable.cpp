@@ -1,5 +1,7 @@
 #include "Breakable.h"
 #include "../animation/Animations.h"
+#include "../gameplay/Map.h"
+#include "BrickDebrisEffect.h"
 
 Breakable::Breakable(float x, float y, int animationId) : DynamicBlock(x, y)
 {
@@ -78,6 +80,15 @@ void Breakable::Render()
 
 void Breakable::Break(bool dropItem)
 {
+    if (isDeleted) return;
+
+    // Spawn VFX
+    BrickDebrisEffect* debris = new BrickDebrisEffect(x, y, animationId);
+    Map::GetInstance()->GetObjects().push_back(debris);
+    Map::GetInstance()->AddObjectToGrid(debris);
+
+    this->isDeleted = true;
+    
     if (leftNeighbor) leftNeighbor->OnNeighborBroken(this);
     if (rightNeighbor) rightNeighbor->OnNeighborBroken(this);
     this->Delete();

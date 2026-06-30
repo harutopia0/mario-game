@@ -16,7 +16,7 @@
 
 #define VENUS_SPEED_Y 0.03f
 #define VENUS_SAFE_ZONE_WIDTH 32.0f
-#define VENUS_SHOOT_DELAY 1500 // Thời gian ngắm trước khi bắn
+#define VENUS_SHOOT_DELAY 500 // Thời gian ngắm trước khi bắn
 #define VENUS_HIDE_DELAY 2000 // Thời gian nằm dưới ống
 
 class VenusFireTrap : public Enemy {

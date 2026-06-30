@@ -136,7 +136,7 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     }
 
     // Ledge Detection (Quay đầu khi đến mép vực)
-    if (isOnGround)
+    if (isOnGround && !CanFallOffLedge())
     {
         bool hasGroundAhead = false;
         

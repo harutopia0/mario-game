@@ -9,7 +9,7 @@ private:
     int animationId;
 
 public:
-    GroundBlock(float x, float y, int animationId);
+    GroundBlock(float x, float y, int animationId, float customWidth = -1.0f);
 
     virtual void Render();
     virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom);

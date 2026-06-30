@@ -146,7 +146,8 @@ void Koopa::Update(DWORD dt, vector<GameObject*>* coObjects)
 		}
 	}
 
-	// Red Koopa: Kiểm tra vực trước mặt khi đi bộ
+	// Đã bỏ logic quay đầu khi gặp vực (theo yêu cầu)
+	/*
 	if (type == KOOPA_TYPE_RED && state == KOOPA_STATE_WALKING)
 	{
 		if (vy == 0 && CheckCliffAhead(coObjects))
@@ -156,6 +157,7 @@ void Koopa::Update(DWORD dt, vector<GameObject*>* coObjects)
 			nx = -nx;
 		}
 	}
+	*/
 
 	// Flying Koopa: Nhảy lại khi chạm đất
 	if (type == KOOPA_TYPE_GREEN_FLYING && state == KOOPA_STATE_JUMPING)

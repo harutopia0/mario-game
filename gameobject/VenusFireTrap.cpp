@@ -37,6 +37,10 @@ VenusFireTrap::VenusFireTrap(float x, float y, bool isUpsideDown) : Enemy(x, y, 
 }
 
 void VenusFireTrap::GetBoundingBox(float &left, float &top, float &right, float &bottom) {
+    if (state == VENUS_STATE_HIDING) {
+        left = top = right = bottom = 0;
+        return;
+    }
     left = x;
     top = y;
     right = x + width;
@@ -206,5 +210,6 @@ void VenusFireTrap::OnStomped(Mario* mario) {
         mario->TakeDamage();
     } else {
         this->died = true;
+        this->isDeleted = true;
     }
 }

@@ -23,23 +23,8 @@ void PiranhaPlant::Update(DWORD dt, vector<GameObject *> *coObjects) {
 
   if (state == PIRANHA_STATE_HIDING) {
     if (GetTickCount64() - waitTimeStart > PIRANHA_HIDE_TIME) {
-      Mario *mario = Map::GetInstance()->GetMario();
-
-      bool isSafe = true;
-      if (mario) {
-        float dx = abs(mario->GetX() - this->x);
-        if (dx <= PIRANHA_SAFE_ZONE_WIDTH) {
-          isSafe = false;
-        }
-      }
-
-      if (isSafe) {
-        state = PIRANHA_STATE_GOING_UP;
-        vy = -PIRANHA_SPEED; // Trồi lên là giảm Y
-      } else {
-        // Check again in 500ms
-        waitTimeStart = GetTickCount64() - PIRANHA_HIDE_TIME + 500;
-      }
+      state = PIRANHA_STATE_GOING_UP;
+      vy = -PIRANHA_SPEED; // Trồi lên là giảm Y
     }
   } else if (state == PIRANHA_STATE_GOING_UP) {
     if (y <= minY) {
@@ -71,6 +56,10 @@ void PiranhaPlant::Render() {
 
 void PiranhaPlant::GetBoundingBox(float &left, float &top, float &right,
                                   float &bottom) {
+  if (state == PIRANHA_STATE_HIDING) {
+    left = top = right = bottom = 0;
+    return;
+  }
   left = x;
   top = y;
   right = x + width;
@@ -86,5 +75,6 @@ void PiranhaPlant::OnStomped(Mario *mario) {
     mario->TakeDamage();
   } else {
     this->died = true; // Chết do bị ném lửa hoặc sao
+    this->isDeleted = true;
   }
 }

@@ -76,7 +76,7 @@ void Map::LoadMap(LPCWSTR filePath) {
     animTop = 213;
     animBottom = 214;
   } else if (currentLevel == 3) {
-    animTop = 217;
+    animTop = 217; // Cloud
     animBottom = 218;
   } else if (currentLevel == 4 || currentLevel == 5) {
     animTop = 215;
@@ -106,12 +106,53 @@ void Map::LoadMap(LPCWSTR filePath) {
         bool isTop = (r == 0 || mapData[r - 1][c] != 1 || r == rows - 2);
         bool isFloating = (r + 1 < rows && mapData[r + 1][c] != 1);
 
-        int groundAnimId = animBottom;
-        if (isTop) {
-          groundAnimId = animTop;
+        if (currentLevel == 3 && r < 11 && !hasLeft) {
+          int len = 1;
+          while (c + len < cols && mapData[r][c + len] == 1) {
+            len++;
+          }
+          if (len >= 4 && len <= 6) {
+            int cloudAnimId = 1300;
+            if (len == 5) cloudAnimId = 1301;
+            if (len == 6) cloudAnimId = 1302;
+
+            GroundBlock *cloud = new GroundBlock(realX, realY, cloudAnimId, len * 15.0f);
+            objects.push_back(cloud);
+
+            int cellX = (int)(realX / GRID_CELL_SIZE);
+            int cellY = (int)(realY / GRID_CELL_SIZE);
+
+            if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+                cellY < MAX_CELL_ROW) {
+              AddObjectToGrid(cloud);
+            }
+
+            // Register in additional cells if the cloud spans multiple grid cells
+            int endCellX = (int)((realX + len * 15.0f - 1.0f) / GRID_CELL_SIZE);
+            for (int extraX = cellX + 1; extraX <= endCellX; extraX++) {
+                if (extraX >= 0 && extraX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
+                    grid[cellY][extraX].push_back(cloud);
+                }
+            }
+            c += len - 1;
+            continue;
+          }
         }
 
-        if (animTop == 211) { // 211 is Grass Top
+        int currentAnimTop = animTop;
+        int currentAnimBottom = animBottom;
+        
+        if (currentLevel == 3 && r >= 11) {
+            currentAnimTop = 211;
+            currentAnimBottom = 212;
+        }
+
+        int groundAnimId = currentAnimBottom;
+        if (isTop) {
+          groundAnimId = currentAnimTop;
+        }
+
+        if (currentAnimTop == 211) { // 211 is Grass Top
           if (isStair) {
             if (isTop) {
               if (isFloating) {
@@ -155,7 +196,7 @@ void Map::LoadMap(LPCWSTR filePath) {
           }
         }
 
-        if (!isStair) { // Chỉ áp dụng 2 lớp cho 2 hàng dưới cùng (Mặt đất)
+        if (!isStair || currentLevel == 3) { // Chỉ áp dụng 2 lớp cho 2 hàng dưới cùng (Mặt đất)
           GroundBlock *ground = new GroundBlock(realX, realY, groundAnimId);
           objects.push_back(ground);
 
@@ -185,7 +226,7 @@ void Map::LoadMap(LPCWSTR filePath) {
               brick->leftNeighbor = lastBrickInRow;
           }
           lastBrickInRow = brick;
-          brick->SetRenderParams(isTop, isFloating, animTop);
+          brick->SetRenderParams(isTop, isFloating, currentAnimTop);
         }
       } else if (tileID == 0 && currentLevel == 1 && r == rows - 2) {
         Water* water = new Water(realX, realY - 18.0f);
@@ -230,6 +271,8 @@ void Map::LoadMap(LPCWSTR filePath) {
             breakableAnim = 237;
           else
             breakableAnim = 235;
+        } else if (currentLevel == 3) {
+            breakableAnim = 1303;
         }
         Breakable *breakableBlock = new Breakable(realX, realY, breakableAnim);
         objects.push_back(breakableBlock);
