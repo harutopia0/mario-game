@@ -1,159 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="animation">
+      <UniqueIdentifier>{f1f3c50c-0132-4710-8522-1e03c7c57b11}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="input">
+      <UniqueIdentifier>{68aa1e34-806a-4651-a720-8023c2025936}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\animation">
-      <UniqueIdentifier>{6b1c5f76-ee17-4d12-9597-4d41338f723b}</UniqueIdentifier>
+    <Filter Include="ui">
+      <UniqueIdentifier>{bc2d2035-181f-4ec6-96bb-e04d50d43ffa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\assests">
-      <UniqueIdentifier>{88940263-8ec2-43e1-9e75-0b7e6eb6fac1}</UniqueIdentifier>
+    <Filter Include="gameobject">
+      <UniqueIdentifier>{380cb5ed-d34b-4c94-9f74-8e82786c7808}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\audio">
-      <UniqueIdentifier>{cf1aa75e-abe4-4279-b8fc-5359bece1428}</UniqueIdentifier>
+    <Filter Include="audio">
+      <UniqueIdentifier>{e00f1206-f5f6-48c0-af67-051e08ae3220}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\core">
-      <UniqueIdentifier>{1531b5a6-efde-4d05-a460-7d55cd396a06}</UniqueIdentifier>
+    <Filter Include="physics">
+      <UniqueIdentifier>{c82f6496-e3a3-4c44-aae9-b5bc04891ab2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\gameplay">
-      <UniqueIdentifier>{9f800e70-34d3-47b8-9f64-c34817dc1861}</UniqueIdentifier>
+    <Filter Include="core">
+      <UniqueIdentifier>{8721a648-3364-4117-bcec-987a6653c65b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\levels">
-      <UniqueIdentifier>{9855e6dc-f663-4cdf-b764-ae4807d13b14}</UniqueIdentifier>
+    <Filter Include="render">
+      <UniqueIdentifier>{a1103e74-51d4-4fe5-8921-577c60b1950d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\physics">
-      <UniqueIdentifier>{538ad7f7-44a0-486d-9c96-5739fac866cb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\render">
-      <UniqueIdentifier>{4adca345-f69a-4b64-8898-395b854962ea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ui">
-      <UniqueIdentifier>{09ed2835-1a26-4af5-a87f-d09a65eb7f1d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\input">
-      <UniqueIdentifier>{d3164f9f-416e-45ef-bda1-5bb2e6aba6f6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\gameobject">
-      <UniqueIdentifier>{50a551a7-8aba-4168-8266-740d2a68eeaf}</UniqueIdentifier>
+    <Filter Include="gameplay">
+      <UniqueIdentifier>{307dfd7d-26dc-424f-b8bf-fcc8c95ce533}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="animation\Animation.cpp">
-      <Filter>Source Files\animation</Filter>
+      <Filter>animation</Filter>
     </ClCompile>
     <ClCompile Include="animation\Animations.cpp">
-      <Filter>Source Files\animation</Filter>
-    </ClCompile>
-    <ClCompile Include="core\Game.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="render\Sprite.cpp">
-      <Filter>Source Files\render</Filter>
-    </ClCompile>
-    <ClCompile Include="render\Sprites.cpp">
-      <Filter>Source Files\render</Filter>
-    </ClCompile>
-    <ClCompile Include="render\Textures.cpp">
-      <Filter>Source Files\render</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="input\MarioInputHandler.cpp">
-      <Filter>Source Files\input</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\Intro.cpp">
-      <Filter>Source Files\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="core\GameObject.cpp">
-      <Filter>Source Files\core</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Brick.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Buff.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Enemy.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Goomba.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Koopa.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Fireball.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Projectile.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\FireBlast.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\CounterAttack.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\LightningEffect.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\RollingBall.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Mario.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="physics\Collision.cpp">
-      <Filter>Source Files\physics</Filter>
-    </ClCompile>
-    <ClCompile Include="gameplay\GameManager.cpp">
-      <Filter>Source Files\gameplay</Filter>
-    </ClCompile>
-    <ClCompile Include="ui\HUD.cpp">
-      <Filter>Source Files\ui</Filter>
+      <Filter>animation</Filter>
     </ClCompile>
     <ClCompile Include="audio\AudioManager.cpp">
-      <Filter>Source Files\audio</Filter>
+      <Filter>audio</Filter>
     </ClCompile>
-    <ClCompile Include="gameobject\Platform.cpp">
-      <Filter>Source Files\gameobject</Filter>
+    <ClCompile Include="core\Game.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\GameObject.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="debug.cpp" />
+    <ClCompile Include="gameobject\Breakable.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Buff.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Enemy.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Goomba.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Koopa.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\PiranhaPlant.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\EnemyFireball.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\VenusFireTrap.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Fireball.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\FireBlast.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Hammer.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\HammerBro.cpp">
+      <Filter>gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameobject\Flower.cpp">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameobject\Ground.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Mushroom.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Pipe.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\Breakable.cpp">
-      <Filter>Source Files\gameobject</Filter>
-    </ClCompile>
-    <ClCompile Include="gameobject\LuckyBlock.cpp">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
     </ClCompile>
     <ClCompile Include="gameobject\GroundBlock.cpp">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\LuckyBlock.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Mario.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Mushroom.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Pipe.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Platform.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Projectile.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\CounterAttack.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\LightningEffect.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\RollingBall.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Prop.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\PropSpawner.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameobject\Water.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
+    <ClCompile Include="gameplay\GameManager.cpp">
+      <Filter>gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="gameplay\Map.cpp">
+      <Filter>gameplay</Filter>
     </ClCompile>
     <ClCompile Include="gameplay\SceneManager.cpp">
-      <Filter>Source Files\gameplay</Filter>
+      <Filter>gameplay</Filter>
+    </ClCompile>
+    <ClCompile Include="input\MarioInputHandler.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="physics\Collision.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="render\Camera.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\Sprite.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\Sprites.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="render\Textures.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\HUD.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="ui\Intro.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="ui\WorldMap.cpp">
-      <Filter>Source Files\ui</Filter>
+      <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="render\Camera.cpp">
       <Filter>Source Files</Filter>
@@ -161,162 +170,191 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation\Animation.h">
-      <Filter>Source Files\animation</Filter>
+      <Filter>animation</Filter>
     </ClInclude>
     <ClInclude Include="animation\Animations.h">
-      <Filter>Source Files\animation</Filter>
-    </ClInclude>
-    <ClInclude Include="core\Game.h">
-      <Filter>Source Files\core</Filter>
-    </ClInclude>
-    <ClInclude Include="render\Sprite.h">
-      <Filter>Source Files\render</Filter>
-    </ClInclude>
-    <ClInclude Include="render\Sprites.h">
-      <Filter>Source Files\render</Filter>
-    </ClInclude>
-    <ClInclude Include="render\Textures.h">
-      <Filter>Source Files\render</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\Intro.h">
-      <Filter>Source Files\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\Scene.h">
-      <Filter>Source Files\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="input\KeyEventHandler.h">
-      <Filter>Source Files\input</Filter>
-    </ClInclude>
-    <ClInclude Include="input\MarioInputHandler.h">
-      <Filter>Source Files\input</Filter>
-    </ClInclude>
-    <ClInclude Include="core\GameObject.h">
-      <Filter>Source Files\core</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Brick.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Block.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\StaticBlock.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\DynamicBlock.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\GroundBlock.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Buff.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Enemy.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Goomba.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Koopa.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Fireball.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\FireBlast.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\RollingBall.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\CounterAttack.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\LightningEffect.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Projectile.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Mario.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameplay\GameManager.h">
-      <Filter>Source Files\gameplay</Filter>
-    </ClInclude>
-    <ClInclude Include="physics\Collision.h">
-      <Filter>Source Files\physics</Filter>
-    </ClInclude>
-    <ClInclude Include="ui\HUD.h">
-      <Filter>Source Files\ui</Filter>
+      <Filter>animation</Filter>
     </ClInclude>
     <ClInclude Include="audio\AudioManager.h">
-      <Filter>Source Files\audio</Filter>
+      <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="audio\miniaudio.h">
-      <Filter>Source Files\audio</Filter>
+      <Filter>audio</Filter>
     </ClInclude>
-    <ClInclude Include="gameobject\Platform.h">
-      <Filter>Source Files\gameobject</Filter>
+    <ClInclude Include="core\Game.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\GameObject.h">
+      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="debug.h" />
+    <ClInclude Include="gameobject\Breakable.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Block.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\StaticBlock.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\DynamicBlock.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\GroundBlock.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Buff.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Enemy.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Goomba.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Koopa.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\PiranhaPlant.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\EnemyFireball.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\VenusFireTrap.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Fireball.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\FireBlast.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Hammer.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\HammerBro.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
     <ClInclude Include="gameobject\Flower.h">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\Ground.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Mushroom.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Pipe.h">
-      <Filter>Source Files\gameobject</Filter>
-    </ClInclude>
-    <ClInclude Include="gameobject\Breakable.h">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\LuckyBlock.h">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Mario.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Mushroom.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Pipe.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Platform.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Projectile.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Prop.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\PropSpawner.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\Water.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\CounterAttack.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\LightningEffect.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\RollingBall.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameplay\GameManager.h">
+      <Filter>gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="gameplay\Map.h">
+      <Filter>gameplay</Filter>
     </ClInclude>
     <ClInclude Include="gameplay\SceneManager.h">
-      <Filter>Source Files\gameplay</Filter>
+      <Filter>gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="input\KeyEventHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="input\MarioInputHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="physics\Collision.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="render\Camera.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="render\Sprite.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="render\Sprites.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="render\Textures.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\HUD.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\Intro.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="ui\Scene.h">
+      <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="ui\WorldMap.h">
-      <Filter>Source Files\ui</Filter>
+      <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="render\Camera.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="ui\.gitkeep" />
     <None Include="gameplay\.gitkeep">
-      <Filter>Source Files\gameplay</Filter>
+      <Filter>gameplay</Filter>
+    </None>
+    <None Include="packages.config" />
+    <None Include="ui\.gitkeep">
+      <Filter>ui</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="gameobject\Flower.txt">
-      <Filter>Source Files\gameobject</Filter>
-    </Text>
-    <Text Include="gameobject\Ground.txt">
-      <Filter>Source Files\gameobject</Filter>
-    </Text>
     <Text Include="gameobject\Brick.txt">
-      <Filter>Source Files\gameobject</Filter>
-    </Text>
-    <Text Include="gameobject\Mushroom.txt">
-      <Filter>Source Files\gameobject</Filter>
-    </Text>
-    <Text Include="gameobject\Pipe.txt">
-      <Filter>Source Files\gameobject</Filter>
-    </Text>
-    <Text Include="gameobject\Mario.txt">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
     </Text>
     <Text Include="gameobject\Enemy.txt">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Flower.txt">
+      <Filter>gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Ground.txt">
+      <Filter>gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Mario.txt">
+      <Filter>gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Mushroom.txt">
+      <Filter>gameobject</Filter>
     </Text>
     <Text Include="gameobject\Note.txt">
-      <Filter>Source Files\gameobject</Filter>
+      <Filter>gameobject</Filter>
+    </Text>
+    <Text Include="gameobject\Pipe.txt">
+      <Filter>gameobject</Filter>
     </Text>
   </ItemGroup>
 </Project>

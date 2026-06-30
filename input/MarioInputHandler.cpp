@@ -40,7 +40,7 @@ void MarioInputHandler::KeyState(BYTE *state) {
   static bool isZPressed = false;
   if (GetAsyncKeyState('Z') & 0x8000) {
     if (!isZPressed) {
-      if (mario->IsSukuna()) {
+      if (mario->IsScissors()) {
         mario->StartParry();
       } else {
         mario->ShootFireball();

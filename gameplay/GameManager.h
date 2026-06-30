@@ -25,7 +25,7 @@ private:
 	// Form Mario (giữ qua các màn)
 	bool isMarioBig;
 	bool isMarioFire;
-	bool isMarioSukuna;
+	bool isMarioScissors;
 
 public:
 	static GameManager* GetInstance();
@@ -84,8 +84,8 @@ public:
 	bool IsMarioBig() { return isMarioBig; }
 	void SetMarioFire(bool fire) { isMarioFire = fire; }
 	bool IsMarioFire() { return isMarioFire; }
-	void SetMarioSukuna(bool sukuna) { isMarioSukuna = sukuna; }
-	bool IsMarioSukuna() { return isMarioSukuna; }
+	void SetMarioScissors(bool scissors) { isMarioScissors = scissors; }
+	bool IsMarioScissors() { return isMarioScissors; }
 
 
 	// Reset một số giá trị khi vào màn chơi mới

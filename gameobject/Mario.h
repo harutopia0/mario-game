@@ -3,7 +3,7 @@
 #include "../gameobject/Platform.h"
 
 #define MARIO_SMALL_WIDTH 13.0f
-#define MARIO_SMALL_HEIGHT 16.0f
+#define MARIO_SMALL_HEIGHT 13.0f
 #define MARIO_BIG_WIDTH 15.0f
 #define MARIO_BIG_HEIGHT 27.0f
 
@@ -15,7 +15,7 @@
 #define MARIO_FRICTION			0.0004f
 
 // Thời gian bất tử
-#define MARIO_UNTOUCHABLE_TIME 5000
+#define MARIO_UNTOUCHABLE_TIME 3000
 
 // ĐỊNH NGHĨA STEP THỜI GIAN GIỮA CÁC MỨC PMETER (mili-giây)
 #define PMETER_STEP_UP_TIME     150
@@ -29,7 +29,7 @@ private:
 	float width, height;
 	bool isBig;
 	bool isFire;
-	bool isSukuna;
+	bool isScissors;
 	bool isDead;
 	float pMeterValue;
 	int pMeterLevel;
@@ -57,7 +57,7 @@ public:
 	float ax;
 	MarioInputHandler* inputHandler;
 
-	Mario(float x, float y, bool isBig = false, bool isFire = false);
+	Mario(float x, float y, bool isBig = false, bool isFire = false, bool isScissors = false);
 	~Mario();
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 	void Update(DWORD dt, vector<GameObject*>* coObjects);
@@ -76,8 +76,8 @@ public:
 	void SetFire(bool fire);
 	bool IsFire() const { return isFire; }
 	
-	void SetSukuna(bool sukuna);
-	bool IsSukuna() const { return isSukuna; }
+	void SetScissors(bool scissors);
+	bool IsScissors() const { return isScissors; }
 
 	void ShootFireball();
 	bool ShootFireBlast();
@@ -103,4 +103,5 @@ public:
 	bool untouchable;
 	bool isStarInvincible;
 	void TakeDamage();
+	void ResolveOverlap();
 };
