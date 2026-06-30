@@ -138,13 +138,17 @@
     <ClCompile Include="core\GameObject.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="gameobject\Breakable.cpp" />
-    <ClCompile Include="gameobject\Brick.cpp" />
     <ClCompile Include="gameobject\Buff.cpp" />
     <ClCompile Include="gameobject\Enemy.cpp" />
     <ClCompile Include="gameobject\Goomba.cpp" />
     <ClCompile Include="gameobject\Koopa.cpp" />
+    <ClCompile Include="gameobject\PiranhaPlant.cpp" />
+    <ClCompile Include="gameobject\EnemyFireball.cpp" />
+    <ClCompile Include="gameobject\VenusFireTrap.cpp" />
     <ClCompile Include="gameobject\Fireball.cpp" />
     <ClCompile Include="gameobject\FireBlast.cpp" />
+    <ClCompile Include="gameobject\Hammer.cpp" />
+    <ClCompile Include="gameobject\HammerBro.cpp" />
 
     <ClCompile Include="gameobject\Flower.cpp" />
     <ClCompile Include="gameobject\Ground.cpp" />
@@ -158,7 +162,11 @@
     <ClCompile Include="gameobject\CounterAttack.cpp" />
     <ClCompile Include="gameobject\LightningEffect.cpp" />
     <ClCompile Include="gameobject\RollingBall.cpp" />
+    <ClCompile Include="gameobject\Prop.cpp" />
+    <ClCompile Include="gameobject\PropSpawner.cpp" />
+    <ClCompile Include="gameobject\Water.cpp" />
     <ClCompile Include="gameplay\GameManager.cpp" />
+    <ClCompile Include="gameplay\Map.cpp" />
     <ClCompile Include="gameplay\SceneManager.cpp" />
     <ClCompile Include="input\MarioInputHandler.cpp" />
     <ClCompile Include="main.cpp" />
@@ -180,7 +188,6 @@
     <ClInclude Include="core\GameObject.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="gameobject\Breakable.h" />
-    <ClInclude Include="gameobject\Brick.h" />
     <ClInclude Include="gameobject\Block.h" />
     <ClInclude Include="gameobject\StaticBlock.h" />
     <ClInclude Include="gameobject\DynamicBlock.h" />
@@ -189,8 +196,13 @@
     <ClInclude Include="gameobject\Enemy.h" />
     <ClInclude Include="gameobject\Goomba.h" />
     <ClInclude Include="gameobject\Koopa.h" />
+    <ClInclude Include="gameobject\PiranhaPlant.h" />
+    <ClInclude Include="gameobject\EnemyFireball.h" />
+    <ClInclude Include="gameobject\VenusFireTrap.h" />
     <ClInclude Include="gameobject\Fireball.h" />
     <ClInclude Include="gameobject\FireBlast.h" />
+    <ClInclude Include="gameobject\Hammer.h" />
+    <ClInclude Include="gameobject\HammerBro.h" />
 
     <ClInclude Include="gameobject\Flower.h" />
     <ClInclude Include="gameobject\Ground.h" />
@@ -200,10 +212,14 @@
     <ClInclude Include="gameobject\Pipe.h" />
     <ClInclude Include="gameobject\Platform.h" />
     <ClInclude Include="gameobject\Projectile.h" />
+    <ClInclude Include="gameobject\Prop.h" />
+    <ClInclude Include="gameobject\PropSpawner.h" />
+    <ClInclude Include="gameobject\Water.h" />
     <ClInclude Include="gameobject\CounterAttack.h" />
     <ClInclude Include="gameobject\LightningEffect.h" />
     <ClInclude Include="gameobject\RollingBall.h" />
     <ClInclude Include="gameplay\GameManager.h" />
+    <ClInclude Include="gameplay\Map.h" />
     <ClInclude Include="gameplay\SceneManager.h" />
     <ClInclude Include="input\KeyEventHandler.h" />
     <ClInclude Include="input\MarioInputHandler.h" />

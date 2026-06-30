@@ -1,9 +1,11 @@
 #include "RollingBall.h"
+#include "../gameplay/Map.h"
 #include "../animation/Animations.h"
 #include "../physics/Collision.h"
 #include "../gameobject/Platform.h"
 #include "../gameobject/Enemy.h"
 #include "../gameobject/Block.h"
+#include "../render/Camera.h"
 
 RollingBall::RollingBall(float x, float y, int direction) : Projectile(x, y, direction) {
     width = ROLLINGBALL_WIDTH;
@@ -39,11 +41,9 @@ void RollingBall::Update(DWORD dt, vector<GameObject*>* coObjects) {
         return;
     }
 
-    extern std::vector<GameObject*> g_objectList;
-    if (!g_objectList.empty() && g_objectList[0] != nullptr) {
-        float marioX = g_objectList[0]->GetX();
-        // Camera (màn hình) rộng khoảng 320px (khi zoom 2x), nếu cách Mario > 350px là ngoài tầm camera.
-        if (std::abs(this->x - marioX) > 350.0f) {
+    Camera* camera = Camera::GetInstance();
+    if (camera) {
+        if (!camera->IsVisible(x - 32.0f, y - 32.0f, width + 64.0f, height + 64.0f)) {
             this->Delete();
             return;
         }
@@ -79,7 +79,7 @@ void RollingBall::Update(DWORD dt, vector<GameObject*>* coObjects) {
                         enemy->SetDied(true);
                     }
                 }
-                else if (dynamic_cast<Block*>(e) && !dynamic_cast<Platform*>(e)) {
+                else if (dynamic_cast<Block*>(e) && !e->IsOneWay()) {
                     if (t < min_tx) {
                         min_tx = t;
                         nx_col = temp_nx;
@@ -118,7 +118,7 @@ void RollingBall::Update(DWORD dt, vector<GameObject*>* coObjects) {
                     }
                 }
                 else if (dynamic_cast<Block*>(e)) {
-                    if (dynamic_cast<Platform*>(e) && temp_ny != 1) continue;
+                    if (e->IsOneWay() && temp_ny != 1) continue;
 
                     if (t < min_ty) {
                         min_ty = t;
