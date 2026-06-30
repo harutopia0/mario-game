@@ -24,15 +24,15 @@
 #include "CounterAttack.h"
 #include "LightningEffect.h"
 
-Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
+Mario::Mario(float x, float y, bool isBig, bool isFire, bool isScissors) : GameObject(x, y) {
   isOnGround = false;
   ax = 0.0f;
 
   this->isBig = isBig;
   this->isFire = isFire;
-  this->isSukuna = false;
+  this->isScissors = isScissors;
 
-  if (isBig || isFire) {
+  if (isBig || isFire || isScissors) {
     width = MARIO_BIG_WIDTH;
     height = MARIO_BIG_HEIGHT;
   } else {
@@ -40,7 +40,7 @@ Mario::Mario(float x, float y, bool isBig, bool isFire) : GameObject(x, y) {
     height = MARIO_SMALL_HEIGHT;
   }
 
-  if (isFire) GameManager::GetInstance()->SetLives(3);
+  if (isFire || isScissors) GameManager::GetInstance()->SetLives(3);
   else if (isBig) GameManager::GetInstance()->SetLives(2);
   else GameManager::GetInstance()->SetLives(1);
 
@@ -469,7 +469,7 @@ void Mario::Render() {
     return;
   }
 
-  if (isSukuna) {
+  if (isScissors) {
     if (isParrying) {
       ani = (nx > 0) ? Animations::GetInstance()->Get(710)
                      : Animations::GetInstance()->Get(711);
@@ -583,7 +583,6 @@ void Mario::Render() {
 
 void Mario::SetBig(bool big) {
   if (big && !isBig) {
-    
     // Bật trạng thái chớp (tàng hình) và phát âm thanh
     untouchable = true;
     untouchableStart = GetTickCount64();
@@ -598,13 +597,17 @@ void Mario::SetBig(bool big) {
   if (big) {
     width = MARIO_BIG_WIDTH;
     height = MARIO_BIG_HEIGHT;
+    isFire = false;
+    isScissors = false;
+    GameManager::GetInstance()->SetMarioFire(false);
+    GameManager::GetInstance()->SetMarioScissors(false);
   } else {
     width = MARIO_SMALL_WIDTH;
     height = MARIO_SMALL_HEIGHT;
     isFire = false; // Thu nhỏ thì mất luôn lửa
-    isSukuna = false; // Thu nhỏ thì mất luôn Sukuna
+    isScissors = false; // Thu nhỏ thì mất luôn Kéo
     GameManager::GetInstance()->SetMarioFire(false);
-    GameManager::GetInstance()->SetMarioSukuna(false);
+    GameManager::GetInstance()->SetMarioScissors(false);
   }
 
   // Đẩy Mario ra khỏi các block nếu bounding box mới bị overlap
@@ -674,6 +677,12 @@ void Mario::SetFire(bool fire) {
     SceneManager::GetInstance()->ProcessTransform();
   }
   isFire = fire;
+  if (fire) {
+    isScissors = false; // Loại trừ lẫn nhau
+    isBig = true;
+    GameManager::GetInstance()->SetMarioScissors(false);
+    GameManager::GetInstance()->SetMarioBig(true);
+  }
   GameManager::GetInstance()->SetMarioFire(fire);
 }
 
@@ -777,15 +786,13 @@ void Mario::TakeDamage() {
       GameManager::GetInstance()->IsLevelClear())
     return;
 
-  if (isSukuna) {
-    SetSukuna(false);
-    GameManager::GetInstance()->SetMarioSukuna(false);
-    SetBig(true);
+  if (isScissors) {
+    SetScissors(false);
     GameManager::GetInstance()->SetLives(2);
     untouchable = true;
     untouchableStart = GetTickCount64();
     untouchableDuration = MARIO_UNTOUCHABLE_TIME;
-    OutputDebugStringA("Mario lost Sukuna -> Big Mario + invincible\n");
+    OutputDebugStringA("Mario lost Scissors -> Big Mario + invincible\n");
   } else if (isFire) {
     SetFire(false);
     GameManager::GetInstance()->SetLives(2);
@@ -827,8 +834,8 @@ void Mario::SetHoldingJump(bool holding) {
   }
 }
 
-void Mario::SetSukuna(bool sukuna) {
-  if (sukuna && !isSukuna) {
+void Mario::SetScissors(bool scissors) {
+  if (scissors && !isScissors) {
     if (!isBig) {
       isBig = true;
       width = MARIO_BIG_WIDTH;
@@ -844,12 +851,18 @@ void Mario::SetSukuna(bool sukuna) {
     // Tạm dừng game 1 giây khi biến hóa
     SceneManager::GetInstance()->ProcessTransform();
   }
-  isSukuna = sukuna;
-  GameManager::GetInstance()->SetMarioSukuna(sukuna);
+  isScissors = scissors;
+  if (scissors) {
+    isFire = false; // Loại trừ lẫn nhau
+    isBig = true;
+    GameManager::GetInstance()->SetMarioFire(false);
+    GameManager::GetInstance()->SetMarioBig(true);
+  }
+  GameManager::GetInstance()->SetMarioScissors(scissors);
 }
 
 bool Mario::StartParry() {
-  if (!isSukuna) return false;
+  if (!isScissors) return false;
   if (isParrying) return false;
   if (GetTickCount64() < parryCooldownTime) {
     AudioManager::GetInstance()->PlaySFX("use-failed");

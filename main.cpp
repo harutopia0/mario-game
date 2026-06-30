@@ -54,7 +54,7 @@ enum TEXTURE_ID {
   TEX_COMMON1 = 1,
   TEX_COMMON2 = 2,
   TEX_FIRE_MARIO = 3,
-  TEX_SUKUNA_MARIO = 4,
+  TEX_SCISSORS_MARIO = 4,
   TEX_ENEMIES_1 = 10, // enemies_transparent.png (Goomba, Green Koopa walk)
   TEX_ENEMIES_2 =
       15, // enemies_transparent_3.png (Koopa shell, Red Koopa, Flying Koopa)
@@ -337,7 +337,7 @@ void LoadResources() {
   textures->Add(TEX_COMMON1, L"assets/CommonObjects1.png");
   textures->Add(TEX_COMMON2, L"assets/CommonObjects2.png");
   textures->Add(TEX_FIRE_MARIO, L"assets/fireMario.png");
-  textures->Add(TEX_SUKUNA_MARIO, L"assets/sukunaMario.png");
+  textures->Add(TEX_SCISSORS_MARIO, L"assets/sukunaMario.png");
 
   textures->Add(TEX_HUD, L"assets/hud.png");
   textures->Add(TEX_INTRO, L"assets/intro_items.png");
@@ -462,43 +462,43 @@ void LoadResources() {
   sprites->Add(612, 85, 106, 156, 129, TEX_FIRE_MARIO);
 
   // ==========================================
-  // SUKUNA MARIO SPRITES
+  // SCISSORS MARIO SPRITES
   // ==========================================
   // Idle
-  sprites->Add(60, 216, 2, 229, 28, TEX_SUKUNA_MARIO); // Phải
-  sprites->Add(61, 176, 2, 189, 28, TEX_SUKUNA_MARIO); // Trái
+  sprites->Add(60, 216, 2, 229, 28, TEX_SCISSORS_MARIO); // Phải
+  sprites->Add(61, 176, 2, 189, 28, TEX_SCISSORS_MARIO); // Trái
 
   // Run
-  sprites->Add(62, 255, 2, 270, 28, TEX_SUKUNA_MARIO); // Phải 1
-  sprites->Add(63, 295, 3, 310, 28, TEX_SUKUNA_MARIO); // Phải 2
-  sprites->Add(64, 135, 2, 150, 28, TEX_SUKUNA_MARIO); // Trái 1
-  sprites->Add(65, 95, 3, 110, 28, TEX_SUKUNA_MARIO);  // Trái 2
+  sprites->Add(62, 255, 2, 270, 28, TEX_SCISSORS_MARIO); // Phải 1
+  sprites->Add(63, 295, 3, 310, 28, TEX_SCISSORS_MARIO); // Phải 2
+  sprites->Add(64, 135, 2, 150, 28, TEX_SCISSORS_MARIO); // Trái 1
+  sprites->Add(65, 95, 3, 110, 28, TEX_SCISSORS_MARIO);  // Trái 2
 
   // Jump
-  sprites->Add(66, 335, 3, 350, 28, TEX_SUKUNA_MARIO); // Phải
-  sprites->Add(67, 55, 3, 70, 28, TEX_SUKUNA_MARIO);   // Trái
+  sprites->Add(66, 335, 3, 350, 28, TEX_SCISSORS_MARIO); // Phải
+  sprites->Add(67, 55, 3, 70, 28, TEX_SCISSORS_MARIO);   // Trái
 
   // Skid
-  sprites->Add(68, 215, 42, 230, 69, TEX_SUKUNA_MARIO); // Mặt trái (Skid Right)
-  sprites->Add(69, 175, 42, 190, 69, TEX_SUKUNA_MARIO); // Mặt phải (Skid Left)
+  sprites->Add(68, 215, 42, 230, 69, TEX_SCISSORS_MARIO); // Mặt trái (Skid Right)
+  sprites->Add(69, 175, 42, 190, 69, TEX_SCISSORS_MARIO); // Mặt phải (Skid Left)
 
   // Cast
-  sprites->Add(70, 252, 42, 272, 68, TEX_SUKUNA_MARIO); // Phải
-  sprites->Add(71, 133, 42, 153, 68, TEX_SUKUNA_MARIO); // Trái
+  sprites->Add(70, 252, 42, 272, 68, TEX_SCISSORS_MARIO); // Phải
+  sprites->Add(71, 133, 42, 153, 68, TEX_SCISSORS_MARIO); // Trái
 
   // Slash
-  sprites->Add(630, 25, 85, 53, 106, TEX_SUKUNA_MARIO);  // short slash
-  sprites->Add(631, 72, 75, 117, 106, TEX_SUKUNA_MARIO); // long slash
+  sprites->Add(630, 25, 85, 53, 106, TEX_SCISSORS_MARIO);  // short slash
+  sprites->Add(631, 72, 75, 117, 106, TEX_SCISSORS_MARIO); // long slash
 
   // Parry Left
-  sprites->Add(632, 382, 113, 396, 140, TEX_SUKUNA_MARIO);
-  sprites->Add(633, 356, 113, 371, 140, TEX_SUKUNA_MARIO);
-  sprites->Add(634, 331, 114, 347, 140, TEX_SUKUNA_MARIO);
+  sprites->Add(632, 382, 113, 396, 140, TEX_SCISSORS_MARIO);
+  sprites->Add(633, 356, 113, 371, 140, TEX_SCISSORS_MARIO);
+  sprites->Add(634, 331, 114, 347, 140, TEX_SCISSORS_MARIO);
 
   // Parry Right
-  sprites->Add(635, 331, 82, 345, 109, TEX_SUKUNA_MARIO);
-  sprites->Add(636, 356, 82, 371, 109, TEX_SUKUNA_MARIO);
-  sprites->Add(637, 380, 83, 396, 109, TEX_SUKUNA_MARIO);
+  sprites->Add(635, 331, 82, 345, 109, TEX_SCISSORS_MARIO);
+  sprites->Add(636, 356, 82, 371, 109, TEX_SCISSORS_MARIO);
+  sprites->Add(637, 380, 83, 396, 109, TEX_SCISSORS_MARIO);
 
   // RollingBall
   sprites->Add(620, 74, 151, 108, 185, TEX_MARIO);
@@ -910,7 +910,7 @@ void LoadResources() {
   ani->Add(51, 1000);
   animations->Add(509, ani); // Cast Left
 
-  // Sukuna Mario Animations
+  // Scissors Mario Animations
   ani = new Animation(100);
   ani->Add(60, 1000);
   animations->Add(700, ani); // Idle Phải
