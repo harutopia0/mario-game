@@ -10,6 +10,8 @@
 #include "../gameobject/Goomba.h"
 #include "../gameobject/Koopa.h"
 #include "../gameobject/PiranhaPlant.h"
+#include "../gameobject/HammerBro.h"
+#include "../gameobject/Fireball.h"
 #include "../gameobject/VenusFireTrap.h"
 #include "../gameobject/PropSpawner.h"
 #include "../gameplay/GameManager.h"
@@ -364,6 +366,17 @@ void Map::LoadMap(LPCWSTR filePath) {
         if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
             cellY < MAX_CELL_ROW) {
           AddObjectToGrid(venus);
+        }
+      } else if (tileID == 18) {
+        HammerBro *hammerBro = new HammerBro(realX, realY + 2.0f);
+        objects.push_back(hammerBro);
+
+        int cellX = (int)(realX / GRID_CELL_SIZE);
+        int cellY = (int)(realY / GRID_CELL_SIZE);
+
+        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
+            cellY < MAX_CELL_ROW) {
+          AddObjectToGrid(hammerBro);
         }
       }
     }

@@ -147,6 +147,8 @@
     <ClCompile Include="gameobject\VenusFireTrap.cpp" />
     <ClCompile Include="gameobject\Fireball.cpp" />
     <ClCompile Include="gameobject\FireBlast.cpp" />
+    <ClCompile Include="gameobject\Hammer.cpp" />
+    <ClCompile Include="gameobject\HammerBro.cpp" />
 
     <ClCompile Include="gameobject\Flower.cpp" />
     <ClCompile Include="gameobject\Ground.cpp" />
@@ -199,6 +201,8 @@
     <ClInclude Include="gameobject\VenusFireTrap.h" />
     <ClInclude Include="gameobject\Fireball.h" />
     <ClInclude Include="gameobject\FireBlast.h" />
+    <ClInclude Include="gameobject\Hammer.h" />
+    <ClInclude Include="gameobject\HammerBro.h" />
 
     <ClInclude Include="gameobject\Flower.h" />
     <ClInclude Include="gameobject\Ground.h" />

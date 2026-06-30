@@ -1065,6 +1065,32 @@ void LoadResources() {
   sprites->Add(71502, 334, 147, 351, 176, TEX_ENEMIES_2);
 
   // ==========================================
+  // HAMMER BRO & HAMMER SPRITES
+  // ==========================================
+  // Hammer Bro Walk Right
+  sprites->Add(50001, 165, 850, 180, 873, TEX_ENEMIES_2); 
+  sprites->Add(50002, 215, 850, 230, 873, TEX_ENEMIES_2); 
+  // Hammer Bro Throw Right
+  sprites->Add(50003, 265, 850, 280, 873, TEX_ENEMIES_2); 
+  
+  // Hammer Bro Walk Left
+  sprites->Add(50011, 115, 850, 130, 873, TEX_ENEMIES_2); 
+  sprites->Add(50012, 65, 850, 80, 873, TEX_ENEMIES_2);   
+  // Hammer Bro Throw Left
+  sprites->Add(50013, 15, 850, 30, 873, TEX_ENEMIES_2);   
+
+  // Hammer
+  sprites->Add(51001, 305, 842, 320, 855, TEX_ENEMIES_2);
+  sprites->Add(51002, 329, 840, 342, 855, TEX_ENEMIES_2);
+  sprites->Add(51003, 353, 840, 366, 855, TEX_ENEMIES_2);
+  sprites->Add(51004, 375, 842, 390, 855, TEX_ENEMIES_2);
+  sprites->Add(51005, 305, 869, 320, 882, TEX_ENEMIES_2);
+  sprites->Add(51006, 329, 867, 342, 882, TEX_ENEMIES_2);
+  sprites->Add(51007, 353, 867, 366, 882, TEX_ENEMIES_2);
+  sprites->Add(51008, 375, 869, 390, 882, TEX_ENEMIES_2);
+
+
+  // ==========================================
   // GOOMBA & KOOPA ANIMATIONS
   // ==========================================
 
@@ -1150,6 +1176,37 @@ void LoadResources() {
   ani->Add(71501);
   ani->Add(71502);
   animations->Add(351, ani); // Flying Koopa jump right
+
+  // --- Hammer Bro & Hammer ---
+  ani = new Animation(50);
+  ani->Add(51001);
+  ani->Add(51002);
+  ani->Add(51003);
+  ani->Add(51004);
+  ani->Add(51008);
+  ani->Add(51007);
+  ani->Add(51006);
+  ani->Add(51005);
+  animations->Add(11000, ani); // Hammer spinning
+
+  ani = new Animation(150);
+  ani->Add(50011);
+  ani->Add(50012);
+  animations->Add(11001, ani); // Hammer Bro walk left
+
+  ani = new Animation(150);
+  ani->Add(50001);
+  ani->Add(50002);
+  animations->Add(11002, ani); // Hammer Bro walk right
+
+  ani = new Animation(150);
+  ani->Add(50013);
+  animations->Add(11003, ani); // Hammer Bro throw left
+
+  ani = new Animation(150);
+  ani->Add(50003);
+  animations->Add(11004, ani); // Hammer Bro throw right
+
 
   ani = new Animation(100);
   ani->Add(900, 1000);
