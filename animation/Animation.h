@@ -34,6 +34,7 @@ public:
     void Add(int spriteId, DWORD time = 0);
     void Render(float x, float y);
     void Render(float x, float y, int nx);
+    void Render(float x, float y, int nx, int ny);
     void Render(float x, float y, float angle);
     void Render(float x, float y, D3DXCOLOR color);
     int GetWidth();

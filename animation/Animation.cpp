@@ -62,6 +62,28 @@ void Animation::Render(float x, float y, int nx)
     frames[currentFrame]->GetSprite()->Draw(x, y, nx);
 }
 
+void Animation::Render(float x, float y, int nx, int ny)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y, nx, ny);
+}
+
 void Animation::Render(float x, float y, float angle)
 {
     DWORD now = GetTickCount64();
