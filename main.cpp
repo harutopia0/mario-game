@@ -373,10 +373,8 @@ void LoadResources() {
   textures->Add(TEX_LAVA_BRICK, L"assets/lavabrick.png");
   textures->Add(TEX_LAVA_BRICK2, L"assets/lavabrick2.png"); // phần đất phía
                                                             // dưới
-  // black brick
-  textures->Add(TEX_BLACK_BRICK, L"assets/blackbrick.png");
   // grass brick
-  textures->Add(TEX_GRASS_BRICK, L"assets/grass.png");
+  textures->Add(TEX_GRASS_BRICK, L"assets/tiles.png");
   // cloud brick
   textures->Add(TEX_CLOUD_BRICK, L"assets/cloudbrick.png");
   textures->Add(TEX_CLOUDS, L"assets/clouds.png");
@@ -521,8 +519,8 @@ void LoadResources() {
   sprites->Add(10, 74, 34, 89, 49, TEX_COMMON1);
 
   // Black Brick
-  sprites->Add(110, 0, 0, 15, 15, TEX_BLACK_BRICK);  // phần block phía trên
-  sprites->Add(111, 0, 16, 15, 31, TEX_BLACK_BRICK); // phần block phía dưới
+  sprites->Add(110, 69, 1, 84, 16, TEX_GRASS_BRICK);  // phần block phía trên
+  sprites->Add(111, 69, 1, 84, 16, TEX_GRASS_BRICK); // phần block phía dưới
 
   // Lava Brick
   sprites->Add(112, 0, 0, 15, 15, TEX_LAVA_BRICK);  // phần block phía trên
@@ -558,6 +556,12 @@ void LoadResources() {
   // Cloud Brick
   sprites->Add(116, 0, 0, 15, 15, TEX_CLOUD_BRICK);
 
+  // Cloud Platform Sprites
+  sprites->Add(1300, 2, 30, 61, 44, TEX_CLOUDS); // 60px cloud
+  sprites->Add(1301, 2, 46, 76, 60, TEX_CLOUDS); // 75px cloud
+  sprites->Add(1302, 2, 64, 91, 78, TEX_CLOUDS); // 90px cloud
+  sprites->Add(1303, 87, 2, 102, 17, TEX_CLOUDS); // 16x16 cloud block
+
   // Platform
   sprites->Add(11, 481, 152, 496, 167, TEX_COMMON1);
 
@@ -569,10 +573,10 @@ void LoadResources() {
   sprites->Add(16, 5, 60, 36, 75, TEX_COMMON2);
 
   // Breakable
-  sprites->Add(14, 0, 68, 15, 83, TEX_COMMON1);
-  sprites->Add(141, 17, 68, 32, 83, TEX_COMMON1);
-  sprites->Add(142, 34, 68, 49, 83, TEX_COMMON1);
-  sprites->Add(143, 51, 68, 66, 83, TEX_COMMON1);
+  sprites->Add(14, 91, 34, 106, 49, TEX_COMMON1);
+  sprites->Add(141, 91, 34, 106, 49, TEX_COMMON1);
+  sprites->Add(142, 91, 34, 106, 49, TEX_COMMON1);
+  sprites->Add(143, 91, 34, 106, 49, TEX_COMMON1);
 
   // Lucky Block
   sprites->Add(15, 74, 17, 89, 32, TEX_COMMON1);
@@ -623,6 +627,13 @@ void LoadResources() {
   sprites->Add(81001, 55, 7, 70, 22, TEX_COMMON2); // Bush
   sprites->Add(81002, 3, 80, 130, 143, TEX_COMMON2); // Cliff
   sprites->Add(81003, 59, 27, 121, 74, TEX_COMMON2); // Small cliff
+  
+  // Underground/Athletic Props (Level 2 & 4)
+  sprites->Add(82001, 370, 745, 380, 754, TEX_COMMON2); // Nấm
+  sprites->Add(82002, 427, 743, 474, 806, TEX_COMMON2); // Vách đá 1
+  sprites->Add(82003, 476, 743, 523, 806, TEX_COMMON2); // Vách đá 2
+  sprites->Add(82004, 525, 743, 572, 806, TEX_COMMON2); // Cột đầu lâu
+  sprites->Add(82005, 583, 742, 590, 752, TEX_COMMON2); // Mây nhỏ màn 2 & 4
   
   // Clouds
   sprites->Add(81004, 52, 3, 83, 26, TEX_CLOUDS); // Single cloud
@@ -724,6 +735,12 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(11, 1000);
   animations->Add(202, ani); // Platform
+  // Cloud Platforms
+  ani = new Animation(100); ani->Add(1300); animations->Add(1300, ani); // Cloud 60px
+  ani = new Animation(100); ani->Add(1301); animations->Add(1301, ani); // Cloud 75px
+  ani = new Animation(100); ani->Add(1302); animations->Add(1302, ani); // Cloud 90px
+  ani = new Animation(100); ani->Add(1303); animations->Add(1303, ani); // Cloud Block
+
   ani = new Animation(100);
   ani->Add(12, 1000);
   animations->Add(203, ani); // Big Block
@@ -1233,6 +1250,15 @@ void LoadResources() {
 
   // Khởi tạo các Scene và chuyển giao quyền cho SceneManager
   SceneManager::GetInstance()->Init();
+
+  // Cloud Platform Animations
+  ani = new Animation(100); ani->Add(1300, 1000); animations->Add(1300, ani);
+  ani = new Animation(100); ani->Add(1301, 1000); animations->Add(1301, ani);
+  ani = new Animation(100); ani->Add(1302, 1000); animations->Add(1302, ani);
+  ani = new Animation(100); ani->Add(1303, 1000); animations->Add(1303, ani);
+
+  // Default Breakable Brick
+  ani = new Animation(100); ani->Add(14, 1000); animations->Add(205, ani);
 
   // ==========================================
   // 5. NẠP VÀ PHÁT ÂM THANH

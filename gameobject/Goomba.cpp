@@ -94,5 +94,6 @@ void Goomba::OnStomped(Mario* mario)
 		died = true;
 
 		layer = LAYER_BACKGROUND;
+		AudioManager::GetInstance()->PlaySFX("stomp");
 	}
 }

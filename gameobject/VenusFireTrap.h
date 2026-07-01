@@ -8,6 +8,7 @@
 #define VENUS_STATE_AIMING 300
 #define VENUS_STATE_SHOOTING 400
 #define VENUS_STATE_GOING_DOWN 500
+#define VENUS_STATE_DIE        600
 
 #define VENUS_DIR_UP_LEFT 1
 #define VENUS_DIR_DOWN_LEFT 2
@@ -16,7 +17,7 @@
 
 #define VENUS_SPEED_Y 0.03f
 #define VENUS_SAFE_ZONE_WIDTH 32.0f
-#define VENUS_SHOOT_DELAY 1500 // Thời gian ngắm trước khi bắn
+#define VENUS_SHOOT_DELAY 750 // Thời gian ngắm trước khi bắn
 #define VENUS_HIDE_DELAY 2000 // Thời gian nằm dưới ống
 
 class VenusFireTrap : public Enemy {

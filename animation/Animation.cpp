@@ -152,6 +152,28 @@ void Animation::Render(float x, float y, D3DXCOLOR color)
     frames[currentFrame]->GetSprite()->Draw(x, y, color);
 }
 
+void Animation::Render(float x, float y, float drawWidth, float drawHeight)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y, drawWidth, drawHeight);
+}
+
 int Animation::GetWidth()
 {
     if (frames.size() > 0)

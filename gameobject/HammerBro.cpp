@@ -166,13 +166,13 @@ void HammerBro::Update(DWORD dt, vector<GameObject*>* coObjects) {
     }
 
     if (!isThrowing) {
-        if (canThrow && GetTickCount64() - throwCooldownStart > 2500) { // Mỗi 2.5s ném 1 lần
+        if (canThrow && GetTickCount64() - throwCooldownStart > 2000) { // Mỗi 2.0s ném 1 lần
             isThrowing = true;
             throwStart = GetTickCount64();
             state = HAMMERBRO_STATE_WALKING; // Vẫn vừa đi vừa ném được
         }
     } else {
-        if (GetTickCount64() - throwStart > 300) { // Khựng 300ms rồi ném
+        if (GetTickCount64() - throwStart > 200) { // Khựng 200ms rồi ném
             float spawnX = (nx > 0) ? (x + width) : (x - HAMMER_BBOX_WIDTH);
             float spawnY = y + height - 8.0f;
 
@@ -187,8 +187,8 @@ void HammerBro::Update(DWORD dt, vector<GameObject*>* coObjects) {
     }
 
     // Xử lý nhảy
-    if (isOnGround && GetTickCount64() - jumpCooldownStart > 4000) {
-        // Nhảy mỗi 4s
+    if (isOnGround && GetTickCount64() - jumpCooldownStart > 3000) {
+        // Nhảy mỗi 3s
         vy = HAMMERBRO_JUMP_SPEED;
         jumpCooldownStart = GetTickCount64();
         // Trong game thật HammerBro có thể drop xuống bằng cách bỏ qua collision block

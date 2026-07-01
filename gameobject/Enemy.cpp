@@ -131,12 +131,13 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
 
     // Xử lý rớt khỏi map
     if (y < 0.0f) {
-        SetDied(true);
+        this->died = true;
+        this->isDeleted = true;
         return;
     }
 
     // Ledge Detection (Quay đầu khi đến mép vực)
-    if (isOnGround)
+    if (isOnGround && !CanFallOffLedge())
     {
         bool hasGroundAhead = false;
         

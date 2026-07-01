@@ -161,6 +161,7 @@
     <ClCompile Include="gameobject\Projectile.cpp" />
     <ClCompile Include="gameobject\CounterAttack.cpp" />
     <ClCompile Include="gameobject\LightningEffect.cpp" />
+    <ClCompile Include="gameobject\BrickDebrisEffect.cpp" />
     <ClCompile Include="gameobject\RollingBall.cpp" />
     <ClCompile Include="gameobject\Prop.cpp" />
     <ClCompile Include="gameobject\PropSpawner.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="gameobject\Water.h" />
     <ClInclude Include="gameobject\CounterAttack.h" />
     <ClInclude Include="gameobject\LightningEffect.h" />
+    <ClInclude Include="gameobject\BrickDebrisEffect.h" />
     <ClInclude Include="gameobject\RollingBall.h" />
     <ClInclude Include="gameplay\GameManager.h" />
     <ClInclude Include="gameplay\Map.h" />

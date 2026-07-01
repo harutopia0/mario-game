@@ -25,7 +25,7 @@
 #define KOOPA_KICK_COOLDOWN        500  // ms: sau khi Mario đá, shell không damage Mario
 
 // Cliff detection threshold for Red Koopa
-#define KOOPA_CLIFF_CHECK_AHEAD    18.0f
+#define KOOPA_CLIFF_CHECK_AHEAD    2.0f
 
 class Koopa : public Enemy
 {
@@ -41,7 +41,7 @@ public:
 	virtual void Render() override;
 	virtual void OnStomped(Mario* mario) override;
 	virtual void OnCollision(GameObject* obj) override;
-	
+	virtual bool CanFallOffLedge() override { return state != KOOPA_STATE_WALKING; }
 	void Kick(int direction);
 	int GetState() const { return state; }
 	int GetType() const { return type; }

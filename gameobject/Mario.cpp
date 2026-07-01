@@ -8,6 +8,8 @@
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
 #include "../gameobject/Koopa.h"
+#include "../gameobject/PiranhaPlant.h"
+#include "../gameobject/VenusFireTrap.h"
 
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
@@ -360,10 +362,15 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
         } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
           if (!enemy->IsDied() && !enemy->IsFreezed()) {
             if (temp_ny == 1) {
-              // Mario dẫm lên đầu enemy
-              vy = MARIO_JUMP_SPEED_Y * 0.5f;
-              OutputDebugStringA("Enemy stomped!\n");
-              enemy->OnStomped(this);
+              if (dynamic_cast<PiranhaPlant*>(enemy) != nullptr || dynamic_cast<VenusFireTrap*>(enemy) != nullptr) {
+                // Mario dẫm lên cây ăn thịt -> Bị mất máu, xuyên qua, không nảy lên
+                enemy->OnStomped(this);
+              } else {
+                // Mario dẫm lên đầu enemy bình thường -> nảy lên
+                vy = MARIO_JUMP_SPEED_Y * 0.5f;
+                OutputDebugStringA("Enemy stomped!\n");
+                enemy->OnStomped(this);
+              }
             }
             // Lưu ý: va chạm ngang với enemy được xử lý ở phần AABB check bên dưới
           }

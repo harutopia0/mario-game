@@ -12,6 +12,9 @@ protected:
 	int animationId;
 	bool died;
 	bool isFreezed;
+	int nx;
+
+	virtual bool CanFallOffLedge() { return false; }
 public:
 	Enemy(float x, float y, int animationId);
 	virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;

@@ -115,6 +115,9 @@
     <ClCompile Include="gameobject\LightningEffect.cpp">
       <Filter>gameobject</Filter>
     </ClCompile>
+    <ClCompile Include="gameobject\BrickDebrisEffect.cpp">
+      <Filter>gameobject</Filter>
+    </ClCompile>
     <ClCompile Include="gameobject\RollingBall.cpp">
       <Filter>gameobject</Filter>
     </ClCompile>
@@ -270,6 +273,9 @@
       <Filter>gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\LightningEffect.h">
+      <Filter>gameobject</Filter>
+    </ClInclude>
+    <ClInclude Include="gameobject\BrickDebrisEffect.h">
       <Filter>gameobject</Filter>
     </ClInclude>
     <ClInclude Include="gameobject\RollingBall.h">

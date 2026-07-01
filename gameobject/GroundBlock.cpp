@@ -1,11 +1,11 @@
 #include "GroundBlock.h"
 #include "../animation/Animations.h"
 
-GroundBlock::GroundBlock(float x, float y, int animationId)
+GroundBlock::GroundBlock(float x, float y, int animationId, float customWidth)
     : StaticBlock(x, y)
 {
     this->animationId = animationId;
-    this->width = 16.0f;
+    this->width = customWidth > 0 ? customWidth : 16.0f;
     this->height = 16.0f;
 }
 
