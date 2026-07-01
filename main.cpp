@@ -628,6 +628,13 @@ void LoadResources() {
   sprites->Add(81002, 3, 80, 130, 143, TEX_COMMON2); // Cliff
   sprites->Add(81003, 59, 27, 121, 74, TEX_COMMON2); // Small cliff
   
+  // Underground/Athletic Props (Level 2 & 4)
+  sprites->Add(82001, 370, 745, 380, 754, TEX_COMMON2); // Nấm
+  sprites->Add(82002, 427, 743, 474, 806, TEX_COMMON2); // Vách đá 1
+  sprites->Add(82003, 476, 743, 523, 806, TEX_COMMON2); // Vách đá 2
+  sprites->Add(82004, 525, 743, 572, 806, TEX_COMMON2); // Cột đầu lâu
+  sprites->Add(82005, 583, 742, 590, 752, TEX_COMMON2); // Mây nhỏ màn 2 & 4
+  
   // Clouds
   sprites->Add(81004, 52, 3, 83, 26, TEX_CLOUDS); // Single cloud
   sprites->Add(81005, 1, 3, 48, 26, TEX_CLOUDS);  // Double cloud

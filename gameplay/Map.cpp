@@ -72,13 +72,13 @@ void Map::LoadMap(LPCWSTR filePath) {
   int animTop = 211;
   int animBottom = 212;
 
-  if (currentLevel == 2) {
+  if (currentLevel == 2 || currentLevel == 4) {
     animTop = 213;
     animBottom = 214;
   } else if (currentLevel == 3) {
     animTop = 217; // Cloud
     animBottom = 218;
-  } else if (currentLevel == 4 || currentLevel == 5) {
+  } else if (currentLevel == 5) {
     animTop = 215;
     animBottom = 216;
   } else {
@@ -474,6 +474,71 @@ void Map::LoadMap(LPCWSTR filePath) {
       koopa2->Kick(-1); // Lăn trái
       objects.push_back(koopa2);
       AddObjectToGrid(koopa2);
+  }
+
+  if (currentLevel == 2 || currentLevel == 4) {
+      PropSpawner spawner;
+      // Trọng số rỗng cao hơn một chút để prop không bị quá dày đặc
+      spawner.SetEmptySpace(30, 100.0f, 300.0f);
+      
+      // Tăng tỷ lệ (weight) và giảm khoảng cách (gap) của nấm để dễ thấy hơn
+      PropDef mushroom = { 82001, 10.0f, 9.0f, 15.0f, 60, 20.0f, 80.0f };
+      PropDef cliff1 = { 82002, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f };
+      PropDef cliff2 = { 82003, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f };
+      PropDef skull = { 82004, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f };
+      
+      spawner.AddProp(mushroom);
+      spawner.AddProp(cliff1);
+      spawner.AddProp(cliff2);
+      spawner.AddProp(skull);
+      
+      float groundY = (currentLevel == 4) ? 65.0f : 50.0f; // Level 4 ground ở r=13, Level 2 ground ở r=14
+      
+      std::vector<GameObject*> props = spawner.SpawnProps(cols, mapData, groundY);
+      for (size_t i = 0; i < props.size(); i++) {
+          objects.push_back(props[i]);
+          AddObjectToGrid(props[i]);
+      }
+      
+      // Bầu trời: Mây nhỏ (sao) cho màn 2 và 4
+      PropSpawner cloudSpawner;
+      cloudSpawner.SetEmptySpace(20, 30.0f, 100.0f); // Dày hơn mây bình thường một chút
+      
+      PropDef smallCloud = { 82005, 8.0f, 11.0f, 15.0f, 80, 20.0f, 60.0f };
+      cloudSpawner.AddProp(smallCloud);
+      
+      std::vector<GameObject*> skyClouds = cloudSpawner.SpawnClouds(cols, 120.0f, 220.0f);
+      for (size_t i = 0; i < skyClouds.size(); i++) {
+          objects.push_back(skyClouds[i]);
+          AddObjectToGrid(skyClouds[i]);
+      }
+  }
+
+  if (currentLevel == 3) {
+      PropSpawner cloudSpawner;
+      // Giảm khoảng trống (weight rỗng = 5, gap chỉ từ 10-30) để mây dày đặc hơn
+      cloudSpawner.SetEmptySpace(5, 10.0f, 30.0f);
+      
+      // Tăng tỷ lệ mây đơn (nhỏ) và mây đôi (lớn), giảm minGap/maxGap để chúng kết hợp sát nhau
+      PropDef cloud1 = { 81004, 31.0f, 23.0f, 10.0f, 50, 5.0f, 20.0f };
+      PropDef cloud2 = { 81005, 47.0f, 23.0f, 10.0f, 50, 5.0f, 20.0f };
+      
+      cloudSpawner.AddProp(cloud1);
+      cloudSpawner.AddProp(cloud2);
+      
+      // Spawn dải mây trên không (200 - 250)
+      std::vector<GameObject*> skyClouds = cloudSpawner.SpawnClouds(cols, 200.0f, 250.0f);
+      for (size_t i = 0; i < skyClouds.size(); i++) {
+          objects.push_back(skyClouds[i]);
+          AddObjectToGrid(skyClouds[i]);
+      }
+      
+      // Spawn dải mây dưới ground (0 - 60)
+      std::vector<GameObject*> groundClouds = cloudSpawner.SpawnClouds(cols, 0.0f, 60.0f);
+      for (size_t i = 0; i < groundClouds.size(); i++) {
+          objects.push_back(groundClouds[i]);
+          AddObjectToGrid(groundClouds[i]);
+      }
   }
 }
 

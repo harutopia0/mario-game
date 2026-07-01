@@ -265,6 +265,7 @@ void Koopa::OnStomped(Mario* mario)
 		vx = (nx > 0) ? -0.05f : 0.05f;
 		layer = LAYER_BACKGROUND;
 		died = true;
+		AudioManager::GetInstance()->PlaySFX("stomp");
 		return;
 	}
 

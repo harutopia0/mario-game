@@ -5,6 +5,7 @@
 #define PIRANHA_STATE_GOING_UP    200
 #define PIRANHA_STATE_BITING      300
 #define PIRANHA_STATE_GOING_DOWN  400
+#define PIRANHA_STATE_DIE         500
 
 #define PIRANHA_BITE_TIME         1500
 #define PIRANHA_HIDE_TIME         1500

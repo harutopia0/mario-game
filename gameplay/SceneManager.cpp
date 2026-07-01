@@ -163,6 +163,7 @@ void SceneManager::ProcessMarioDeath() {
   deathStartTime = GetTickCount64();
 
   AudioManager::GetInstance()->StopMusic();
+  AudioManager::GetInstance()->StopEventMusic();
   AudioManager::GetInstance()->PlaySFX("mario_die");
 
   GameManager::GetInstance()->SetGameOver(true);
@@ -464,13 +465,13 @@ void SceneManager::Update(DWORD dt) {
 
       if (GetAsyncKeyState(key) & 0x8000) {
         if (!isSlotPressed[slot]) {
-          int cardType = GameManager::GetInstance()->UseCard(slot);
-          if (cardType != 0) // CARD_NONE = 0
-          {
-            Mario *mario = g_objectList.empty()
-                               ? nullptr
-                               : dynamic_cast<Mario *>(g_objectList[0]);
-            if (mario != nullptr && !mario->IsDied()) {
+          Mario *mario = g_objectList.empty()
+                             ? nullptr
+                             : dynamic_cast<Mario *>(g_objectList[0]);
+          if (mario != nullptr && !mario->IsDied()) {
+            int cardType = GameManager::GetInstance()->UseCard(slot);
+            if (cardType != 0) // CARD_NONE = 0
+            {
               if (cardType == 3) // CARD_STAR: Bất tử 10 giây
               {
                 mario->untouchable = true;

@@ -3,6 +3,8 @@
 #include "../gameplay/Map.h"
 #include "../physics/Collision.h"
 #include "../render/Camera.h"
+#include "../audio/AudioManager.h"
+#include "../animation/Animations.h"
 
 VenusFireTrap::VenusFireTrap(float x, float y, bool isUpsideDown) : Enemy(x, y, 5001) {
     this->isUpsideDown = isUpsideDown;
@@ -72,6 +74,18 @@ void VenusFireTrap::SetState(int state) {
 }
 
 void VenusFireTrap::Update(DWORD dt, vector<GameObject*>* coObjects) {
+    if (isDeleted) return;
+    
+    if (state == VENUS_STATE_DIE) {
+        vy += ENEMY_GRAVITY * dt;
+        x += vx * dt;
+        y += vy * dt;
+        if (y < -100.0f) {
+            Delete();
+        }
+        return;
+    }
+    
     if (died) return;
 
     Camera* camera = Camera::GetInstance();
@@ -126,8 +140,8 @@ void VenusFireTrap::Update(DWORD dt, vector<GameObject*>* coObjects) {
         }
     } 
     else if (state == VENUS_STATE_SHOOTING) {
-        // Giữ tư thế há miệng 0.5 giây sau khi bắn
-        if (GetTickCount64() - timerStart > 500) {
+        // Giữ tư thế há miệng 0.75 giây sau khi bắn
+        if (GetTickCount64() - timerStart > 750) {
             if (!isSafe) {
                 SetState(VENUS_STATE_GOING_DOWN); // Xoay vòng xong mà Mario lại gần thì thụt xuống
             } else {
@@ -195,6 +209,14 @@ void VenusFireTrap::ShootFireball(vector<GameObject*>* coObjects) {
 }
 
 void VenusFireTrap::Render() {
+    if (isDeleted) return;
+    
+    if (state == VENUS_STATE_DIE) {
+        Animation* ani = Animations::GetInstance()->Get(animationId);
+        if (ani) ani->Render(x, y, 0, 1);
+        return;
+    }
+    
     if (died) return;
     
     // Ở trạng thái shooting, ta mượn animation ID mở miệng, 
@@ -209,7 +231,11 @@ void VenusFireTrap::OnStomped(Mario* mario) {
     if (mario != NULL) {
         mario->TakeDamage();
     } else {
+        SetState(VENUS_STATE_DIE);
+        this->vy = isUpsideDown ? -VENUS_SPEED_Y * 5.0f : VENUS_SPEED_Y * 5.0f; // Jump up a bit
+        this->vx = 0.05f;
         this->died = true;
-        this->isDeleted = true;
+        this->layer = LAYER_BACKGROUND;
+        AudioManager::GetInstance()->PlaySFX("stomp");
     }
 }

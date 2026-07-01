@@ -6,7 +6,7 @@ Prop::Prop(float x, float y, int spriteId, float width, float height) : GameObje
     this->spriteId = spriteId;
     this->width = width;
     this->height = height;
-    this->layer = LAYER_PROP; // Luôn nằm ở lớp sau cùng
+    this->layer = LAYER_PROP; // Trở lại làm cảnh nền đằng sau
 }
 
 void Prop::Render()

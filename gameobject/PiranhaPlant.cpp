@@ -2,6 +2,8 @@
 #include "../physics/Collision.h"
 #include "Mario.h"
 #include "../gameplay/Map.h"
+#include "../audio/AudioManager.h"
+#include "../animation/Animations.h"
 
 PiranhaPlant::PiranhaPlant(float x, float y) : Enemy(x, y, 5000) {
   this->state = PIRANHA_STATE_HIDING;
@@ -14,9 +16,22 @@ PiranhaPlant::PiranhaPlant(float x, float y) : Enemy(x, y, 5000) {
 }
 
 void PiranhaPlant::Update(DWORD dt, vector<GameObject *> *coObjects) {
-  if (died)
+  if (isDeleted)
     return;
   if (isFreezed)
+    return;
+
+  if (state == PIRANHA_STATE_DIE) {
+    vy += ENEMY_GRAVITY * dt;
+    x += vx * dt;
+    y += vy * dt;
+    if (y < -100.0f) {
+      Delete();
+    }
+    return;
+  }
+
+  if (died)
     return;
 
   y += vy * dt;
@@ -49,6 +64,13 @@ void PiranhaPlant::Update(DWORD dt, vector<GameObject *> *coObjects) {
 }
 
 void PiranhaPlant::Render() {
+  if (isDeleted)
+    return;
+  if (state == PIRANHA_STATE_DIE) {
+      Animation* ani = Animations::GetInstance()->Get(animationId);
+      if (ani) ani->Render(x, y, 0, 1); // Flip vertically
+      return;
+  }
   if (died)
     return;
   Enemy::Render();
@@ -74,7 +96,11 @@ void PiranhaPlant::OnStomped(Mario *mario) {
   if (mario != NULL) {
     mario->TakeDamage();
   } else {
-    this->died = true; // Chết do bị ném lửa hoặc sao
-    this->isDeleted = true;
+    this->state = PIRANHA_STATE_DIE;
+    this->vy = PIRANHA_SPEED * 5.0f; // Jump a bit
+    this->vx = 0.05f;
+    this->died = true;
+    this->layer = LAYER_BACKGROUND;
+    AudioManager::GetInstance()->PlaySFX("stomp");
   }
 }
