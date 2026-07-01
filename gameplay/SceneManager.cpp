@@ -320,34 +320,20 @@ void SceneManager::Update(DWORD dt) {
   if (isMarioScissorsAttacking) {
     DWORD elapsed = (DWORD)(GetTickCount64() - scissorsAttackStartTime);
 
-    // Phase 1: Zoom out (0-400ms) - màn hình vẫn sáng bình thường
+    // Phase 1: Fade tối (0ms - 400ms)
     if (elapsed < 400) {
-      scissorsAttackOverlayAlpha = 0.0f;
+      scissorsAttackOverlayAlpha = elapsed / 400.0f;
       HUD::GetInstance()->Update(dt);
       return; // freeze game
     }
 
-    // Phase 2: Fade tối (400ms - 800ms) - giữ camera ở góc rộng 1x
+    // Phase 2: Chém quái trong màn hình thường (400ms - 800ms) - giữ tối đen
     if (elapsed >= 400 && elapsed < 800) {
-      scissorsAttackOverlayAlpha = (elapsed - 400.0f) / 400.0f;
-      HUD::GetInstance()->Update(dt);
-      return; // freeze game
-    }
-
-    // Phase 3: Chém quái trong màn hình góc rộng (800ms - 1200ms) - giữ tối đen
-    if (elapsed >= 800 && elapsed < 1200) {
       scissorsAttackOverlayAlpha = 1.0f;
       if (!scissorsAttackEnemiesKilled) {
         AudioManager::GetInstance()->PlaySFX("slash-sound");
 
-        // Chỉ tiêu diệt quái vật nằm trong phạm vi camera góc rộng (zoom out 1x)
-        float camX = Camera::GetInstance()->GetX();
-        float camY = Camera::GetInstance()->GetY();
-        float left = camX - 160.0f;
-        float right = camX + 480.0f;
-        float top = camY - 120.0f;
-        float bottom = camY + 360.0f;
-
+        // Chỉ tiêu diệt quái vật nằm trong phạm vi camera thường (IsVisible)
         for (size_t i = 0; i < g_objectList.size(); i++) {
           GameObject* obj = g_objectList[i];
           Enemy* enemy = dynamic_cast<Enemy*>(obj);
@@ -357,8 +343,8 @@ void SceneManager::Update(DWORD dt) {
             float ew = er - el;
             float eh = eb - et;
 
-            // Kiểm tra xem enemy có nằm trong vùng nhìn thấy của camera đã zoom out không
-            if (el + ew > left && el < right && et + eh > top && et < bottom) {
+            // Kiểm tra xem enemy có nằm trong vùng nhìn thấy của camera không
+            if (Camera::GetInstance()->IsVisible(el, et, ew, eh)) {
               enemy->SetDied(true);
             }
           }
@@ -369,22 +355,15 @@ void SceneManager::Update(DWORD dt) {
       return; // freeze game
     }
 
-    // Phase 4: Fade sáng lại (1200ms - 1600ms)
-    if (elapsed >= 1200 && elapsed < 1600) {
-      scissorsAttackOverlayAlpha = 1.0f - (elapsed - 1200.0f) / 400.0f;
+    // Phase 3: Fade sáng lại (800ms - 1200ms)
+    if (elapsed >= 800 && elapsed < 1200) {
+      scissorsAttackOverlayAlpha = 1.0f - (elapsed - 800.0f) / 400.0f;
       HUD::GetInstance()->Update(dt);
       return; // freeze game
     }
 
-    // Phase 5: Zoom in lại (1600ms - 2000ms) - màn hình đã sáng
-    if (elapsed >= 1600 && elapsed < 2000) {
-      scissorsAttackOverlayAlpha = 0.0f;
-      HUD::GetInstance()->Update(dt);
-      return; // freeze game
-    }
-
-    // Phase 6: Hoàn thành (>= 2000ms)
-    if (elapsed >= 2000) {
+    // Phase 4: Hoàn thành (>= 1200ms)
+    if (elapsed >= 1200) {
       isMarioScissorsAttacking = false;
       scissorsAttackOverlayAlpha = 0.0f;
       AudioManager::GetInstance()->ResumeMusic();
@@ -621,42 +600,19 @@ void SceneManager::Render() {
     D3DXMATRIX matCamera;
     D3DXMATRIX matFinal;
 
-    float zoomScale = 1.0f;
-    if (isMarioScissorsAttacking) {
-      DWORD elapsed = (DWORD)(GetTickCount64() - scissorsAttackStartTime);
-      if (elapsed < 400) {
-        zoomScale = 1.0f - (elapsed / 400.0f) * 0.5f; // Smooth zoom out to 0.5f (0-400ms)
-      } else if (elapsed >= 400 && elapsed < 1600) {
-        zoomScale = 0.5f; // Stay zoomed out (400ms-1600ms)
-      } else if (elapsed >= 1600 && elapsed < 2000) {
-        zoomScale = 0.5f + ((elapsed - 1600.0f) / 400.0f) * 0.5f; // Smooth zoom in back to 1.0f (1600ms-2000ms)
-      }
-    }
-
     D3DXMatrixScaling(&matZoom, 1.0f, 1.0f, 1.0f);
     matCamera = Camera::GetInstance()->GetViewMatrix();
 
-    if (isMarioScissorsAttacking) {
+    float cameraZoom = Camera::GetInstance()->GetZoom();
+    if (cameraZoom != 1.0f) {
       D3DXMATRIX matTranslateToCenter, matScaleRelative, matTranslateBack;
-      float relativeScale = zoomScale;
-
       D3DXMatrixTranslation(&matTranslateToCenter, -320.0f, -240.0f, 0.0f);
-      D3DXMatrixScaling(&matScaleRelative, relativeScale, relativeScale, 1.0f);
+      D3DXMatrixScaling(&matScaleRelative, cameraZoom, cameraZoom, 1.0f);
       D3DXMatrixTranslation(&matTranslateBack, 320.0f, 240.0f, 0.0f);
 
       matFinal = matCamera * matZoom * matTranslateToCenter * matScaleRelative * matTranslateBack;
     } else {
-      float cameraZoom = Camera::GetInstance()->GetZoom();
-      if (cameraZoom != 1.0f) {
-        D3DXMATRIX matTranslateToCenter, matScaleRelative, matTranslateBack;
-        D3DXMatrixTranslation(&matTranslateToCenter, -320.0f, -240.0f, 0.0f);
-        D3DXMatrixScaling(&matScaleRelative, cameraZoom, cameraZoom, 1.0f);
-        D3DXMatrixTranslation(&matTranslateBack, 320.0f, 240.0f, 0.0f);
-
-        matFinal = matCamera * matZoom * matTranslateToCenter * matScaleRelative * matTranslateBack;
-      } else {
-        matFinal = matCamera * matZoom;
-      }
+      matFinal = matCamera * matZoom;
     }
 
     game->GetSpriteHandler()->SetViewTransform(&matFinal);
@@ -848,12 +804,12 @@ void SceneManager::RenderScissorsAttackOverlay() {
     blackOverlay->Draw(0.0f, 0.0f, 640.0f, 480.0f, D3DXCOLOR(0.0f, 0.0f, 0.0f, scissorsAttackOverlayAlpha));
   }
 
-  // Draw slash lines on top of the black background starting at 800ms
+  // Draw slash lines on top of the black background starting at 400ms
   DWORD elapsed = (DWORD)(GetTickCount64() - scissorsAttackStartTime);
-  if (elapsed >= 800 && elapsed < 1600) {
+  if (elapsed >= 400 && elapsed < 1200) {
     float slashAlpha = 1.0f;
-    if (elapsed > 1200) {
-      slashAlpha = 1.0f - (elapsed - 1200.0f) / 400.0f;
+    if (elapsed > 800) {
+      slashAlpha = 1.0f - (elapsed - 800.0f) / 400.0f;
       if (slashAlpha < 0.0f) slashAlpha = 0.0f;
     }
 
@@ -861,28 +817,28 @@ void SceneManager::RenderScissorsAttackOverlay() {
     if (whiteSprite) {
       // Draw 5 clean, sharp white slash lines sequentially (one every 80ms)
       
-      // Slash 1 - Appears at 800ms
-      if (elapsed >= 800) {
+      // Slash 1 - Appears at 400ms
+      if (elapsed >= 400) {
         whiteSprite->DrawRotatedScaled(wsX[0] - 0.5f, wsY[0] - 0.5f, wsAngle[0], wsLength[0], wsThickness[0], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
       }
 
-      // Slash 2 - Appears at 880ms
-      if (elapsed >= 880) {
+      // Slash 2 - Appears at 480ms
+      if (elapsed >= 480) {
         whiteSprite->DrawRotatedScaled(wsX[1] - 0.5f, wsY[1] - 0.5f, wsAngle[1], wsLength[1], wsThickness[1], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
       }
 
-      // Slash 3 - Appears at 960ms
-      if (elapsed >= 960) {
+      // Slash 3 - Appears at 560ms
+      if (elapsed >= 560) {
         whiteSprite->DrawRotatedScaled(wsX[2] - 0.5f, wsY[2] - 0.5f, wsAngle[2], wsLength[2], wsThickness[2], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
       }
 
-      // Slash 4 - Appears at 1040ms
-      if (elapsed >= 1040) {
+      // Slash 4 - Appears at 640ms
+      if (elapsed >= 640) {
         whiteSprite->DrawRotatedScaled(wsX[3] - 0.5f, wsY[3] - 0.5f, wsAngle[3], wsLength[3], wsThickness[3], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
       }
 
-      // Slash 5 - Appears at 1120ms
-      if (elapsed >= 1120) {
+      // Slash 5 - Appears at 720ms
+      if (elapsed >= 720) {
         whiteSprite->DrawRotatedScaled(wsX[4] - 0.5f, wsY[4] - 0.5f, wsAngle[4], wsLength[4], wsThickness[4], D3DXCOLOR(1.0f, 1.0f, 1.0f, slashAlpha));
       }
     }
