@@ -6,34 +6,21 @@
 #include "../audio/AudioManager.h"
 #include "../animation/Animations.h"
 
-VenusFireTrap::VenusFireTrap(float x, float y, bool isUpsideDown) : Enemy(x, y, 5001) {
-    this->isUpsideDown = isUpsideDown;
+VenusFireTrap::VenusFireTrap(float x, float y) : Enemy(x, y, 5001) {
     this->width = 16.0f;
     this->height = 24.0f;
     this->layer = LAYER_PROP; // Nằm dưới Pipe
     this->aimDir = VENUS_DIR_UP_LEFT; // Default
 
-    if (isUpsideDown) {
-        // Bản treo ngược (Top-Down)
-        this->hiddenY = y + this->height; // Giấu hẳn vào trong ống
-        this->poppedY = y - 2.0f; // Thò xuống hết cỡ
-        this->y = this->poppedY; // Bắt đầu ở trạng thái trồi ra
-        
-        aniUpLeft = 5011;
-        aniUpRight = 5012;
-        aniDownLeft = 5013;
-        aniDownRight = 5014;
-    } else {
-        // Bản thông thường (Bottom-Up)
-        this->hiddenY = y - 2.0f - this->height; // Nằm sâu trong ống (đã xác nhận là y - 26)
-        this->poppedY = y - 2.0f; // Nổi lên ngoài ống (đã xác nhận là y - 2)
-        this->y = this->poppedY; // Bắt đầu ở trạng thái trồi ra ngoài
-        
-        aniUpLeft = 5001;
-        aniUpRight = 5002;
-        aniDownLeft = 5003;
-        aniDownRight = 5004;
-    }
+    // Bản thông thường (Bottom-Up)
+    this->hiddenY = y - 2.0f - this->height; // Nằm sâu trong ống (đã xác nhận là y - 26)
+    this->poppedY = y - 2.0f; // Nổi lên ngoài ống (đã xác nhận là y - 2)
+    this->y = this->poppedY; // Bắt đầu ở trạng thái trồi ra ngoài
+    
+    aniUpLeft = 5001;
+    aniUpRight = 5002;
+    aniDownLeft = 5003;
+    aniDownRight = 5004;
 
     SetState(VENUS_STATE_AIMING);
 }
@@ -57,7 +44,7 @@ void VenusFireTrap::SetState(int state) {
             timerStart = GetTickCount64();
             break;
         case VENUS_STATE_GOING_UP:
-            vy = isUpsideDown ? -VENUS_SPEED_Y : VENUS_SPEED_Y; // Trồi ra: y tiến về poppedY
+            vy = VENUS_SPEED_Y; // Trồi ra: y tiến về poppedY
             break;
         case VENUS_STATE_AIMING:
             vy = 0;
@@ -68,7 +55,7 @@ void VenusFireTrap::SetState(int state) {
             timerStart = GetTickCount64();
             break;
         case VENUS_STATE_GOING_DOWN:
-            vy = isUpsideDown ? VENUS_SPEED_Y : -VENUS_SPEED_Y; // Thụt vào: y tiến về hiddenY
+            vy = -VENUS_SPEED_Y; // Thụt vào: y tiến về hiddenY
             break;
     }
 }
@@ -90,8 +77,8 @@ void VenusFireTrap::Update(DWORD dt, vector<GameObject*>* coObjects) {
 
     Camera* camera = Camera::GetInstance();
     if (camera) {
-        // Mở rộng viền một chút (ví dụ 16px) để không bị ngắt cái rụp khi vừa nhích khỏi mép
-        if (!camera->IsVisible(x - 16.0f, y - 16.0f, width + 32.0f, height + 32.0f)) {
+        // Chỉ hoạt động khi thực sự nằm hoàn toàn hoặc một phần trong màn hình
+        if (!camera->IsVisible(x, y, width, height)) {
             timerStart = GetTickCount64(); // Reset timer để khi vào màn hình không bị giật mình
             return;
         }
@@ -119,10 +106,7 @@ void VenusFireTrap::Update(DWORD dt, vector<GameObject*>* coObjects) {
     } 
     else if (state == VENUS_STATE_GOING_UP) {
         y += vy * dt;
-        if (!isUpsideDown && y >= poppedY) { // Bottom-up trồi ra (y tăng)
-            y = poppedY;
-            SetState(VENUS_STATE_AIMING);
-        } else if (isUpsideDown && y <= poppedY) { // Top-down trồi ra (y giảm)
+        if (y >= poppedY) { // Bottom-up trồi ra (y tăng)
             y = poppedY;
             SetState(VENUS_STATE_AIMING);
         }
@@ -151,10 +135,7 @@ void VenusFireTrap::Update(DWORD dt, vector<GameObject*>* coObjects) {
     } 
     else if (state == VENUS_STATE_GOING_DOWN) {
         y += vy * dt;
-        if (!isUpsideDown && y <= hiddenY) { // Bottom-up thụt vào (y giảm)
-            y = hiddenY;
-            SetState(VENUS_STATE_HIDING);
-        } else if (isUpsideDown && y >= hiddenY) { // Top-down thụt vào (y tăng)
+        if (y <= hiddenY) { // Bottom-up thụt vào (y giảm)
             y = hiddenY;
             SetState(VENUS_STATE_HIDING);
         }
@@ -186,7 +167,6 @@ void VenusFireTrap::ShootFireball(vector<GameObject*>* coObjects) {
     // Xuất phát đạn từ miệng cây (canh giữa)
     float fx = x + width / 2.0f - ENEMY_FIREBALL_WIDTH / 2.0f;
     float fy = y + height - 8.0f; // Canh đại khái ngay miệng
-    if (isUpsideDown) fy = y + 8.0f;
     
     Mario *mario = Map::GetInstance()->GetMario();
     if (mario) {
@@ -232,7 +212,7 @@ void VenusFireTrap::OnStomped(Mario* mario) {
         mario->TakeDamage();
     } else {
         SetState(VENUS_STATE_DIE);
-        this->vy = isUpsideDown ? -VENUS_SPEED_Y * 5.0f : VENUS_SPEED_Y * 5.0f; // Jump up a bit
+        this->vy = VENUS_SPEED_Y * 5.0f; // Jump up a bit
         this->vx = 0.05f;
         this->died = true;
         this->layer = LAYER_BACKGROUND;

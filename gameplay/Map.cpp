@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "../gameobject/GroundBlock.h"
 #include "../gameobject/Breakable.h"
-#include "../gameobject/Water.h"
+
 #include "../gameobject/Platform.h"
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
@@ -79,15 +79,14 @@ void Map::LoadMap(LPCWSTR filePath) {
     animTop = 217; // Cloud
     animBottom = 218;
   } else if (currentLevel == 5) {
-    animTop = 215;
-    animBottom = 216;
+    animTop = 250;
+    animBottom = 251;
   } else {
     animTop = 211;
     animBottom = 212;
   }
 
   for (int r = 0; r < rows; r++) {
-    float lastWaterX = -100.0f;
     Breakable* lastBrickInRow = nullptr;
     for (int c = 0; c < cols; c++) {
       int tileID = mapData[r][c];
@@ -228,14 +227,7 @@ void Map::LoadMap(LPCWSTR filePath) {
           lastBrickInRow = brick;
           brick->SetRenderParams(isTop, isFloating, currentAnimTop);
         }
-      } else if (tileID == 0 && currentLevel == 1 && r == rows - 2) {
-        Water* water = new Water(realX, realY - 18.0f);
-        objects.push_back(water);
-        int cellX = (int)(realX / GRID_CELL_SIZE);
-        int cellY = (int)(realY / GRID_CELL_SIZE);
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
-            AddObjectToGrid(water);
-        }
+
       } else if (tileID == 3) {
         Platform *platform = new Platform(realX, realY, 202);
         objects.push_back(platform);
@@ -386,7 +378,7 @@ void Map::LoadMap(LPCWSTR filePath) {
         if (tileID == 15) {
             plant = new PiranhaPlant(realX + 8.0f, plantY);
         } else {
-            plant = new VenusFireTrap(realX + 8.0f, plantY, false);
+            plant = new VenusFireTrap(realX + 8.0f, plantY);
         }
         objects.push_back(plant);
 
@@ -397,19 +389,7 @@ void Map::LoadMap(LPCWSTR filePath) {
             cellY < MAX_CELL_ROW) {
           AddObjectToGrid(plant);
         }
-      } else if (tileID == 17) {
-        // Venus lộn ngược, mặc định đặt ngay dưới miệng ống lộn ngược
-        float plantY = realY + 15.0f; // Tạm thời dùng realY + 15 làm miệng ống
-        VenusFireTrap *venus = new VenusFireTrap(realX + 8.0f, plantY, true);
-        objects.push_back(venus);
 
-        int cellX = (int)((realX + 8.0f) / GRID_CELL_SIZE);
-        int cellY = (int)(plantY / GRID_CELL_SIZE);
-
-        if (cellX >= 0 && cellX < MAX_CELL_COL && cellY >= 0 &&
-            cellY < MAX_CELL_ROW) {
-          AddObjectToGrid(venus);
-        }
       } else if (tileID == 18) {
         HammerBro *hammerBro = new HammerBro(realX, realY + 2.0f);
         objects.push_back(hammerBro);

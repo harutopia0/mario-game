@@ -1,0 +1,10 @@
+Enter WinMain
+Window created
+Before InitDirectX
+After InitDirectX
+Enter WinMain
+Window created
+Before InitDirectX
+After InitDirectX
+Enter LoadResources
+Loading Textures

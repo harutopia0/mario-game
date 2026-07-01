@@ -59,7 +59,7 @@ void HammerBro::Update(DWORD dt, vector<GameObject*>* coObjects) {
     
     Camera* camera = Camera::GetInstance();
     if (camera) {
-        if (!camera->IsVisible(x - 16.0f, y - 16.0f, width + 32.0f, height + 32.0f)) {
+        if (!camera->IsVisible(x, y, width, height)) {
             // Khi ở ngoài camera, reset lại các timer để khi lọt vào không bị tấn công / nhảy ngay lập tức
             throwCooldownStart = GetTickCount64();
             jumpCooldownStart = GetTickCount64();

@@ -127,9 +127,7 @@
     <ClCompile Include="gameobject\PropSpawner.cpp">
       <Filter>gameobject</Filter>
     </ClCompile>
-    <ClCompile Include="gameobject\Water.cpp">
-      <Filter>gameobject</Filter>
-    </ClCompile>
+
     <ClCompile Include="gameplay\GameManager.cpp">
       <Filter>gameplay</Filter>
     </ClCompile>
@@ -266,9 +264,7 @@
     <ClInclude Include="gameobject\PropSpawner.h">
       <Filter>gameobject</Filter>
     </ClInclude>
-    <ClInclude Include="gameobject\Water.h">
-      <Filter>gameobject</Filter>
-    </ClInclude>
+
     <ClInclude Include="gameobject\CounterAttack.h">
       <Filter>gameobject</Filter>
     </ClInclude>
