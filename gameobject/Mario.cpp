@@ -242,6 +242,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           int cardType = 2; // Default to Flower
           if (buffType == 301) cardType = 1; // Mushroom
           else if (buffType == 303) cardType = 3; // Star
+          else if (buffType == 304) cardType = 4; // Scissors
 
           if (GameManager::GetInstance()->AddCard(cardType)) {
             buff->Delete();
@@ -379,6 +380,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           int cardType = 2; // Default to Flower
           if (buffType == 301) cardType = 1; // Mushroom
           else if (buffType == 303) cardType = 3; // Star
+          else if (buffType == 304) cardType = 4; // Scissors
 
           if (GameManager::GetInstance()->AddCard(cardType)) {
             buff->Delete();
@@ -409,6 +411,26 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     for (UINT i = 0; i < coObjects->size(); i++) {
       GameObject *e = coObjects->at(i);
       if (e == this) continue;
+
+      if (Buff *buff = dynamic_cast<Buff *>(e)) {
+        if (buff->IsDeleted()) continue;
+        float bl, bt, br, bb;
+        buff->GetBoundingBox(bl, bt, br, bb);
+
+        if (!(fr <= bl || fl >= br || fb <= bt || ft >= bb)) {
+          int buffType = buff->GetAnimationId();
+          int cardType = 2; // Default to Flower
+          if (buffType == 301) cardType = 1; // Mushroom
+          else if (buffType == 303) cardType = 3; // Star
+          else if (buffType == 304) cardType = 4; // Scissors
+
+          if (GameManager::GetInstance()->AddCard(cardType)) {
+            buff->Delete();
+            OutputDebugStringA("Buff added to inventory (AABB)\n");
+          }
+        }
+        continue;
+      }
 
       Enemy *enemy = dynamic_cast<Enemy *>(e);
       if (!enemy || enemy->IsDied() || enemy->IsFreezed()) continue;

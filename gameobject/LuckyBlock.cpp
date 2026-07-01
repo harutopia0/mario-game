@@ -1,5 +1,9 @@
 #include "LuckyBlock.h"
 #include "../animation/Animations.h"
+#include "../audio/AudioManager.h"
+#include "../gameplay/Map.h"
+#include "Buff.h"
+#include <cstdlib>
 
 LuckyBlock::LuckyBlock(float x, float y, int activeAnimationId, int usedAnimationId)
     : DynamicBlock(x, y)
@@ -33,18 +37,31 @@ void LuckyBlock::Render()
     if (ani != NULL) ani->Render(x, y);
 }
 
+void LuckyBlock::SpawnItem()
+{
+    int items[] = { 301, 302, 303, 304 };
+    int randomItem = items[rand() % 4];
+
+    Buff* buff = new Buff(x, y, randomItem);
+    buff->StartSprouting(y);
+    Map::GetInstance()->GetObjects().push_back(buff);
+    Map::GetInstance()->AddObjectToGrid(buff);
+
+    AudioManager::GetInstance()->PlaySFX("mushroom_sound_effect");
+}
+
 void LuckyBlock::Hit()
 {
     if (!isHit) {
         isHit = true;
+        SpawnItem();
     }
 }
 
 void LuckyBlock::Break(bool dropItem)
 {
     if (!isHit && dropItem) {
-        // TODO: Spawn item (Mushroom/Flower/Coin) here
-        OutputDebugStringA("LuckyBlock broken! Dropping item...\n");
+        SpawnItem();
     }
     this->Delete();
 }

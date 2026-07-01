@@ -9,6 +9,7 @@ private:
     int activeAnimationId;
     int usedAnimationId;
     bool isHit;
+    void SpawnItem();
 
 public:
     LuckyBlock(float x, float y, int activeAnimationId, int usedAnimationId);

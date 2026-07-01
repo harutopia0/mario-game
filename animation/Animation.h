@@ -38,7 +38,7 @@ public:
     void Render(float x, float y, float angle);
     void RenderScaled(float x, float y, float scaleX, float scaleY);
     void Render(float x, float y, D3DXCOLOR color);
-    void Render(float x, float y, float drawWidth, float drawHeight);
+    void Render(float x, float y, float drawWidth, float drawHeight, float alpha = 0.5f);
     int GetWidth();
     int GetHeight();
 };

@@ -152,7 +152,7 @@ void Animation::Render(float x, float y, D3DXCOLOR color)
     frames[currentFrame]->GetSprite()->Draw(x, y, color);
 }
 
-void Animation::Render(float x, float y, float drawWidth, float drawHeight)
+void Animation::Render(float x, float y, float drawWidth, float drawHeight, float alpha)
 {
     ULONGLONG now = GetTickCount64();
     if (currentFrame == -1)
@@ -171,7 +171,7 @@ void Animation::Render(float x, float y, float drawWidth, float drawHeight)
         }
     }
 
-    frames[currentFrame]->GetSprite()->Draw(x, y, drawWidth, drawHeight);
+    frames[currentFrame]->GetSprite()->Draw(x, y, drawWidth, drawHeight, alpha);
 }
 
 int Animation::GetWidth()
