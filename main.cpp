@@ -1090,6 +1090,8 @@ void LoadResources() {
   sprites->Add(106004, 214, 198, 231, 225, TEX_ENEMIES_2);
   // Red shell (sleep)
   sprites->Add(107001, 49, 203, 66, 220, TEX_ENEMIES_2);
+  // Red shell reverse (sleep upside-down)
+  sprites->Add(107501, 328, 203, 347, 220, TEX_ENEMIES_2);
   // Red slip (spinning)
   sprites->Add(108001, 14, 203, 31, 220, TEX_ENEMIES_2);
   sprites->Add(108002, 14, 228, 31, 245, TEX_ENEMIES_2);
@@ -1209,6 +1211,10 @@ void LoadResources() {
   ani->Add(107001);
   ani->Add(110000);
   animations->Add(344, ani); // Red Koopa shell shaking (reborn)
+
+  ani = new Animation(100);
+  ani->Add(107501);
+  animations->Add(345, ani); // Red Koopa die (flipped)
 
   // --- Flying Koopa (Green Paratroopa) ---
   ani = new Animation(100);

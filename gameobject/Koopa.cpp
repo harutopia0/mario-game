@@ -240,7 +240,7 @@ void Koopa::Render()
 		}
 		else if (state == KOOPA_STATE_DIE)
 		{
-			aniId = 331; // Die (reuse green die sprite, looks similar)
+			aniId = 345; // Red die (flipped)
 		}
 		else
 		{
