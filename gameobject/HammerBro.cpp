@@ -50,7 +50,43 @@ void HammerBro::Update(DWORD dt, vector<GameObject*>* coObjects) {
     
     if (state == HAMMERBRO_STATE_FLAT) {
         vx = 0.0f;
-        vy = 0.0f;
+        vy -= HAMMERBRO_GRAVITY * dt;
+
+        float dy = vy * dt;
+
+        float ml, mt, mr, mb;
+        GetBoundingBox(ml, mt, mr, mb);
+
+        float min_ty = 1.0f;
+        float ny_col = 0;
+
+        for (GameObject* obj : *coObjects) {
+            if (obj == this || obj->IsDeleted()) continue;
+            Block* block = dynamic_cast<Block*>(obj);
+            if (block) {
+                float sl, st, sr, sb;
+                block->GetBoundingBox(sl, st, sr, sb);
+                
+                if (dy < 0 && mr > sl && ml < sr) {
+                    float t, temp_nx, temp_ny;
+                    Collision::GetInstance()->SweptAABB(ml, mt, mr, mb, 0.0f, dy, sl, st, sr, sb, t, temp_nx, temp_ny);
+                    if (t < min_ty && temp_ny == 1) {
+                        min_ty = t;
+                        ny_col = temp_ny;
+                    }
+                }
+            }
+        }
+
+        y += min_ty * dy + ny_col * 0.01f;
+        
+        if (ny_col == 1) {
+            vy = 0.0f;
+            isOnGround = true;
+        } else {
+            isOnGround = false;
+        }
+
         if (GetTickCount64() - flatTimeStart > 500) {
             Delete();
         }
