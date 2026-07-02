@@ -362,7 +362,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           }
         } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
           if (!enemy->IsDied() && !enemy->IsFreezed()) {
-            if (temp_ny == 1) {
+            if (temp_ny == 1 && !isStarInvincible) {
               if (dynamic_cast<PiranhaPlant*>(enemy) != nullptr || dynamic_cast<VenusFireTrap*>(enemy) != nullptr) {
                 // Mario dẫm lên cây ăn thịt -> Bị mất máu, xuyên qua, không nảy lên
                 enemy->OnStomped(this);
@@ -936,7 +936,7 @@ void Mario::OnParrySuccess(GameObject* enemy) {
   Map::GetInstance()->AddObjectToGrid(le);
 
   // Play sound
-  AudioManager::GetInstance()->PlaySFX("slash-sound");
+  AudioManager::GetInstance()->PlaySFX("parry-sound");
 }
 
 void Mario::OnParryFailed() {

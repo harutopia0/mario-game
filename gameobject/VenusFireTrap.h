@@ -21,7 +21,6 @@
 #define VENUS_HIDE_DELAY 2000 // Thời gian nằm dưới ống
 
 class VenusFireTrap : public Enemy {
-    bool isUpsideDown;
     int aimDir;
     int state;
     float hiddenY;
@@ -32,7 +31,7 @@ class VenusFireTrap : public Enemy {
     int aniUpLeft, aniDownLeft, aniUpRight, aniDownRight;
 
 public:
-    VenusFireTrap(float x, float y, bool isUpsideDown);
+    VenusFireTrap(float x, float y);
     void Update(DWORD dt, vector<GameObject*>* coObjects) override;
     void Render() override;
     void GetBoundingBox(float &left, float &top, float &right, float &bottom) override;

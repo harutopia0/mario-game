@@ -16,7 +16,7 @@
 #include "gameobject/Mario.h"
 #include "gameobject/Pipe.h"
 #include "gameobject/Platform.h"
-#include "gameobject/Water.h"
+
 #include "gameobject/Prop.h"
 #include "gameobject/PropSpawner.h"
 #include "gameplay/GameManager.h"
@@ -69,11 +69,8 @@ enum TEXTURE_ID {
   TEX_MAP_LEVEL = 800,
   TEX_OBTAIN_ITEM = 900,
   TEX_WHITE = 999,
-  TEX_LAVA_BRICK = 1000,
-  TEX_LAVA_BRICK2 = 1001,
-  TEX_BLACK_BRICK = 1002,
+
   TEX_GRASS_BRICK = 1003,
-  TEX_CLOUD_BRICK = 1004,
   TEX_CLOUDS = 1005
 };
 
@@ -369,14 +366,9 @@ void LoadResources() {
   textures->Add(TEX_ENEMIES_2, L"assets/enemies_transparent_3.png");
 
   // Brick
-  // lava brick
-  textures->Add(TEX_LAVA_BRICK, L"assets/lavabrick.png");
-  textures->Add(TEX_LAVA_BRICK2, L"assets/lavabrick2.png"); // phần đất phía
-                                                            // dưới
+
   // grass brick
   textures->Add(TEX_GRASS_BRICK, L"assets/tiles.png");
-  // cloud brick
-  textures->Add(TEX_CLOUD_BRICK, L"assets/cloudbrick.png");
   textures->Add(TEX_CLOUDS, L"assets/clouds.png");
 
   // ==========================================
@@ -518,13 +510,7 @@ void LoadResources() {
   // Brick
   sprites->Add(10, 74, 34, 89, 49, TEX_COMMON1);
 
-  // Black Brick
-  sprites->Add(110, 69, 1, 84, 16, TEX_GRASS_BRICK);  // phần block phía trên
-  sprites->Add(111, 69, 1, 84, 16, TEX_GRASS_BRICK); // phần block phía dưới
 
-  // Lava Brick
-  sprites->Add(112, 0, 0, 15, 15, TEX_LAVA_BRICK);  // phần block phía trên
-  sprites->Add(113, 0, 0, 15, 15, TEX_LAVA_BRICK2); // phần block phía dưới
 
   // Grass Brick
   sprites->Add(114, 18, 1, 33, 16, TEX_GRASS_BRICK);   // phần block phía trên
@@ -553,8 +539,11 @@ void LoadResources() {
   sprites->Add(1252, 35, 120, 50, 135, TEX_GRASS_BRICK); // Middle Right
   sprites->Add(1253, 52, 120, 67, 135, TEX_GRASS_BRICK); // Middle Isolated
 
-  // Cloud Brick
-  sprites->Add(116, 0, 0, 15, 15, TEX_CLOUD_BRICK);
+  // Cloud Brick fallback to Grass Brick
+  sprites->Add(116, 0, 0, 15, 15, TEX_GRASS_BRICK);
+
+  // Level 5 Brick
+  sprites->Add(118, 86, 1, 101, 16, TEX_GRASS_BRICK);
 
   // Cloud Platform Sprites
   sprites->Add(1300, 2, 30, 61, 44, TEX_CLOUDS); // 60px cloud
@@ -618,10 +607,7 @@ void LoadResources() {
   // White line drawing block sprite
   sprites->Add(99998, 0, 0, 1, 1, TEX_WHITE);
 
-  // Water Sprites
-  sprites->Add(80011, 264, 634, 279, 663, TEX_COMMON2);
-  sprites->Add(80012, 298, 634, 313, 663, TEX_COMMON2);
-  sprites->Add(80013, 332, 634, 347, 663, TEX_COMMON2);
+
 
   // Jungle Props
   sprites->Add(81001, 55, 7, 70, 22, TEX_COMMON2); // Bush
@@ -634,6 +620,8 @@ void LoadResources() {
   sprites->Add(82003, 476, 743, 523, 806, TEX_COMMON2); // Vách đá 2
   sprites->Add(82004, 525, 743, 572, 806, TEX_COMMON2); // Cột đầu lâu
   sprites->Add(82005, 583, 742, 590, 752, TEX_COMMON2); // Mây nhỏ màn 2 & 4
+  sprites->Add(85001, 583, 298, 598, 329, TEX_COMMON2); // Cửa sổ màn 5
+  sprites->Add(85002, 219, 770, 232, 797, TEX_COMMON2); // Nến màn 5
   
   // Clouds
   sprites->Add(81004, 52, 3, 83, 26, TEX_CLOUDS); // Single cloud
@@ -667,11 +655,7 @@ void LoadResources() {
   // 3. GOM SPRITES TẠO ANIMATION
   // ==========================================
 
-  // Water Animation
-  ani = new Animation(200);
-  ani->Add(80011);
-  ani->Add(80012);
-  animations->Add(8001, ani);
+
 
   // Small Mario Animations
   ani = new Animation(100);
@@ -834,23 +818,9 @@ void LoadResources() {
   ani->Add(1253, 1000);
   animations->Add(232, ani); // Mid Isolated
 
-  // Black Brick (Underground) - Top
-  ani = new Animation(100);
-  ani->Add(110, 1000);
-  animations->Add(213, ani);
-  // Black Brick (Underground) - Bottom
-  ani = new Animation(100);
-  ani->Add(111, 1000);
-  animations->Add(214, ani);
 
-  // Lava Brick (Castle) - Top
-  ani = new Animation(100);
-  ani->Add(112, 1000);
-  animations->Add(215, ani);
-  // Lava Brick (Castle) - Bottom
-  ani = new Animation(100);
-  ani->Add(113, 1000);
-  animations->Add(216, ani);
+
+
 
   // Cloud Brick (Athletic/Sky) - Top
   ani = new Animation(100);
@@ -860,6 +830,14 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(116, 1000);
   animations->Add(218, ani);
+
+  // Level 5 Brick
+  ani = new Animation(100);
+  ani->Add(118, 1000);
+  animations->Add(250, ani);
+  ani = new Animation(100);
+  ani->Add(118, 1000);
+  animations->Add(251, ani);
 
   // Big Mario Animations
   ani = new Animation(100);
@@ -1308,6 +1286,8 @@ void LoadResources() {
       "star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
   AudioManager::GetInstance()->LoadSound("slash-sound",
                                          "assets/slash-sound.mp3");
+  AudioManager::GetInstance()->LoadSound("parry-sound",
+                                         "assets/parry.MP3");
   AudioManager::GetInstance()->LoadSound("stomp", "assets/stomp.wav");
   AudioManager::GetInstance()->LoadSound("kick", "assets/kick.wav");
 
