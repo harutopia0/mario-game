@@ -42,14 +42,14 @@ Kho đồ của người chơi hiển thị ở góc phải dưới của HUD, l
 - **Mushroom Card (CARD_MUSHROOM - Số 1)**:
   - Dạng Small: Biến thành Big Mario (máu tăng lên 2).
   - Dạng Fire: Tung chiêu đặc biệt **Fire Blast** (tiêu tốn 1 thẻ).
-  - Dạng Scissors: Tung chiêu đặc biệt **World Slash / Scissors Attack** (tiêu tốn 1 thẻ).
+  - Dạng Scissors: Tung chiêu đặc biệt **World Slash** (tiêu tốn 1 thẻ).
   - Dạng Big thường: Tung chiêu đặc biệt **Rolling Ball** (tiêu tốn 1 thẻ).
 - **Flower Card (CARD_FLOWER - Số 2)**:
   - Chưa là Fire Mario: Biến đổi thành Fire Mario (máu tăng lên 3).
   - Đang là Fire Mario: Tung chiêu đặc biệt **Fire Blast** (tiêu tốn 1 thẻ).
 - **Scissors Card (CARD_SCISSORS - Số 4)**:
   - Chưa là Scissors Mario: Biến đổi thành Scissors Mario (máu tăng lên 3).
-  - Đang là Scissors Mario: Tung chiêu đặc biệt **World Slash / Scissors Attack** (tiêu tốn 1 thẻ).
+  - Đang là Scissors Mario: Tung chiêu đặc biệt **World Slash** (tiêu tốn 1 thẻ).
 
 > [!NOTE]  
 > Nếu bạn nhấn phím dùng thẻ kỹ năng nhưng chiêu thức không thể kích hoạt thành công (ví dụ kẹt trong góc tường chật hẹp, không đủ không gian xuất hiện), game sẽ phát ra âm thanh báo lỗi và **hoàn trả lại thẻ bài** về vị trí cũ trên thanh HUD chứ không làm mất thẻ của bạn.
@@ -68,7 +68,7 @@ Khi sử dụng thẻ bài trùng với dạng biến hình hiện tại của M
 - **Cơ chế**: Mario tạo ra một quả bóng năng lượng khổng lồ ($34 \times 34\text{ px}$) lăn dọc trên mặt đất. Quả bóng di chuyển với vận tốc `0.2f` và chịu tác động đầy đủ của trọng lực. Hình ảnh quả bóng tự động xoay tròn mượt mà theo vận tốc thực tế của nó.
 - **Tác dụng**: Cán nát và tiêu diệt tất cả kẻ địch nó lăn qua. Khi đập vào các bức tường đứng hoặc khối gạch cứng, quả bóng không biến mất mà sẽ **bội ngược lại chiều đối diện** (`vx = -vx`) và tiếp tục lăn tàn phá màn chơi cho đến khi rơi xuống vực hoặc ra ngoài góc nhìn của camera.
 
-### 🌟 World Slash / Scissors Attack (Kỹ năng tối thượng dạng Kéo)
+### 🌟 World Slash (Kỹ năng dạng Kéo)
 - **Cơ chế**: Nhát chém phá vỡ không gian, tiêu diệt diện rộng toàn màn hình. Khi kích hoạt:
   - Toàn bộ hoạt động vật lý trong game bị đóng băng, nhạc nền tạm ngắt.
   - Một lớp phủ màu đen tối bao trùm lấy màn hình (**Fade Dark** trong 400ms đầu).
@@ -80,20 +80,13 @@ Khi sử dụng thẻ bài trùng với dạng biến hình hiện tại của M
 
 ## 6. Cơ chế Phản đòn Đột phá (Parry System)
 
-Chỉ có thể sử dụng khi Mario đang ở dạng **Scissors Mario**. Bằng cách nhấn phím **Z**, Mario sẽ vào tư thế phòng thủ với cây kéo lớn.
+Chỉ có thể sử dụng khi Mario đang ở dạng **Scissors Mario**. Bằng cách nhấn phím **Z**, Mario sẽ vào tư thế phòng thủ.
 
 - **Thời gian phản đòn**: **0.25 giây (250ms)**.
 - **Hậu quả thất bại**: Nếu không bị kẻ địch hay vật thể nào va chạm trong 250ms này, Mario sẽ thoát trạng thái đỡ đòn và kỹ năng chịu thời gian hồi (**Cooldown**) là **3 giây** (nếu cố nhấn phím `Z` trong lúc cooldown sẽ phát âm thanh báo lỗi).
 - **Khi phản đòn thành công (On Parry Success)**:
   - Thời gian hồi (cooldown) được đặt lại về 0 ngay lập tức để có thể phản đòn tiếp.
-  - Kẻ địch đánh lén bị tiêu diệt ngay (bị hất văng lật ngược khỏi màn hình).
-  - Kích hoạt **Hit Stop (Đóng băng khung hình)** toàn game trong 100ms.
-  - Camera lập tức **Zoom 1.05x** trong 100ms, đồng thời **Rung chấn màn hình (Camera Shake)** mạnh 6px trong 200ms.
-  - Xuất hiện hiệu ứng thị giác **Lightning Effect** vô cùng hoành tráng theo các phase:
-    - *Phase 1 (Co cụm - 50ms)*: 35-45 hạt không gian màu đen co cụm dồn dập vào điểm va chạm.
-    - *Phase 2 (Tia sét - 40ms)*: Phóng ra hàng loạt tia chớp đỏ đen ngẫu nhiên 360 độ từ tâm điểm.
-    - *Phase 3 (Chém nứt - 60ms)*: Tạo ra 10-15 mảnh vỡ đa giác méo mó màu đỏ đen bay tứ tán kèm theo 4-6 vệt chém đỏ crimson xé gió bay theo hướng quay mặt của Mario.
-    - *Phase 4 (Bụi tàn - 150ms)*: Bùng ra 20-30 hạt bụi không gian màu đen trôi dạt chậm rãi rồi biến mất hoàn toàn.
+  - Kẻ địch bị tiêu diệt.
 
 ---
 
@@ -101,10 +94,10 @@ Chỉ có thể sử dụng khi Mario đang ở dạng **Scissors Mario**. Bằn
 
 - 🍄 **Goomba**: Quái nấm độc nâu cơ bản di chuyển qua lại. Bị tiêu diệt dễ dàng bằng cách dẫm lên đầu (quái bị bẹp dí) hoặc dùng kỹ năng/bắn lửa.
 - 🐢 **Koopa Troopa (Rùa)**: Có 3 loại chính:
-  - *Green Koopa (Rùa xanh thường)*: Đi bộ qua lại và tự rơi xuống mép vực.
+  - *Green Koopa (Rùa xanh)*: Đi bộ qua lại và tự quay đầu ở mép vực.
   - *Green Flying Koopa (Rùa xanh bay)*: Nhảy lò cò liên tục theo quỹ đạo parabol.
-  - *Red Koopa (Rùa đỏ thông minh)*: Tự động cảm nhận và phát hiện vực sâu phía trước để quay đầu đi ngược lại, tránh bị rơi vực.
-  - *Cơ chế mai rùa*: Khi bị dẫm lên đầu, chúng sẽ rút đầu vào mai rùa (`SHELL`). Lúc này Mario có thể đến gần để đá mai rùa bay đi (`SHELL_SPINNING`), trượt đi phá hủy gạch và tiêu diệt các quái vật khác. Nếu để yên mai rùa trong 5 giây, mai rùa sẽ rung lắc dữ dội (`SHELL_SHAKING`) trong 3 giây tiếp theo trước khi Koopa chui ra hoạt động bình thường.
+  - *Red Koopa (Rùa đỏ)*: Tương tự rùa xanh (nhưng nó màu đỏ).
+  - *Cơ chế mai rùa*: Khi bị dẫm lên đầu, chúng sẽ rút đầu vào mai rùa (`SHELL`). Lúc này Mario có thể đến gần để đá mai rùa bay đi (`SHELL_SPINNING`), trượt đi và tiêu diệt các quái vật khác. Nếu để yên mai rùa trong 5 giây, mai rùa sẽ rung lắc dữ dội (`SHELL_SHAKING`) trong 3 giây tiếp theo trước khi Koopa chui ra hoạt động bình thường.
 - 🔨 **Hammer Bro**: Rùa chiến binh ném búa di chuyển qua lại quanh vị trí gác, ném các cây búa bay theo hình vòng cung liên tục và có khả năng tự nhảy lên các tầng gạch cao hơn hoặc nhảy lọt xuống dưới.
 - 🌵 **Piranha Plant & Venus Fire Trap**: Hoa ăn thịt người ẩn nấp trong các ống nước xanh lá:
   - *Piranha Plant*: Tự động trồi lên cắn người chơi và thụt xuống theo chu kỳ.
@@ -116,8 +109,7 @@ Chỉ có thể sử dụng khi Mario đang ở dạng **Scissors Mario**. Bằn
 ## 8. Các khối gạch & Chướng ngại vật (Blocks)
 - **Ground / StaticBlock**: Khối đất tĩnh tạo khung nền địa hình vững chắc cho màn chơi.
 - **Breakable (Gạch vỡ)**: Các viên gạch nâu có thể vỡ vụn khi bị Mario dạng lớn húc đầu từ dưới lên, bị kỹ năng bắn trúng hoặc mai rùa đập vào. Phá hủy gạch mang lại 10 điểm và có hiệu ứng mảnh vỡ văng tung tóe. Chúng có hệ thống dựng hình tự động thay đổi kết cấu đồ họa rìa cỏ theo các ô lân cận (Isolated, Left, Right, Center).
-- **LuckyBlock (Hộp câu hỏi vàng)**: Hộp chứa phần thưởng. Húc từ phía dưới sẽ nhả ra 1 vật phẩm ngẫu nhiên trong 4 loại (`Mushroom`, `Flower`, `Star`, `Scissors`) dưới dạng hạt mầm nảy lên từ từ (`Sprouting`), cộng 100 điểm cho người chơi và chuyển sang màu xám vô hiệu hóa.
-- **Pipe (Ống nước)**: Các ống nước màu xanh lá cây có độ cao khác nhau. Một số ống nước đặc biệt cho phép Mario đứng ở tâm ống và nhấn phím **Mũi tên Xuống** để chui thụt xuống, dịch chuyển tới vùng bản đồ ngầm bí mật.
+- **LuckyBlock (Hộp câu hỏi vàng)**: Hộp chứa phần thưởng. Húc từ phía dưới sẽ nhả ra 1 vật phẩm ngẫu nhiên trong 4 loại (`Mushroom`, `Flower`, `Star`, `Scissors`) dưới dạng hạt mầm nảy lên từ từ (`Sprouting`), cộng 100 điểm cho người chơi và vô hiệu hóa.
 
 ---
 
