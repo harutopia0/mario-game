@@ -14,9 +14,12 @@ private:
     D3DXMATRIX matScaling;
 
 public:
+    static float globalScale;
+
     Sprite(int id, int left, int top, int right, int bottom, LPDIRECT3DTEXTURE tex);
     void Draw(float x, float y);
     void Draw(float x, float y, int nx);
+    void Draw(float x, float y, int nx, int ny);
     void Draw(float x, float y, float angle);
     void Draw(float x, float y, D3DXCOLOR color);
     void Draw(float x, float y, float drawWidth, float drawHeight, float alpha = 0.5f);

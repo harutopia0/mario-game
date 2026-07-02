@@ -1,6 +1,9 @@
 #include "CounterAttack.h"
 #include "Mario.h"
 #include "Enemy.h"
+#include "Projectile.h"
+#include "EnemyFireball.h"
+#include "Hammer.h"
 
 CounterAttack::CounterAttack(Mario* mario) : GameObject() {
     this->mario = mario;
@@ -35,7 +38,7 @@ void CounterAttack::Update(DWORD dt, std::vector<GameObject*>* coObjects) {
         return;
     }
 
-    // Check for overlap with any active enemy
+    // Check for overlap with any active enemy or target projectiles
     float myL, myT, myR, myB;
     GetBoundingBox(myL, myT, myR, myB);
 
@@ -53,6 +56,23 @@ void CounterAttack::Update(DWORD dt, std::vector<GameObject*>* coObjects) {
                 mario->OnParrySuccess(enemy);
                 Delete();
                 return;
+            }
+        }
+
+        Projectile* proj = dynamic_cast<Projectile*>(obj);
+        if (proj && !proj->IsDeleted() && !proj->IsParried()) {
+            bool isTargetProjectile = (dynamic_cast<EnemyFireball*>(proj) != nullptr) || (dynamic_cast<Hammer*>(proj) != nullptr);
+            if (isTargetProjectile) {
+                float el, et, er, eb;
+                proj->GetBoundingBox(el, et, er, eb);
+
+                // AABB overlap check
+                if (myR > el && myL < er && myB > et && myT < eb) {
+                    proj->Deflect(mario->GetNx());
+                    mario->OnParrySuccess(proj);
+                    Delete();
+                    return;
+                }
             }
         }
     }

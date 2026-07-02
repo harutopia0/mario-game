@@ -6,11 +6,16 @@ class Buff : public GameObject
 {
 private:
 		float width, height;
+    bool isSprouting;
+    float sproutStartY;
+    float sproutTargetY;
+
 public:
 	Buff(float x, float y, int animationId);
-		void GetBoundingBox(float& left, float& top, float& right, float& bottom);
-		void Update(DWORD dt, vector<GameObject*>* coObjects);
-		void Render() override;
+    void StartSprouting(float startY);
+    void GetBoundingBox(float& left, float& top, float& right, float& bottom);
+    void Update(DWORD dt, vector<GameObject*>* coObjects);
+    void Render() override;
     int animationId;
 public:
 	int GetAnimationId() const { return animationId; }
