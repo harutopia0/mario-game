@@ -936,7 +936,7 @@ void Mario::OnParrySuccess(GameObject* enemy) {
   Map::GetInstance()->AddObjectToGrid(le);
 
   // Play sound
-  AudioManager::GetInstance()->PlaySFX("slash-sound");
+  AudioManager::GetInstance()->PlaySFX("parry-sound");
 }
 
 void Mario::OnParryFailed() {

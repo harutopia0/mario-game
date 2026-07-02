@@ -1286,6 +1286,8 @@ void LoadResources() {
       "star_theme", "assets/super-mario-bros-nes-music-star-theme-cut-mp3.mp3");
   AudioManager::GetInstance()->LoadSound("slash-sound",
                                          "assets/slash-sound.mp3");
+  AudioManager::GetInstance()->LoadSound("parry-sound",
+                                         "assets/parry.MP3");
   AudioManager::GetInstance()->LoadSound("stomp", "assets/stomp.wav");
   AudioManager::GetInstance()->LoadSound("kick", "assets/kick.wav");
 
