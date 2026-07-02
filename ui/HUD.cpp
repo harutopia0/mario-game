@@ -116,7 +116,7 @@ void HUD::Render()
 
     // Đọc tất cả dữ liệu từ GameManager để vẽ
     DrawScore(gm->GetScore());
-    DrawCoins(gm->GetCoins());
+    DrawKills(gm->GetKills());
     DrawTime(gm->GetTime());
     DrawPMeter(currentPMeter);
     DrawPlayerIcon(currentPlayer);
@@ -146,9 +146,9 @@ void HUD::DrawString(std::string text, float x, float y)
     }
 }
 
-void HUD::DrawCoins(int coins)
+void HUD::DrawKills(int kills)
 {
-    std::string str = std::to_string(coins);
+    std::string str = std::to_string(kills);
     while (str.length() < 2) str = "0" + str;
 
     DrawString(str, HUD_COINS_X, HUD_COINS_Y);

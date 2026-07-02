@@ -16,7 +16,7 @@ private:
 
 	// Dữ liệu gameplay (nguồn dữ liệu duy nhất)
 	int score;
-	int coins;
+	int kills;
 	int lives;
 	int time;
 	DWORD timeAccumulator;
@@ -65,10 +65,10 @@ public:
 	int GetScore() { return score; }
 	void AddScore(int s) { score += s; }
 
-	// Coins
-	void SetCoins(int c) { coins = c; }
-	int GetCoins() { return coins; }
-	void AddCoins(int c) { coins += c; }
+	// Kills
+	void SetKills(int k) { kills = k; }
+	int GetKills() { return kills; }
+	void AddKills(int k) { kills += k; }
 
 	// Lives
 	void SetLives(int l) { lives = l; }
@@ -77,6 +77,7 @@ public:
 	// Time (đếm ngược)
 	void ResetTime();           // Reset về 300s
 	int GetTime() { return time; }
+	void SetTime(int t) { time = t; }
 	void UpdateTime(DWORD dt);  // Đếm ngược mỗi frame
 
 	// Mario Form (giữ qua các màn, reset khi về Intro)

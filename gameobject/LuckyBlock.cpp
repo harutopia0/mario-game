@@ -3,6 +3,7 @@
 #include "../audio/AudioManager.h"
 #include "../gameplay/Map.h"
 #include "Buff.h"
+#include "../gameplay/GameManager.h"
 #include <cstdlib>
 
 LuckyBlock::LuckyBlock(float x, float y, int activeAnimationId, int usedAnimationId)
@@ -55,6 +56,7 @@ void LuckyBlock::Hit()
     if (!isHit) {
         isHit = true;
         SpawnItem();
+        GameManager::GetInstance()->AddScore(100);
     }
 }
 

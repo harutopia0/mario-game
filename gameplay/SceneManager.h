@@ -68,6 +68,7 @@ private:
     int rouletteCardType;
     DWORD lastRouletteTick;
     bool isRouletteDone;
+    DWORD lastTimeDeductTick;
 
     // Hit stop
     float hitStopTimer;

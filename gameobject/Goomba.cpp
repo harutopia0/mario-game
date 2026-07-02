@@ -2,6 +2,7 @@
 #include "../audio/AudioManager.h"
 #include "../animation/Animations.h"
 #include "Mario.h"
+#include "../gameplay/GameManager.h"
 
 Goomba::Goomba(float x, float y, int type) : Enemy(x, y, 310)
 {
@@ -82,6 +83,8 @@ void Goomba::OnStomped(Mario* mario)
 		layer = LAYER_BACKGROUND;
 
 		AudioManager::GetInstance()->PlaySFX("stomp");
+		GameManager::GetInstance()->AddScore(100);
+		GameManager::GetInstance()->AddKills(1);
 	}
 	else
 	{
@@ -95,5 +98,7 @@ void Goomba::OnStomped(Mario* mario)
 
 		layer = LAYER_BACKGROUND;
 		AudioManager::GetInstance()->PlaySFX("stomp");
+		GameManager::GetInstance()->AddScore(200);
+		GameManager::GetInstance()->AddKills(1);
 	}
 }

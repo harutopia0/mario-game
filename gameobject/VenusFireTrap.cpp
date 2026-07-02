@@ -5,6 +5,7 @@
 #include "../render/Camera.h"
 #include "../audio/AudioManager.h"
 #include "../animation/Animations.h"
+#include "../gameplay/GameManager.h"
 
 VenusFireTrap::VenusFireTrap(float x, float y) : Enemy(x, y, 5001) {
     this->width = 16.0f;
@@ -231,5 +232,7 @@ void VenusFireTrap::OnStomped(Mario* mario) {
         this->died = true;
         this->layer = LAYER_BACKGROUND;
         AudioManager::GetInstance()->PlaySFX("stomp");
+        GameManager::GetInstance()->AddScore(200);
+        GameManager::GetInstance()->AddKills(1);
     }
 }

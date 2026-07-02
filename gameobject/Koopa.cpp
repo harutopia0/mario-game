@@ -6,6 +6,7 @@
 #include "../physics/Collision.h"
 #include "../animation/Animations.h"
 #include <cstdlib>
+#include "../gameplay/GameManager.h"
 
 Koopa::Koopa(float x, float y, int type) : Enemy(x, y, 312)
 {
@@ -266,6 +267,8 @@ void Koopa::OnStomped(Mario* mario)
 		layer = LAYER_BACKGROUND;
 		died = true;
 		AudioManager::GetInstance()->PlaySFX("stomp");
+		GameManager::GetInstance()->AddScore(200);
+		GameManager::GetInstance()->AddKills(1);
 		return;
 	}
 
@@ -292,6 +295,7 @@ void Koopa::OnStomped(Mario* mario)
 		}
 
 		AudioManager::GetInstance()->PlaySFX("stomp");
+		GameManager::GetInstance()->AddScore(100);
 	}
 	else if (state == KOOPA_STATE_SHELL || state == KOOPA_STATE_SHELL_SHAKING)
 	{
@@ -300,6 +304,7 @@ void Koopa::OnStomped(Mario* mario)
 		{
 			int dir = (mario->GetX() < x) ? 1 : -1;
 			Kick(dir);
+			GameManager::GetInstance()->AddScore(100);
 		}
 	}
 	else if (state == KOOPA_STATE_SHELL_SPINNING)
@@ -310,6 +315,7 @@ void Koopa::OnStomped(Mario* mario)
 		vx = 0.0f;
 
 		AudioManager::GetInstance()->PlaySFX("stomp");
+		GameManager::GetInstance()->AddScore(100);
 	}
 }
 

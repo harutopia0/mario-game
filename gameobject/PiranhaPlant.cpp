@@ -4,6 +4,7 @@
 #include "../gameplay/Map.h"
 #include "../audio/AudioManager.h"
 #include "../animation/Animations.h"
+#include "../gameplay/GameManager.h"
 
 PiranhaPlant::PiranhaPlant(float x, float y) : Enemy(x, y, 5000) {
   this->state = PIRANHA_STATE_HIDING;
@@ -116,5 +117,7 @@ void PiranhaPlant::OnStomped(Mario *mario) {
     this->died = true;
     this->layer = LAYER_ENEMIES; // Render trước pipe để thấy animation chết
     AudioManager::GetInstance()->PlaySFX("stomp");
+    GameManager::GetInstance()->AddScore(200);
+    GameManager::GetInstance()->AddKills(1);
   }
 }

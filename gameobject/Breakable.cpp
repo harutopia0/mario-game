@@ -2,6 +2,7 @@
 #include "../animation/Animations.h"
 #include "../gameplay/Map.h"
 #include "BrickDebrisEffect.h"
+#include "../gameplay/GameManager.h"
 
 Breakable::Breakable(float x, float y, int animationId) : DynamicBlock(x, y)
 {
@@ -92,4 +93,6 @@ void Breakable::Break(bool dropItem)
     if (leftNeighbor) leftNeighbor->OnNeighborBroken(this);
     if (rightNeighbor) rightNeighbor->OnNeighborBroken(this);
     this->Delete();
+
+    GameManager::GetInstance()->AddScore(10);
 }

@@ -16,7 +16,7 @@ GameManager* GameManager::GetInstance()
         for (int i = 0; i < 3; i++) __instance->holdingCards[i] = 0;
 
         __instance->score = 0;
-        __instance->coins = 0;
+        __instance->kills = 0;
         __instance->lives = 1;
         __instance->time = 300;
         __instance->timeAccumulator = 0;

@@ -8,6 +8,7 @@
 #include "../physics/Collision.h"
 #include "Block.h"
 #include <cstdlib> // rand()
+#include "../gameplay/GameManager.h"
 
 HammerBro::HammerBro(float x, float y) : Enemy(x, y, 5002) {
     this->startX = x;
@@ -281,11 +282,15 @@ void HammerBro::OnStomped(Mario* mario) {
         flatTimeStart = GetTickCount64();
         vx = 0.0f;
         vy = 0.0f;
+        GameManager::GetInstance()->AddScore(100);
+        GameManager::GetInstance()->AddKills(1);
     } else {
         // Bị đòn khác -> Lật ngược rơi đi
         state = HAMMERBRO_STATE_DIE;
         vy = HAMMERBRO_JUMP_SPEED * 0.5f; // Jump upward slightly
         vx = (nx > 0) ? -0.05f : 0.05f; // Move slightly in the opposite horizontal direction
+        GameManager::GetInstance()->AddScore(200);
+        GameManager::GetInstance()->AddKills(1);
     }
 
     AudioManager::GetInstance()->PlaySFX("stomp");

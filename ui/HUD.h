@@ -37,8 +37,8 @@ public:
     // Gọi các hàm vẽ để hiển thị toàn bộ HUD lên màn hình
     void Render();
 
-    // Vẽ số lượng đồng xu hiện có
-    void DrawCoins(int coins);
+    // Vẽ số lượng quái vật hạ gục được
+    void DrawKills(int kills);
 
     // Vẽ điểm số hiện tại
     void DrawScore(int score);

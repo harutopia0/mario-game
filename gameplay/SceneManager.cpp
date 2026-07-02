@@ -58,6 +58,7 @@ SceneManager::SceneManager() {
   rouletteCardType = 1;
   lastRouletteTick = 0;
   isRouletteDone = false;
+  lastTimeDeductTick = 0;
   hitStopTimer = 0.0f;
 }
 
@@ -188,6 +189,7 @@ void SceneManager::ProcessLevelClear() {
   rouletteCardType = 1;
   lastRouletteTick = GetTickCount64();
   isRouletteDone = false;
+  lastTimeDeductTick = GetTickCount64();
 
   AudioManager::GetInstance()->StopMusic();
   AudioManager::GetInstance()->StopEventMusic();
@@ -214,6 +216,7 @@ void SceneManager::ProcessGameWin() {
 
   isMarioGameWinning = true;
   gameWinStartTime = GetTickCount64();
+  lastTimeDeductTick = GetTickCount64();
 
   AudioManager::GetInstance()->StopMusic();
   AudioManager::GetInstance()->StopEventMusic();
@@ -250,6 +253,22 @@ void SceneManager::Update(DWORD dt) {
   if (isMarioLevelClearing) {
     DWORD holdingTime = GetTickCount64() - levelClearStartTime;
 
+    GameManager *gm = GameManager::GetInstance();
+    if (gm->GetTime() > 0) {
+      DWORD now = GetTickCount64();
+      if (now - lastTimeDeductTick >= 30) {
+        int secs = (int)((now - lastTimeDeductTick) / 30) * 2;
+        if (secs > gm->GetTime()) {
+          secs = gm->GetTime();
+        }
+        if (secs > 0) {
+          gm->SetTime(gm->GetTime() - secs);
+          gm->AddScore(secs * 50);
+          lastTimeDeductTick = now;
+        }
+      }
+    }
+
     if (holdingTime < 4000) {
       if (GetTickCount64() - lastRouletteTick >= 30) {
         rouletteCardType = (rand() % 4) + 1;
@@ -263,7 +282,7 @@ void SceneManager::Update(DWORD dt) {
       GameManager::GetInstance()->AddCard(rouletteCardType);
     }
 
-    if (holdingTime >= 6000) {
+    if (holdingTime >= 6000 && gm->GetTime() == 0) {
       isMarioLevelClearing = false;
       GameManager::GetInstance()->SetLevelClear(false);
 
@@ -278,7 +297,23 @@ void SceneManager::Update(DWORD dt) {
   }
 
   if (isMarioGameWinning) {
-    if (GetTickCount64() - gameWinStartTime >= 6000) {
+    GameManager *gm = GameManager::GetInstance();
+    if (gm->GetTime() > 0) {
+      DWORD now = GetTickCount64();
+      if (now - lastTimeDeductTick >= 30) {
+        int secs = (int)((now - lastTimeDeductTick) / 30) * 2;
+        if (secs > gm->GetTime()) {
+          secs = gm->GetTime();
+        }
+        if (secs > 0) {
+          gm->SetTime(gm->GetTime() - secs);
+          gm->AddScore(secs * 50);
+          lastTimeDeductTick = now;
+        }
+      }
+    }
+
+    if (GetTickCount64() - gameWinStartTime >= 6000 && gm->GetTime() == 0) {
       isMarioGameWinning = false;
       GameManager::GetInstance()->SetGameWin(false);
 
@@ -419,17 +454,20 @@ void SceneManager::Update(DWORD dt) {
       }
     }
 
+    GameObject *marioObj = g_objectList.empty() ? nullptr : g_objectList[0];
+    Mario *mario = dynamic_cast<Mario *>(marioObj);
+
     // Cập nhật thời gian đếm ngược trong GameManager
     if (!isMarioDying) {
       GameManager::GetInstance()->UpdateTime(dt);
+      if (mario && !mario->IsDied() && GameManager::GetInstance()->GetTime() <= 0 &&
+          !isMarioLevelClearing && !isMarioGameWinning) {
+        mario->Die();
+      }
     }
 
     // Cập nhật HUD (nhấp nháy PMeter)
     HUD::GetInstance()->Update(dt);
-
-    GameObject *marioObj = g_objectList.empty() ? nullptr : g_objectList[0];
-
-    Mario *mario = dynamic_cast<Mario *>(marioObj);
 
     if (mario) {
       Camera::GetInstance()->Update(mario->GetX(), mario->GetY(), dt / 1000.0f);
