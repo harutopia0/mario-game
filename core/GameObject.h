@@ -26,6 +26,7 @@ protected:
 public:
     int GetLayer() const { return layer; }
     void SetLayer(int l) { layer = l; }
+    int GetNx() const { return nx; }
 
     //địa chỉ trong grid của object
     int gridRow;

@@ -2,6 +2,8 @@
 #include "../animation/Animations.h"
 #include "../physics/Collision.h"
 #include "Mario.h"
+#include "Enemy.h"
+#include "Block.h"
 
 EnemyFireball::EnemyFireball(float x, float y, float vx, float vy) : Projectile(x, y, 1) {
     this->width = ENEMY_FIREBALL_WIDTH;
@@ -21,19 +23,47 @@ void EnemyFireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
     float ml, mt, mr, mb;
     GetBoundingBox(ml, mt, mr, mb);
 
-    for (UINT i = 0; i < coObjects->size(); i++) {
-        GameObject* e = coObjects->at(i);
-        if (e == this || e->IsDeleted()) continue;
+    if (isParried) {
+        for (UINT i = 0; i < coObjects->size(); i++) {
+            GameObject* e = coObjects->at(i);
+            if (e == this || e->IsDeleted()) continue;
 
-        if (Mario* mario = dynamic_cast<Mario*>(e)) {
             float sl, st, sr, sb;
-            mario->GetBoundingBox(sl, st, sr, sb);
+            e->GetBoundingBox(sl, st, sr, sb);
 
             // AABB check
             if (!(mr < sl || ml > sr || mb < st || mt > sb)) {
-                mario->TakeDamage();
-                this->Delete();
-                return;
+                if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
+                    if (!enemy->IsDied()) {
+                        enemy->OnStomped(NULL);
+                        this->Delete();
+                        return;
+                    }
+                }
+                else if (Block* block = dynamic_cast<Block*>(e)) {
+                    if (!block->IsOneWay()) {
+                        this->Delete();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    else {
+        for (UINT i = 0; i < coObjects->size(); i++) {
+            GameObject* e = coObjects->at(i);
+            if (e == this || e->IsDeleted()) continue;
+
+            if (Mario* mario = dynamic_cast<Mario*>(e)) {
+                float sl, st, sr, sb;
+                mario->GetBoundingBox(sl, st, sr, sb);
+
+                // AABB check
+                if (!(mr < sl || ml > sr || mb < st || mt > sb)) {
+                    mario->TakeDamage();
+                    this->Delete();
+                    return;
+                }
             }
         }
     }

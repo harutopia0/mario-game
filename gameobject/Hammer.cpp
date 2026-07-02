@@ -4,6 +4,8 @@
 #include "../render/Camera.h"
 #include "../physics/Collision.h"
 #include "../animation/Animations.h"
+#include "Enemy.h"
+#include "Block.h"
 
 Hammer::Hammer(float x, float y, int direction) : Projectile(x, y, direction) {
     float calc_vx = HAMMER_SPEED_X;
@@ -36,7 +38,11 @@ void Hammer::GetBoundingBox(float& left, float& top, float& right, float& bottom
 void Hammer::Update(DWORD dt, vector<GameObject*>* coObjects) {
     if (IsDeleted()) return;
 
-    vy -= HAMMER_GRAVITY * dt; // Rơi xuống (Y giảm)
+    if (isParried) {
+        vy = 0;
+    } else {
+        vy -= HAMMER_GRAVITY * dt; // Rơi xuống (Y giảm)
+    }
     
     x += vx * dt;
     y += vy * dt;
@@ -50,18 +56,46 @@ void Hammer::Update(DWORD dt, vector<GameObject*>* coObjects) {
         }
     }
 
-    // Xuyên địa hình, chỉ check AABB với Mario
-    Mario* mario = Map::GetInstance()->GetMario();
-    if (mario && !mario->IsDeleted() && !mario->untouchable) {
-        float ml, mt, mr, mb;
-        mario->GetBoundingBox(ml, mt, mr, mb);
-        
-        float hl, ht, hr, hb;
-        GetBoundingBox(hl, ht, hr, hb);
-        
-        if (hr > ml && hl < mr && hb > mt && ht < mb) {
-            // Trúng Mario
-            mario->TakeDamage();
+    float hl, ht, hr, hb;
+    GetBoundingBox(hl, ht, hr, hb);
+
+    if (isParried) {
+        for (UINT i = 0; i < coObjects->size(); i++) {
+            GameObject* e = coObjects->at(i);
+            if (e == this || e->IsDeleted()) continue;
+
+            float sl, st, sr, sb;
+            e->GetBoundingBox(sl, st, sr, sb);
+
+            // AABB check
+            if (!(hr < sl || hl > sr || hb < st || ht > sb)) {
+                if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
+                    if (!enemy->IsDied()) {
+                        enemy->OnStomped(NULL);
+                        this->Delete();
+                        return;
+                    }
+                }
+                else if (Block* block = dynamic_cast<Block*>(e)) {
+                    if (!block->IsOneWay()) {
+                        this->Delete();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    else {
+        // Xuyên địa hình, chỉ check AABB với Mario
+        Mario* mario = Map::GetInstance()->GetMario();
+        if (mario && !mario->IsDeleted() && !mario->untouchable) {
+            float ml, mt, mr, mb;
+            mario->GetBoundingBox(ml, mt, mr, mb);
+            
+            if (hr > ml && hl < mr && hb > mt && ht < mb) {
+                // Trúng Mario
+                mario->TakeDamage();
+            }
         }
     }
 }
