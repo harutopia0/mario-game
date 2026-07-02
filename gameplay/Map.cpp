@@ -1,55 +1,55 @@
 #include "Map.h"
-#include <fstream>
-#include <algorithm>
-#include "../gameobject/GroundBlock.h"
 #include "../gameobject/Breakable.h"
+#include "../gameobject/GroundBlock.h"
+#include <algorithm>
+#include <fstream>
 
-#include "../gameobject/Platform.h"
+
+#include "../gameobject/Fireball.h"
+#include "../gameobject/Goomba.h"
+#include "../gameobject/HammerBro.h"
+#include "../gameobject/Koopa.h"
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
-#include "../gameobject/Goomba.h"
-#include "../gameobject/Koopa.h"
 #include "../gameobject/PiranhaPlant.h"
-#include "../gameobject/HammerBro.h"
-#include "../gameobject/Fireball.h"
-#include "../gameobject/VenusFireTrap.h"
-#include "../gameobject/PropSpawner.h"
+#include "../gameobject/Platform.h"
 #include "../gameobject/Prop.h"
+#include "../gameobject/PropSpawner.h"
+#include "../gameobject/VenusFireTrap.h"
 #include "../gameplay/GameManager.h"
 #include "../render/Camera.h"
+
 using namespace std;
 
-Map* Map::instance = nullptr;
+Map *Map::instance = nullptr;
 
-Map* Map::GetInstance() {
-    if (instance == nullptr) {
-        instance = new Map();
-    }
-    return instance;
+Map *Map::GetInstance() {
+  if (instance == nullptr) {
+    instance = new Map();
+  }
+  return instance;
 }
 
 void Map::Clear() {
-    for (GameObject* obj : objects) {
-        delete obj;
+  for (GameObject *obj : objects) {
+    delete obj;
+  }
+  objects.clear();
+  for (int r = 0; r < MAX_CELL_ROW; r++) {
+    for (int c = 0; c < MAX_CELL_COL; c++) {
+      grid[r][c].clear();
     }
-    objects.clear();
-    for (int r = 0; r < MAX_CELL_ROW; r++) {
-        for (int c = 0; c < MAX_CELL_COL; c++) {
-            grid[r][c].clear();
-        }
-    }
+  }
 }
 
-void Map::Update(DWORD dt) {
-}
+void Map::Update(DWORD dt) {}
 
-void Map::Render() {
-}
+void Map::Render() {}
 
 void Map::SpawnEnemy(float x, float y) {
-    Goomba* enemy = new Goomba(x, y, GOOMBA_TYPE_NORMAL);
-    objects.push_back(enemy);
-    AddObjectToGrid(enemy);
+  Goomba *enemy = new Goomba(x, y, GOOMBA_TYPE_NORMAL);
+  objects.push_back(enemy);
+  AddObjectToGrid(enemy);
 }
 
 void Map::LoadMap(LPCWSTR filePath) {
@@ -88,12 +88,12 @@ void Map::LoadMap(LPCWSTR filePath) {
   }
 
   for (int r = 0; r < rows; r++) {
-    Breakable* lastBrickInRow = nullptr;
+    Breakable *lastBrickInRow = nullptr;
     for (int c = 0; c < cols; c++) {
       int tileID = mapData[r][c];
 
       if (tileID != 1 && tileID != 5 && tileID != 6) {
-          lastBrickInRow = nullptr;
+        lastBrickInRow = nullptr;
       }
 
       float realX = c * 15.0f;
@@ -113,10 +113,13 @@ void Map::LoadMap(LPCWSTR filePath) {
           }
           if (len >= 4 && len <= 6) {
             int cloudAnimId = 1300;
-            if (len == 5) cloudAnimId = 1301;
-            if (len == 6) cloudAnimId = 1302;
+            if (len == 5)
+              cloudAnimId = 1301;
+            if (len == 6)
+              cloudAnimId = 1302;
 
-            GroundBlock *cloud = new GroundBlock(realX, realY, cloudAnimId, len * 15.0f);
+            GroundBlock *cloud =
+                new GroundBlock(realX, realY, cloudAnimId, len * 15.0f);
             objects.push_back(cloud);
 
             int cellX = (int)(realX / GRID_CELL_SIZE);
@@ -127,12 +130,14 @@ void Map::LoadMap(LPCWSTR filePath) {
               AddObjectToGrid(cloud);
             }
 
-            // Register in additional cells if the cloud spans multiple grid cells
+            // Register in additional cells if the cloud spans multiple grid
+            // cells
             int endCellX = (int)((realX + len * 15.0f - 1.0f) / GRID_CELL_SIZE);
             for (int extraX = cellX + 1; extraX <= endCellX; extraX++) {
-                if (extraX >= 0 && extraX < MAX_CELL_COL && cellY >= 0 && cellY < MAX_CELL_ROW) {
-                    grid[cellY][extraX].push_back(cloud);
-                }
+              if (extraX >= 0 && extraX < MAX_CELL_COL && cellY >= 0 &&
+                  cellY < MAX_CELL_ROW) {
+                grid[cellY][extraX].push_back(cloud);
+              }
             }
             c += len - 1;
             continue;
@@ -141,10 +146,10 @@ void Map::LoadMap(LPCWSTR filePath) {
 
         int currentAnimTop = animTop;
         int currentAnimBottom = animBottom;
-        
+
         if (currentLevel == 3 && r >= 11) {
-            currentAnimTop = 211;
-            currentAnimBottom = 212;
+          currentAnimTop = 211;
+          currentAnimBottom = 212;
         }
 
         int groundAnimId = currentAnimBottom;
@@ -156,15 +161,23 @@ void Map::LoadMap(LPCWSTR filePath) {
           if (isStair) {
             if (isTop) {
               if (isFloating) {
-                if (!hasLeft && !hasRight) groundAnimId = 238;
-                else if (!hasLeft) groundAnimId = 236;
-                else if (!hasRight) groundAnimId = 237;
-                else groundAnimId = 235; // Floating Center
+                if (!hasLeft && !hasRight)
+                  groundAnimId = 238;
+                else if (!hasLeft)
+                  groundAnimId = 236;
+                else if (!hasRight)
+                  groundAnimId = 237;
+                else
+                  groundAnimId = 235; // Floating Center
               } else {
-                if (!hasLeft && !hasRight) groundAnimId = 228;
-                else if (!hasLeft) groundAnimId = 226;
-                else if (!hasRight) groundAnimId = 227;
-                else groundAnimId = 225; // Top Center
+                if (!hasLeft && !hasRight)
+                  groundAnimId = 228;
+                else if (!hasLeft)
+                  groundAnimId = 226;
+                else if (!hasRight)
+                  groundAnimId = 227;
+                else
+                  groundAnimId = 225; // Top Center
               }
             } else {
               if (!hasLeft && !hasRight)
@@ -196,7 +209,9 @@ void Map::LoadMap(LPCWSTR filePath) {
           }
         }
 
-        if (!isStair || currentLevel == 3) { // Chỉ áp dụng 2 lớp cho 2 hàng dưới cùng (Mặt đất)
+        if (!isStair ||
+            currentLevel ==
+                3) { // Chỉ áp dụng 2 lớp cho 2 hàng dưới cùng (Mặt đất)
           GroundBlock *ground = new GroundBlock(realX, realY, groundAnimId);
           objects.push_back(ground);
 
@@ -208,8 +223,8 @@ void Map::LoadMap(LPCWSTR filePath) {
             AddObjectToGrid(ground);
           }
         } else {
-          // Các khối trên không trung trở thành Gạch (Breakable) và hiển thị hình
-          // Ground Block
+          // Các khối trên không trung trở thành Gạch (Breakable) và hiển thị
+          // hình Ground Block
           Breakable *brick = new Breakable(realX, realY, groundAnimId);
           objects.push_back(brick);
 
@@ -220,10 +235,10 @@ void Map::LoadMap(LPCWSTR filePath) {
               cellY < MAX_CELL_ROW) {
             AddObjectToGrid(brick);
           }
-          
+
           if (lastBrickInRow != nullptr) {
-              lastBrickInRow->rightNeighbor = brick;
-              brick->leftNeighbor = lastBrickInRow;
+            lastBrickInRow->rightNeighbor = brick;
+            brick->leftNeighbor = lastBrickInRow;
           }
           lastBrickInRow = brick;
           brick->SetRenderParams(isTop, isFloating, currentAnimTop);
@@ -254,8 +269,10 @@ void Map::LoadMap(LPCWSTR filePath) {
       } else if (tileID == 5) {
         int breakableAnim = 205; // Default Breakable Brick
         if (currentLevel == 1) {
-          bool hasLeft = (c > 0 && (mapData[r][c - 1] == 5 || mapData[r][c - 1] == 6));
-          bool hasRight = (c < cols - 1 && (mapData[r][c + 1] == 5 || mapData[r][c + 1] == 6));
+          bool hasLeft =
+              (c > 0 && (mapData[r][c - 1] == 5 || mapData[r][c - 1] == 6));
+          bool hasRight = (c < cols - 1 &&
+                           (mapData[r][c + 1] == 5 || mapData[r][c + 1] == 6));
           if (!hasLeft && !hasRight)
             breakableAnim = 238;
           else if (!hasLeft)
@@ -265,7 +282,9 @@ void Map::LoadMap(LPCWSTR filePath) {
           else
             breakableAnim = 235;
         } else if (currentLevel == 3) {
-            breakableAnim = 1303;
+          breakableAnim = 1303;
+        } else if (currentLevel == 2 || currentLevel == 4) {
+          breakableAnim = 215;
         }
         Breakable *breakableBlock = new Breakable(realX, realY, breakableAnim);
         objects.push_back(breakableBlock);
@@ -279,8 +298,8 @@ void Map::LoadMap(LPCWSTR filePath) {
         }
 
         if (lastBrickInRow != nullptr) {
-            lastBrickInRow->rightNeighbor = breakableBlock;
-            breakableBlock->leftNeighbor = lastBrickInRow;
+          lastBrickInRow->rightNeighbor = breakableBlock;
+          breakableBlock->leftNeighbor = lastBrickInRow;
         }
         lastBrickInRow = breakableBlock;
         breakableBlock->SetRenderParams(true, true, animTop);
@@ -362,24 +381,26 @@ void Map::LoadMap(LPCWSTR filePath) {
         }
       } else if (tileID == 15 || tileID == 16) {
         int pipeTile = 0;
-        if (r + 1 < rows) pipeTile = mapData[r + 1][c];
-        
+        if (r + 1 < rows)
+          pipeTile = mapData[r + 1][c];
+
         float plantY = realY + 16.0f; // Default (chuẩn cho ống ngắn)
         if (pipeTile >= 7 && pipeTile <= 10) {
-            int pipeHeight = pipeTile - 5;
-            float pipeRealY = realY - 15.0f; // Toạ độ gạch đỉnh ống
-            float pipeBottomY = pipeRealY - (pipeHeight - 1) * 15.0f; // Đáy ống
-            float pipeRenderHeight = (pipeHeight <= 3) ? 46.0f : ((pipeHeight - 3) * 15.0f + 46.0f);
-            plantY = pipeBottomY + pipeRenderHeight; // Đỉnh ống thực sự
+          int pipeHeight = pipeTile - 5;
+          float pipeRealY = realY - 15.0f; // Toạ độ gạch đỉnh ống
+          float pipeBottomY = pipeRealY - (pipeHeight - 1) * 15.0f; // Đáy ống
+          float pipeRenderHeight =
+              (pipeHeight <= 3) ? 46.0f : ((pipeHeight - 3) * 15.0f + 46.0f);
+          plantY = pipeBottomY + pipeRenderHeight; // Đỉnh ống thực sự
         }
 
         plantY -= 1.0f; // Dời xuống 1 pixel theo yêu cầu
 
         Enemy *plant = NULL;
         if (tileID == 15) {
-            plant = new PiranhaPlant(realX + 8.0f, plantY);
+          plant = new PiranhaPlant(realX + 8.0f, plantY);
         } else {
-            plant = new VenusFireTrap(realX + 8.0f, plantY);
+          plant = new VenusFireTrap(realX + 8.0f, plantY);
         }
         objects.push_back(plant);
 
@@ -411,137 +432,144 @@ void Map::LoadMap(LPCWSTR filePath) {
 
   // Spawn some Jungle Props manually for visual testing
   if (currentLevel == 1) {
-      PropSpawner spawner;
-      spawner.SetEmptySpace(20, 100.0f, 300.0f);
-      
-      PropDef cliff = { 81002, 128.0f, 64.0f, 140.0f, 20, 150.0f, 350.0f };
-      PropDef smallCliff = { 81003, 64.0f, 48.0f, 80.0f, 25, 100.0f, 300.0f };
-      PropDef bush = { 81001, 16.0f, 16.0f, 16.0f, 35, 80.0f, 230.0f };
-      
-      spawner.AddProp(cliff);
-      spawner.AddProp(smallCliff);
-      spawner.AddProp(bush);
-      
-      std::vector<GameObject*> props = spawner.SpawnProps(cols, mapData, 65.0f);
-      for (size_t i = 0; i < props.size(); i++) {
-          objects.push_back(props[i]);
-          AddObjectToGrid(props[i]);
-      }
+    PropSpawner spawner;
+    spawner.SetEmptySpace(20, 100.0f, 300.0f);
 
-      // Mây trên trời
-      PropSpawner cloudSpawner;
-      cloudSpawner.SetEmptySpace(40, 50.0f, 150.0f);
-      
-      PropDef cloud1 = { 81004, 31.0f, 23.0f, 40.0f, 30, 50.0f, 200.0f };
-      PropDef cloud2 = { 81005, 47.0f, 23.0f, 60.0f, 20, 50.0f, 200.0f };
-      
-      cloudSpawner.AddProp(cloud1);
-      cloudSpawner.AddProp(cloud2);
-      
-      // Độ cao mây từ 150 (thấp) đến 220 (cao)
-      std::vector<GameObject*> clouds = cloudSpawner.SpawnClouds(cols, 150.0f, 220.0f);
-      for (size_t i = 0; i < clouds.size(); i++) {
-          objects.push_back(clouds[i]);
-          AddObjectToGrid(clouds[i]);
-      }
+    PropDef cliff = {81002, 128.0f, 64.0f, 140.0f, 20, 150.0f, 350.0f};
+    PropDef smallCliff = {81003, 64.0f, 48.0f, 80.0f, 25, 100.0f, 300.0f};
+    PropDef bush = {81001, 16.0f, 16.0f, 16.0f, 35, 80.0f, 230.0f};
 
-      // Thêm 2 con rùa lăn vào cuối map để test
-      Koopa *koopa1 = new Koopa(2900.0f, 150.0f, KOOPA_TYPE_GREEN);
-      koopa1->Kick(1); // Lăn phải
-      objects.push_back(koopa1);
-      AddObjectToGrid(koopa1);
+    spawner.AddProp(cliff);
+    spawner.AddProp(smallCliff);
+    spawner.AddProp(bush);
 
-      Koopa *koopa2 = new Koopa(3000.0f, 150.0f, KOOPA_TYPE_GREEN);
-      koopa2->Kick(-1); // Lăn trái
-      objects.push_back(koopa2);
-      AddObjectToGrid(koopa2);
+    std::vector<GameObject *> props = spawner.SpawnProps(cols, mapData, 65.0f);
+    for (size_t i = 0; i < props.size(); i++) {
+      objects.push_back(props[i]);
+      AddObjectToGrid(props[i]);
+    }
+
+    // Mây trên trời
+    PropSpawner cloudSpawner;
+    cloudSpawner.SetEmptySpace(40, 50.0f, 150.0f);
+
+    PropDef cloud1 = {81004, 31.0f, 23.0f, 40.0f, 30, 50.0f, 200.0f};
+    PropDef cloud2 = {81005, 47.0f, 23.0f, 60.0f, 20, 50.0f, 200.0f};
+
+    cloudSpawner.AddProp(cloud1);
+    cloudSpawner.AddProp(cloud2);
+
+    // Độ cao mây từ 150 (thấp) đến 220 (cao)
+    std::vector<GameObject *> clouds =
+        cloudSpawner.SpawnClouds(cols, 150.0f, 220.0f);
+    for (size_t i = 0; i < clouds.size(); i++) {
+      objects.push_back(clouds[i]);
+      AddObjectToGrid(clouds[i]);
+    }
+
+    Koopa *koopa1 = new Koopa(2900.0f, 150.0f, KOOPA_TYPE_GREEN);
+    koopa1->Kick(1); // Lăn phải
+    objects.push_back(koopa1);
+    AddObjectToGrid(koopa1);
+
+    Koopa *koopa2 = new Koopa(3000.0f, 150.0f, KOOPA_TYPE_GREEN);
+    koopa2->Kick(-1); // Lăn trái
+    objects.push_back(koopa2);
+    AddObjectToGrid(koopa2);
   }
 
   if (currentLevel == 2 || currentLevel == 4) {
-      PropSpawner spawner;
-      // Trọng số rỗng cao hơn một chút để prop không bị quá dày đặc
-      spawner.SetEmptySpace(30, 100.0f, 300.0f);
-      
-      // Tăng tỷ lệ (weight) và giảm khoảng cách (gap) của nấm để dễ thấy hơn
-      PropDef mushroom = { 82001, 10.0f, 9.0f, 15.0f, 60, 20.0f, 80.0f };
-      PropDef cliff1 = { 82002, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f };
-      PropDef cliff2 = { 82003, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f };
-      PropDef skull = { 82004, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f };
-      
-      spawner.AddProp(mushroom);
-      spawner.AddProp(cliff1);
-      spawner.AddProp(cliff2);
-      spawner.AddProp(skull);
-      
-      float groundY = (currentLevel == 4) ? 65.0f : 50.0f; // Level 4 ground ở r=13, Level 2 ground ở r=14
-      
-      std::vector<GameObject*> props = spawner.SpawnProps(cols, mapData, groundY);
-      for (size_t i = 0; i < props.size(); i++) {
-          objects.push_back(props[i]);
-          AddObjectToGrid(props[i]);
-      }
-      
-      // Bầu trời: Mây nhỏ (sao) cho màn 2 và 4
-      PropSpawner cloudSpawner;
-      cloudSpawner.SetEmptySpace(20, 30.0f, 100.0f); // Dày hơn mây bình thường một chút
-      
-      PropDef smallCloud = { 82005, 8.0f, 11.0f, 15.0f, 80, 20.0f, 60.0f };
-      cloudSpawner.AddProp(smallCloud);
-      
-      std::vector<GameObject*> skyClouds = cloudSpawner.SpawnClouds(cols, 120.0f, 220.0f);
-      for (size_t i = 0; i < skyClouds.size(); i++) {
-          objects.push_back(skyClouds[i]);
-          AddObjectToGrid(skyClouds[i]);
-      }
+    PropSpawner spawner;
+    // Trọng số rỗng cao hơn một chút để prop không bị quá dày đặc
+    spawner.SetEmptySpace(30, 100.0f, 300.0f);
+
+    // Tăng tỷ lệ (weight) và giảm khoảng cách (gap) của nấm để dễ thấy hơn
+    PropDef mushroom = {82001, 10.0f, 9.0f, 15.0f, 60, 20.0f, 80.0f};
+    PropDef cliff1 = {82002, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f};
+    PropDef cliff2 = {82003, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f};
+    PropDef skull = {82004, 47.0f, 63.0f, 60.0f, 20, 100.0f, 250.0f};
+
+    spawner.AddProp(mushroom);
+    spawner.AddProp(cliff1);
+    spawner.AddProp(cliff2);
+    spawner.AddProp(skull);
+
+    float groundY = (currentLevel == 4)
+                        ? 65.0f
+                        : 50.0f; // Level 4 ground ở r=13, Level 2 ground ở r=14
+
+    std::vector<GameObject *> props =
+        spawner.SpawnProps(cols, mapData, groundY);
+    for (size_t i = 0; i < props.size(); i++) {
+      objects.push_back(props[i]);
+      AddObjectToGrid(props[i]);
+    }
+
+    // Bầu trời: Mây nhỏ (sao) cho màn 2 và 4
+    PropSpawner cloudSpawner;
+    cloudSpawner.SetEmptySpace(20, 30.0f,
+                               100.0f); // Dày hơn mây bình thường một chút
+
+    PropDef smallCloud = {82005, 8.0f, 11.0f, 15.0f, 80, 20.0f, 60.0f};
+    cloudSpawner.AddProp(smallCloud);
+
+    std::vector<GameObject *> skyClouds =
+        cloudSpawner.SpawnClouds(cols, 120.0f, 220.0f);
+    for (size_t i = 0; i < skyClouds.size(); i++) {
+      objects.push_back(skyClouds[i]);
+      AddObjectToGrid(skyClouds[i]);
+    }
   }
 
   if (currentLevel == 5) {
-      float currentX = 100.0f; // Bắt đầu cách lề một chút
-      float totalWidth = cols * 15.0f;
-      bool isWindow = true; // Bắt đầu bằng cửa sổ
-      
-      while (currentX < totalWidth - 100.0f) {
-          int spriteId = isWindow ? 85001 : 85002;
-          float width = isWindow ? 15.0f : 13.0f;
-          float height = isWindow ? 31.0f : 27.0f;
-          
-          Prop* prop = new Prop(currentX, 110.0f, spriteId, width, height);
-          objects.push_back(prop);
-          AddObjectToGrid(prop);
-          
-          currentX += width + 150.0f; // Khoảng cách cố định 150px
-          isWindow = !isWindow; // Luân phiên cửa sổ và nến
-      }
+    float currentX = 100.0f; // Bắt đầu cách lề một chút
+    float totalWidth = cols * 15.0f;
+    bool isWindow = true; // Bắt đầu bằng cửa sổ
+
+    while (currentX < totalWidth - 100.0f) {
+      int spriteId = isWindow ? 85001 : 85002;
+      float width = isWindow ? 15.0f : 13.0f;
+      float height = isWindow ? 31.0f : 27.0f;
+
+      Prop *prop = new Prop(currentX, 110.0f, spriteId, width, height);
+      objects.push_back(prop);
+      AddObjectToGrid(prop);
+
+      currentX += width + 150.0f; // Khoảng cách cố định 150px
+      isWindow = !isWindow;       // Luân phiên cửa sổ và nến
+    }
   }
 
   if (currentLevel == 3) {
-      PropSpawner cloudSpawner;
-      // Giảm khoảng trống (weight rỗng = 5, gap chỉ từ 10-30) để mây dày đặc hơn
-      cloudSpawner.SetEmptySpace(5, 10.0f, 30.0f);
-      
-      // Tăng tỷ lệ mây đơn (nhỏ) và mây đôi (lớn), giảm minGap/maxGap để chúng kết hợp sát nhau
-      PropDef cloud1 = { 81004, 31.0f, 23.0f, 10.0f, 50, 5.0f, 20.0f };
-      PropDef cloud2 = { 81005, 47.0f, 23.0f, 10.0f, 50, 5.0f, 20.0f };
-      
-      cloudSpawner.AddProp(cloud1);
-      cloudSpawner.AddProp(cloud2);
-      
-      // Spawn dải mây trên không (200 - 250)
-      std::vector<GameObject*> skyClouds = cloudSpawner.SpawnClouds(cols, 200.0f, 250.0f);
-      for (size_t i = 0; i < skyClouds.size(); i++) {
-          objects.push_back(skyClouds[i]);
-          AddObjectToGrid(skyClouds[i]);
-      }
-      
-      // Spawn dải mây dưới ground (0 - 60)
-      std::vector<GameObject*> groundClouds = cloudSpawner.SpawnClouds(cols, 0.0f, 60.0f);
-      for (size_t i = 0; i < groundClouds.size(); i++) {
-          objects.push_back(groundClouds[i]);
-          AddObjectToGrid(groundClouds[i]);
-      }
+    PropSpawner cloudSpawner;
+    // Giảm khoảng trống (weight rỗng = 5, gap chỉ từ 10-30) để mây dày đặc hơn
+    cloudSpawner.SetEmptySpace(5, 10.0f, 30.0f);
+
+    // Tăng tỷ lệ mây đơn (nhỏ) và mây đôi (lớn), giảm minGap/maxGap để chúng
+    // kết hợp sát nhau
+    PropDef cloud1 = {81004, 31.0f, 23.0f, 10.0f, 50, 5.0f, 20.0f};
+    PropDef cloud2 = {81005, 47.0f, 23.0f, 10.0f, 50, 5.0f, 20.0f};
+
+    cloudSpawner.AddProp(cloud1);
+    cloudSpawner.AddProp(cloud2);
+
+    // Spawn dải mây trên không (200 - 250)
+    std::vector<GameObject *> skyClouds =
+        cloudSpawner.SpawnClouds(cols, 200.0f, 250.0f);
+    for (size_t i = 0; i < skyClouds.size(); i++) {
+      objects.push_back(skyClouds[i]);
+      AddObjectToGrid(skyClouds[i]);
+    }
+
+    // Spawn dải mây dưới ground (0 - 60)
+    std::vector<GameObject *> groundClouds =
+        cloudSpawner.SpawnClouds(cols, 0.0f, 60.0f);
+    for (size_t i = 0; i < groundClouds.size(); i++) {
+      objects.push_back(groundClouds[i]);
+      AddObjectToGrid(groundClouds[i]);
+    }
   }
 }
-
 
 void Map::AddObjectToGrid(GameObject *obj) {
   int col = (int)(obj->GetX() / GRID_CELL_SIZE);
