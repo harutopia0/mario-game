@@ -620,6 +620,8 @@ void LoadResources() {
   sprites->Add(82003, 476, 743, 523, 806, TEX_COMMON2); // Vách đá 2
   sprites->Add(82004, 525, 743, 572, 806, TEX_COMMON2); // Cột đầu lâu
   sprites->Add(82005, 583, 742, 590, 752, TEX_COMMON2); // Mây nhỏ màn 2 & 4
+  sprites->Add(85001, 583, 298, 598, 329, TEX_COMMON2); // Cửa sổ màn 5
+  sprites->Add(85002, 219, 770, 232, 797, TEX_COMMON2); // Nến màn 5
   
   // Clouds
   sprites->Add(81004, 52, 3, 83, 26, TEX_CLOUDS); // Single cloud

@@ -14,6 +14,7 @@
 #include "../gameobject/Fireball.h"
 #include "../gameobject/VenusFireTrap.h"
 #include "../gameobject/PropSpawner.h"
+#include "../gameobject/Prop.h"
 #include "../gameplay/GameManager.h"
 #include "../render/Camera.h"
 using namespace std;
@@ -491,6 +492,25 @@ void Map::LoadMap(LPCWSTR filePath) {
       for (size_t i = 0; i < skyClouds.size(); i++) {
           objects.push_back(skyClouds[i]);
           AddObjectToGrid(skyClouds[i]);
+      }
+  }
+
+  if (currentLevel == 5) {
+      float currentX = 100.0f; // Bắt đầu cách lề một chút
+      float totalWidth = cols * 15.0f;
+      bool isWindow = true; // Bắt đầu bằng cửa sổ
+      
+      while (currentX < totalWidth - 100.0f) {
+          int spriteId = isWindow ? 85001 : 85002;
+          float width = isWindow ? 15.0f : 13.0f;
+          float height = isWindow ? 31.0f : 27.0f;
+          
+          Prop* prop = new Prop(currentX, 110.0f, spriteId, width, height);
+          objects.push_back(prop);
+          AddObjectToGrid(prop);
+          
+          currentX += width + 150.0f; // Khoảng cách cố định 150px
+          isWindow = !isWindow; // Luân phiên cửa sổ và nến
       }
   }
 
