@@ -544,6 +544,10 @@ void LoadResources() {
 
   // Level 5 Brick
   sprites->Add(118, 86, 1, 101, 16, TEX_GRASS_BRICK);
+  
+  // Underground/Castle Sprites
+  sprites->Add(1201, 69, 1, 84, 16, TEX_GRASS_BRICK);
+  sprites->Add(1401, 91, 34, 106, 49, TEX_COMMON1);
 
   // Cloud Platform Sprites
   sprites->Add(1300, 2, 30, 61, 44, TEX_CLOUDS); // 60px cloud
@@ -757,6 +761,21 @@ void LoadResources() {
   ani = new Animation(100);
   ani->Add(115, 1000);
   animations->Add(212, ani);
+
+  // Underground/Castle - Top
+  ani = new Animation(100);
+  ani->Add(1201, 1000);
+  animations->Add(213, ani);
+
+  // Underground/Castle - Bottom
+  ani = new Animation(100);
+  ani->Add(1201, 1000);
+  animations->Add(214, ani);
+
+  // Underground/Castle - Breakable
+  ani = new Animation(100);
+  ani->Add(1401, 1000);
+  animations->Add(215, ani);
 
   // Grass Edge Animations
   ani = new Animation(100);

@@ -9,7 +9,7 @@
 VenusFireTrap::VenusFireTrap(float x, float y) : Enemy(x, y, 5001) {
     this->width = 16.0f;
     this->height = 24.0f;
-    this->layer = LAYER_PROP; // Nằm dưới Pipe
+    this->layer = LAYER_BACKGROUND; // Nằm dưới Pipe, nhưng trên Prop
     this->aimDir = VENUS_DIR_UP_LEFT; // Default
 
     // Bản thông thường (Bottom-Up)
@@ -74,6 +74,20 @@ void VenusFireTrap::Update(DWORD dt, vector<GameObject*>* coObjects) {
     }
     
     if (died) return;
+
+    // Khi cây đang hiện (không hiding), kiểm tra va chạm với Mario có Sao
+    if (state != VENUS_STATE_HIDING) {
+        Mario *mario = Map::GetInstance()->GetMario();
+        if (mario && mario->isStarInvincible && !mario->IsDied()) {
+            float ml, mt, mr, mb;
+            mario->GetBoundingBox(ml, mt, mr, mb);
+            float pl = x, pt = y, pr = x + width, pb = y + height;
+            if (!(mr <= pl || ml >= pr || mb <= pt || mt >= pb)) {
+                SetDied(true);
+                return;
+            }
+        }
+    }
 
     Camera* camera = Camera::GetInstance();
     if (camera) {

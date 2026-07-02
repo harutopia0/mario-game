@@ -12,7 +12,7 @@ PiranhaPlant::PiranhaPlant(float x, float y) : Enemy(x, y, 5000) {
   this->minY = adjustedY - this->height; // Nổi lên hết cỡ
   this->y = this->maxY;                  // Bắt đầu ẩn trong ống
   this->waitTimeStart = GetTickCount64();
-  this->layer = LAYER_PROP; // Nằm dưới Pipe
+  this->layer = LAYER_BACKGROUND; // Nằm dưới Pipe, nhưng trên Prop
 }
 
 void PiranhaPlant::Update(DWORD dt, vector<GameObject *> *coObjects) {
@@ -33,6 +33,21 @@ void PiranhaPlant::Update(DWORD dt, vector<GameObject *> *coObjects) {
 
   if (died)
     return;
+
+  // Khi cây đang hiện (không hiding), kiểm tra va chạm với Mario có Sao
+  // Xử lý từ phía cây vì Mario đứng trên pipe không phát hiện được cây trồi lên
+  if (state != PIRANHA_STATE_HIDING) {
+    Mario *mario = Map::GetInstance()->GetMario();
+    if (mario && mario->isStarInvincible && !mario->IsDied()) {
+      float ml, mt, mr, mb;
+      mario->GetBoundingBox(ml, mt, mr, mb);
+      float pl = x, pt = y, pr = x + width, pb = y + height;
+      if (!(mr <= pl || ml >= pr || mb <= pt || mt >= pb)) {
+        SetDied(true);
+        return;
+      }
+    }
+  }
 
   y += vy * dt;
 
@@ -97,10 +112,10 @@ void PiranhaPlant::OnStomped(Mario *mario) {
     mario->TakeDamage();
   } else {
     this->state = PIRANHA_STATE_DIE;
-    this->vy = PIRANHA_SPEED * 5.0f; // Jump a bit
+    this->vy = -PIRANHA_SPEED * 5.0f; // Bay lên (y giảm = lên trên)
     this->vx = 0.05f;
     this->died = true;
-    this->layer = LAYER_BACKGROUND;
+    this->layer = LAYER_ENEMIES; // Render trước pipe để thấy animation chết
     AudioManager::GetInstance()->PlaySFX("stomp");
   }
 }

@@ -1,19 +1,19 @@
 #include "Mario.h"
-#include "../gameplay/Map.h"
-#include "../render/Camera.h"
 #include "../animation/Animations.h"
 #include "../audio/AudioManager.h"
-#include "../gameobject/Breakable.h"
 #include "../gameobject/Block.h"
+#include "../gameobject/Breakable.h"
 #include "../gameobject/Buff.h"
 #include "../gameobject/Enemy.h"
 #include "../gameobject/Koopa.h"
 #include "../gameobject/PiranhaPlant.h"
 #include "../gameobject/VenusFireTrap.h"
+#include "../gameplay/Map.h"
+#include "../render/Camera.h"
 
+#include "../gameobject/Fireball.h"
 #include "../gameobject/LuckyBlock.h"
 #include "../gameobject/Pipe.h"
-#include "../gameobject/Fireball.h"
 #include "../gameobject/RollingBall.h"
 #include "../gameplay/GameManager.h"
 #include "../gameplay/SceneManager.h"
@@ -26,7 +26,8 @@
 #include "CounterAttack.h"
 #include "LightningEffect.h"
 
-Mario::Mario(float x, float y, bool isBig, bool isFire, bool isScissors) : GameObject(x, y) {
+Mario::Mario(float x, float y, bool isBig, bool isFire, bool isScissors)
+    : GameObject(x, y) {
   isOnGround = false;
   ax = 0.0f;
 
@@ -42,9 +43,12 @@ Mario::Mario(float x, float y, bool isBig, bool isFire, bool isScissors) : GameO
     height = MARIO_SMALL_HEIGHT;
   }
 
-  if (isFire || isScissors) GameManager::GetInstance()->SetLives(3);
-  else if (isBig) GameManager::GetInstance()->SetLives(2);
-  else GameManager::GetInstance()->SetLives(1);
+  if (isFire || isScissors)
+    GameManager::GetInstance()->SetLives(3);
+  else if (isBig)
+    GameManager::GetInstance()->SetLives(2);
+  else
+    GameManager::GetInstance()->SetLives(1);
 
   isDead = false;
   deathStart = 0;
@@ -145,7 +149,8 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
   }
 
   // Khi qua màn, Mario tự động đi bộ về bên phải
-  if (GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin()) {
+  if (GameManager::GetInstance()->IsLevelClear() ||
+      GameManager::GetInstance()->IsGameWin()) {
     vx = MARIO_WALKING_SPEED;
     nx = 1;
     // Bỏ qua input từ người chơi
@@ -179,7 +184,8 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     vx = -MARIO_WALKING_SPEED;
 
   // XỬ LÝ PMETER THEO LOGIC VẬT LÝ
-  if (GameManager::GetInstance()->IsLevelClear() || GameManager::GetInstance()->IsGameWin()) {
+  if (GameManager::GetInstance()->IsLevelClear() ||
+      GameManager::GetInstance()->IsGameWin()) {
     pMeterLevel = 0;
     pMeterTimer = 0;
   } else {
@@ -240,13 +246,20 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
           int cardType = 2; // Default to Flower
-          if (buffType == 301) cardType = 1; // Mushroom
-          else if (buffType == 303) cardType = 3; // Star
-          else if (buffType == 304) cardType = 4; // Scissors
+          if (buffType == 301)
+            cardType = 1; // Mushroom
+          else if (buffType == 303)
+            cardType = 3; // Star
+          else if (buffType == 304)
+            cardType = 4; // Scissors
 
           if (GameManager::GetInstance()->AddCard(cardType)) {
             buff->Delete();
             OutputDebugStringA("Buff added to inventory\n");
+          }
+        } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
+          if (!enemy->IsDied() && !enemy->IsFreezed() && isStarInvincible) {
+            enemy->SetDied(true);
           }
         }
       }
@@ -261,11 +274,12 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
   if (x < 0.0f) {
     x = 0.0f;
   }
-  
+
   // Khi Mario đi tới hoặc vượt qua sát mép phải bản đồ
   float mapEnd = GameManager::GetInstance()->GetMapRightEdge();
   if (mapEnd > 0) {
-    if (!GameManager::GetInstance()->IsLevelClear() && !GameManager::GetInstance()->IsGameWin()) {
+    if (!GameManager::GetInstance()->IsLevelClear() &&
+        !GameManager::GetInstance()->IsGameWin()) {
       if (x > mapEnd - width) {
         int currentLevel = GameManager::GetInstance()->GetLevel();
         if (currentLevel == 5) {
@@ -279,7 +293,8 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     // Fallback if mapEnd is not set
     float rightEdge = Camera::GetInstance()->GetMapWidth();
     if (x > rightEdge - width) {
-      if (!GameManager::GetInstance()->IsLevelClear() && !GameManager::GetInstance()->IsGameWin()) {
+      if (!GameManager::GetInstance()->IsLevelClear() &&
+          !GameManager::GetInstance()->IsGameWin()) {
         int currentLevel = GameManager::GetInstance()->GetLevel();
         if (currentLevel == 5) {
           SceneManager::GetInstance()->ProcessGameWin();
@@ -362,9 +377,11 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
           }
         } else if (Enemy *enemy = dynamic_cast<Enemy *>(e)) {
           if (!enemy->IsDied() && !enemy->IsFreezed()) {
-            if (temp_ny == 1 && !isStarInvincible) {
-              if (dynamic_cast<PiranhaPlant*>(enemy) != nullptr || dynamic_cast<VenusFireTrap*>(enemy) != nullptr) {
-                // Mario dẫm lên cây ăn thịt -> Bị mất máu, xuyên qua, không nảy lên
+            if (isStarInvincible) {
+              enemy->SetDied(true);
+            } else if (temp_ny == 1) {
+              if (dynamic_cast<PiranhaPlant *>(enemy) != nullptr ||
+                  dynamic_cast<VenusFireTrap *>(enemy) != nullptr) {
                 enemy->OnStomped(this);
               } else {
                 // Mario dẫm lên đầu enemy bình thường -> nảy lên
@@ -373,21 +390,24 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
                 enemy->OnStomped(this);
               }
             }
-            // Lưu ý: va chạm ngang với enemy được xử lý ở phần AABB check bên dưới
+            // Lưu ý: va chạm ngang với enemy được xử lý ở phần AABB check bên
+            // dưới
           }
         } else if (Buff *buff = dynamic_cast<Buff *>(e)) {
           int buffType = buff->GetAnimationId();
           int cardType = 2; // Default to Flower
-          if (buffType == 301) cardType = 1; // Mushroom
-          else if (buffType == 303) cardType = 3; // Star
-          else if (buffType == 304) cardType = 4; // Scissors
+          if (buffType == 301)
+            cardType = 1; // Mushroom
+          else if (buffType == 303)
+            cardType = 3; // Star
+          else if (buffType == 304)
+            cardType = 4; // Scissors
 
           if (GameManager::GetInstance()->AddCard(cardType)) {
             buff->Delete();
             OutputDebugStringA("Buff added to inventory\n");
           }
         }
-
       }
     }
   }
@@ -402,27 +422,32 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
     isOnGround = false;
   }
 
-  // KIỂM TRA VA CHẠM NGANG VỚI ENEMY (AABB overlap - xử lý cả khi mario đứng yên)
-  // Thực hiện sau khi đã di chuyển xong để đảm bảo chính xác
+  // KIỂM TRA VA CHẠM NGANG VỚI ENEMY (AABB overlap - xử lý cả khi mario đứng
+  // yên) Thực hiện sau khi đã di chuyển xong để đảm bảo chính xác
   if (!isDead && !isParrying) {
     float fl, ft, fr, fb;
     GetBoundingBox(fl, ft, fr, fb);
 
     for (UINT i = 0; i < coObjects->size(); i++) {
       GameObject *e = coObjects->at(i);
-      if (e == this) continue;
+      if (e == this)
+        continue;
 
       if (Buff *buff = dynamic_cast<Buff *>(e)) {
-        if (buff->IsDeleted()) continue;
+        if (buff->IsDeleted())
+          continue;
         float bl, bt, br, bb;
         buff->GetBoundingBox(bl, bt, br, bb);
 
         if (!(fr <= bl || fl >= br || fb <= bt || ft >= bb)) {
           int buffType = buff->GetAnimationId();
           int cardType = 2; // Default to Flower
-          if (buffType == 301) cardType = 1; // Mushroom
-          else if (buffType == 303) cardType = 3; // Star
-          else if (buffType == 304) cardType = 4; // Scissors
+          if (buffType == 301)
+            cardType = 1; // Mushroom
+          else if (buffType == 303)
+            cardType = 3; // Star
+          else if (buffType == 304)
+            cardType = 4; // Scissors
 
           if (GameManager::GetInstance()->AddCard(cardType)) {
             buff->Delete();
@@ -433,31 +458,44 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
       }
 
       Enemy *enemy = dynamic_cast<Enemy *>(e);
-      if (!enemy || enemy->IsDied() || enemy->IsFreezed()) continue;
+      if (!enemy || enemy->IsDied() || enemy->IsFreezed())
+        continue;
 
       float el, et, er, eb;
       enemy->GetBoundingBox(el, et, er, eb);
 
-      // Kiểm tra AABB overlap theo cả 2 trục
-      if (fr <= el || fl >= er || fb <= et || ft >= eb) continue;
+      // Star Invincible: mở rộng vùng phát hiện để giết cây ăn thịt
+      // khi đứng trên ống nước (pipe chặn overlap thật)
+      if (isStarInvincible) {
+        float margin = 4.0f;
+        bool starOverlap = !(fr + margin <= el || fl - margin >= er || 
+                             fb + margin <= et || ft - margin >= eb);
+        if (starOverlap) {
+          enemy->SetDied(true);
+          continue;
+        }
+      }
 
-      // MTV (Minimum Translation Vector): axis có overlap nhỏ hơn = hướng va chạm
+      // Kiểm tra AABB overlap theo cả 2 trục
+      if (fr <= el || fl >= er || fb <= et || ft >= eb)
+        continue;
+
+      // MTV (Minimum Translation Vector): axis có overlap nhỏ hơn = hướng va
+      // chạm
       float actualOverlapX = min(fr, er) - max(fl, el);
       float actualOverlapY = min(fb, eb) - max(ft, et);
 
-      // Star Invincible: giết quái ngay khi chạm vào
-      if (isStarInvincible) {
-        enemy->SetDied(true);
-        continue;
-      }
+
 
       // Nếu đang untouchable (nhưng không star), bỏ qua damage
-      if (untouchable) continue;
+      if (untouchable)
+        continue;
 
       Koopa *koopa = dynamic_cast<Koopa *>(enemy);
 
       if (actualOverlapX >= actualOverlapY) {
-        // Va chạm theo chiều dọc (dẫm hoặc đập đầu) → đã được xử lý bởi swept AABB
+        // Va chạm theo chiều dọc (dẫm hoặc đập đầu) → đã được xử lý bởi swept
+        // AABB
         continue;
       }
 
@@ -633,7 +671,7 @@ void Mario::SetBig(bool big) {
   } else {
     width = MARIO_SMALL_WIDTH;
     height = MARIO_SMALL_HEIGHT;
-    isFire = false; // Thu nhỏ thì mất luôn lửa
+    isFire = false;     // Thu nhỏ thì mất luôn lửa
     isScissors = false; // Thu nhỏ thì mất luôn Kéo
     GameManager::GetInstance()->SetMarioFire(false);
     GameManager::GetInstance()->SetMarioScissors(false);
@@ -644,17 +682,19 @@ void Mario::SetBig(bool big) {
 }
 
 void Mario::ResolveOverlap() {
-  auto& g_objectList = Map::GetInstance()->GetObjects();
+  auto &g_objectList = Map::GetInstance()->GetObjects();
 
   float ml, mt, mr, mb;
   GetBoundingBox(ml, mt, mr, mb);
 
   for (UINT i = 0; i < g_objectList.size(); i++) {
-    GameObject* obj = g_objectList[i];
-    if (obj == this || obj->IsDeleted()) continue;
+    GameObject *obj = g_objectList[i];
+    if (obj == this || obj->IsDeleted())
+      continue;
 
-    Block* block = dynamic_cast<Block*>(obj);
-    if (!block || block->IsOneWay()) continue;
+    Block *block = dynamic_cast<Block *>(obj);
+    if (!block || block->IsOneWay())
+      continue;
 
     float bl, bt, br, bb;
     block->GetBoundingBox(bl, bt, br, bb);
@@ -671,15 +711,32 @@ void Mario::ResolveOverlap() {
       float minOverlap = overlapLeft;
       int dir = 0; // 0=left, 1=right, 2=up, 3=down
 
-      if (overlapRight < minOverlap) { minOverlap = overlapRight; dir = 1; }
-      if (overlapTop < minOverlap) { minOverlap = overlapTop; dir = 2; }
-      if (overlapBottom < minOverlap) { minOverlap = overlapBottom; dir = 3; }
+      if (overlapRight < minOverlap) {
+        minOverlap = overlapRight;
+        dir = 1;
+      }
+      if (overlapTop < minOverlap) {
+        minOverlap = overlapTop;
+        dir = 2;
+      }
+      if (overlapBottom < minOverlap) {
+        minOverlap = overlapBottom;
+        dir = 3;
+      }
 
       switch (dir) {
-        case 0: x -= overlapLeft; break;   // Đẩy sang trái
-        case 1: x += overlapRight; break;  // Đẩy sang phải
-        case 2: y += overlapTop; break;    // Đẩy lên trên (hệ tọa độ Y ngược)
-        case 3: y -= overlapBottom; break; // Đẩy xuống dưới
+      case 0:
+        x -= overlapLeft;
+        break; // Đẩy sang trái
+      case 1:
+        x += overlapRight;
+        break; // Đẩy sang phải
+      case 2:
+        y += overlapTop;
+        break; // Đẩy lên trên (hệ tọa độ Y ngược)
+      case 3:
+        y -= overlapBottom;
+        break; // Đẩy xuống dưới
       }
 
       // Cập nhật lại bounding box sau khi đẩy
@@ -695,7 +752,7 @@ void Mario::SetFire(bool fire) {
       width = MARIO_BIG_WIDTH;
       height = MARIO_BIG_HEIGHT;
     }
-    
+
     // Bật trạng thái chớp (tàng hình) và phát âm thanh
     untouchable = true;
     untouchableStart = GetTickCount64();
@@ -716,17 +773,18 @@ void Mario::SetFire(bool fire) {
 }
 
 void Mario::ShootFireball() {
-  if (!isFire) return;
-  if (GetTickCount64() - lastShootTime < 500) return; // Cooldown 0.5s
+  if (!isFire)
+    return;
+  if (GetTickCount64() - lastShootTime < 500)
+    return; // Cooldown 0.5s
 
-  auto& g_objectList = Map::GetInstance()->GetObjects();
-  
+  auto &g_objectList = Map::GetInstance()->GetObjects();
 
   // Vị trí xuất phát của fireball (dời vào giữa người Mario để tránh lún tường)
   float spawnX = x + width / 2.0f - FIREBALL_WIDTH / 2.0f;
   float spawnY = y + height / 2.0f;
 
-  Fireball* fb = new Fireball(spawnX, spawnY, nx > 0 ? 1 : -1);
+  Fireball *fb = new Fireball(spawnX, spawnY, nx > 0 ? 1 : -1);
   g_objectList.push_back(fb);
   Map::GetInstance()->AddObjectToGrid(fb);
 
@@ -737,17 +795,15 @@ void Mario::ShootFireball() {
 #include "FireBlast.h"
 
 bool Mario::ShootFireBlast() {
-  if (!isFire) return false;
+  if (!isFire)
+    return false;
 
-  auto& g_objectList = Map::GetInstance()->GetObjects();
-  
+  auto &g_objectList = Map::GetInstance()->GetObjects();
 
   float spawnX = (nx > 0) ? (x + width) : (x - FIREBLAST_WIDTH);
   float spawnY = y + (height / 2.0f) - (FIREBLAST_HEIGHT / 2.0f);
 
-
-
-  FireBlast* fb = new FireBlast(spawnX, spawnY, nx > 0 ? 1 : -1);
+  FireBlast *fb = new FireBlast(spawnX, spawnY, nx > 0 ? 1 : -1);
   g_objectList.push_back(fb);
   Map::GetInstance()->AddObjectToGrid(fb);
 
@@ -756,10 +812,10 @@ bool Mario::ShootFireBlast() {
 }
 
 bool Mario::ShootRollingBall() {
-  if (!isBig) return false;
+  if (!isBig)
+    return false;
 
-  auto& g_objectList = Map::GetInstance()->GetObjects();
-  
+  auto &g_objectList = Map::GetInstance()->GetObjects();
 
   float spawnX = (nx > 0) ? (x + width) : (x - ROLLINGBALL_WIDTH);
   float spawnY = y + 2.0f;
@@ -771,10 +827,11 @@ bool Mario::ShootRollingBall() {
 
   bool canSpawn = true;
   for (size_t i = 0; i < g_objectList.size(); i++) {
-    GameObject* e = g_objectList[i];
-    if (e == this || e->IsDeleted()) continue;
-    
-    if (dynamic_cast<Block*>(e) && !e->IsOneWay()) {
+    GameObject *e = g_objectList[i];
+    if (e == this || e->IsDeleted())
+      continue;
+
+    if (dynamic_cast<Block *>(e) && !e->IsOneWay()) {
       float sl, st, sr, sb;
       e->GetBoundingBox(sl, st, sr, sb);
       if (mr > sl && ml < sr && mb > st && mt < sb) {
@@ -784,9 +841,10 @@ bool Mario::ShootRollingBall() {
     }
   }
 
-  if (!canSpawn) return false;
+  if (!canSpawn)
+    return false;
 
-  RollingBall* rb = new RollingBall(spawnX, spawnY, nx);
+  RollingBall *rb = new RollingBall(spawnX, spawnY, nx);
   g_objectList.push_back(rb);
   Map::GetInstance()->AddObjectToGrid(rb);
 
@@ -870,7 +928,7 @@ void Mario::SetScissors(bool scissors) {
       width = MARIO_BIG_WIDTH;
       height = MARIO_BIG_HEIGHT;
     }
-    
+
     // Bật trạng thái chớp (tàng hình) và phát âm thanh
     untouchable = true;
     untouchableStart = GetTickCount64();
@@ -891,17 +949,18 @@ void Mario::SetScissors(bool scissors) {
 }
 
 bool Mario::StartParry() {
-  if (!isScissors) return false;
-  if (isParrying) return false;
+  if (!isScissors)
+    return false;
+  if (isParrying)
+    return false;
   if (GetTickCount64() < parryCooldownTime) {
     AudioManager::GetInstance()->PlaySFX("use-failed");
     return false;
   }
 
-  auto& g_objectList = Map::GetInstance()->GetObjects();
-  
+  auto &g_objectList = Map::GetInstance()->GetObjects();
 
-  CounterAttack* ca = new CounterAttack(this);
+  CounterAttack *ca = new CounterAttack(this);
   g_objectList.push_back(ca);
   Map::GetInstance()->AddObjectToGrid(ca);
 
@@ -912,26 +971,25 @@ bool Mario::StartParry() {
   return true;
 }
 
-void Mario::OnParrySuccess(GameObject* enemy) {
+void Mario::OnParrySuccess(GameObject *enemy) {
   isParrying = false;
   parryCooldownTime = 0; // Reset cooldown immediately
 
   // Kill the enemy
-  Enemy* e = dynamic_cast<Enemy*>(enemy);
+  Enemy *e = dynamic_cast<Enemy *>(enemy);
   if (e != nullptr && !e->IsDied()) {
     e->OnStomped(NULL); // Die reverse/flipped off-screen
   }
 
   // Spawn visual effect of red/black lightning at enemy location
-  auto& g_objectList = Map::GetInstance()->GetObjects();
-  
+  auto &g_objectList = Map::GetInstance()->GetObjects();
 
   float el, et, er, eb;
   enemy->GetBoundingBox(el, et, er, eb);
   float ecX = el + (er - el) / 2.0f;
   float ecY = et + (eb - et) / 2.0f;
 
-  LightningEffect* le = new LightningEffect(ecX, ecY, this->nx);
+  LightningEffect *le = new LightningEffect(ecX, ecY, this->nx);
   g_objectList.push_back(le);
   Map::GetInstance()->AddObjectToGrid(le);
 
