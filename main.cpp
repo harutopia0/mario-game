@@ -996,13 +996,32 @@ void LoadResources() {
   ani->Add(620);
   animations->Add(620, ani); // RollingBall
 
+  // Items Sprites
+  sprites->Add(3018, 1019, 74, 1074, 139, TEX_HUD); // 3018: Nấm
+  sprites->Add(3019, 1075, 74, 1130, 139, TEX_HUD); // 3019: Flower
+  sprites->Add(3020, 1131, 74, 1186, 139, TEX_HUD); // 3020: Sao
+  sprites->Add(3021, 1019, 140, 1074, 205, TEX_HUD); // 3021: Scissors
+
   // Items & Enemies Animations
   ani = new Animation(100);
   ani->Add(100, 1000);
   animations->Add(300, ani); // Enemy
+
   ani = new Animation(100);
-  ani->Add(101, 1000);
-  animations->Add(301, ani); // Potion
+  ani->Add(3018, 1000);
+  animations->Add(301, ani); // Mushroom
+
+  ani = new Animation(100);
+  ani->Add(3019, 1000);
+  animations->Add(302, ani); // Flower
+
+  ani = new Animation(100);
+  ani->Add(3020, 1000);
+  animations->Add(303, ani); // Star
+
+  ani = new Animation(100);
+  ani->Add(3021, 1000);
+  animations->Add(304, ani); // Scissors
 
   // ==========================================
   // GOOMBA SPRITES (from enemies_transparent.png = TEX_ENEMIES_1, texID=10)
