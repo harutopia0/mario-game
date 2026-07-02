@@ -1,5 +1,8 @@
 #include "../render/Sprite.h"
 #include "../core/Game.h"
+#include <cmath>
+
+float Sprite::globalScale = 1.0f;
 
 Sprite::Sprite(int id, int left, int top, int right, int bottom, LPDIRECT3DTEXTURE tex)
 {
@@ -15,14 +18,14 @@ Sprite::Sprite(int id, int left, int top, int right, int bottom, LPDIRECT3DTEXTU
 
     spriteInfo.pTexture = this->texture;
 
-    spriteInfo.TexCoord.x = this->left / (float)texWidth;
-    spriteInfo.TexCoord.y = this->top / (float)texHeight;
+    spriteInfo.TexCoord.x = (float)this->left / (float)texWidth;
+    spriteInfo.TexCoord.y = (float)this->top / (float)texHeight;
 
     int spriteWidth = (this->right - this->left + 1);
     int spriteHeight = (this->bottom - this->top + 1);
 
-    spriteInfo.TexSize.x = spriteWidth / (float)texWidth;
-    spriteInfo.TexSize.y = spriteHeight / (float)texHeight;
+    spriteInfo.TexSize.x = (float)spriteWidth / (float)texWidth;
+    spriteInfo.TexSize.y = (float)spriteHeight / (float)texHeight;
 
     spriteInfo.ColorModulate = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
     spriteInfo.TextureIndex = 0;
@@ -32,36 +35,41 @@ Sprite::Sprite(int id, int left, int top, int right, int bottom, LPDIRECT3DTEXTU
 
 void Sprite::Draw(float x, float y)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
-    D3DXMATRIX matTranslation;
+    D3DXMATRIX matTranslation, matScale;
 
-    float spriteWidth = (this->right - this->left + 1);
-    float spriteHeight = (this->bottom - this->top + 1);
+    float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
+    float actualHeight = (this->bottom - this->top + 1) * Sprite::globalScale;
 
-    float centerX = x + (spriteWidth / 2.0f);
-    float centerY = y + (spriteHeight / 2.0f);
+    float centerX = std::round(x * Sprite::globalScale) + (actualWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualHeight / 2.0f);
 
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+    D3DXMatrixScaling(&matScale, Sprite::globalScale, Sprite::globalScale, 1.0f);
 
-    this->spriteInfo.matWorld = (this->matScaling * matTranslation);
-    game->GetSpriteHandler()->DrawSpritesImmediate(&spriteInfo, 1, 0, 0);
+    D3DX10_SPRITE spriteToDraw = this->spriteInfo;
+    spriteToDraw.matWorld = (this->matScaling * matScale * matTranslation);
+    game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
 }
 
 void Sprite::Draw(float x, float y, int nx)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
-    D3DXMATRIX matTranslation;
+    D3DXMATRIX matTranslation, matScale;
 
-    float spriteWidth = (this->right - this->left + 1);
-    float spriteHeight = (this->bottom - this->top + 1);
+    float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
+    float actualHeight = (this->bottom - this->top + 1) * Sprite::globalScale;
 
-    float centerX = x + (spriteWidth / 2.0f);
-    float centerY = y + (spriteHeight / 2.0f);
+    float centerX = std::round(x * Sprite::globalScale) + (actualWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualHeight / 2.0f);
 
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+    D3DXMatrixScaling(&matScale, Sprite::globalScale, Sprite::globalScale, 1.0f);
 
     D3DX10_SPRITE spriteToDraw = this->spriteInfo;
-    spriteToDraw.matWorld = (this->matScaling * matTranslation);
+    spriteToDraw.matWorld = (this->matScaling * matScale * matTranslation);
 
     if (nx > 0)
     {
@@ -72,53 +80,94 @@ void Sprite::Draw(float x, float y, int nx)
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
 }
 
+void Sprite::Draw(float x, float y, int nx, int ny)
+{
+    if (this->texture == NULL) return;
+    Game* game = Game::GetInstance();
+    D3DXMATRIX matTranslation, matScale;
+
+    float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
+    float actualHeight = (this->bottom - this->top + 1) * Sprite::globalScale;
+
+    float centerX = std::round(x * Sprite::globalScale) + (actualWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualHeight / 2.0f);
+
+    D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+    D3DXMatrixScaling(&matScale, Sprite::globalScale, Sprite::globalScale, 1.0f);
+
+    D3DX10_SPRITE spriteToDraw = this->spriteInfo;
+    spriteToDraw.matWorld = (this->matScaling * matScale * matTranslation);
+
+    if (nx > 0)
+    {
+        spriteToDraw.TexCoord.x = this->spriteInfo.TexCoord.x + this->spriteInfo.TexSize.x;
+        spriteToDraw.TexSize.x = -this->spriteInfo.TexSize.x;
+    }
+
+    if (ny > 0)
+    {
+        spriteToDraw.TexCoord.y = this->spriteInfo.TexCoord.y + this->spriteInfo.TexSize.y;
+        spriteToDraw.TexSize.y = -this->spriteInfo.TexSize.y;
+    }
+
+    game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
+}
+
 void Sprite::Draw(float x, float y, float angle)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
-    D3DXMATRIX matTranslation, matRotation;
+    D3DXMATRIX matTranslation, matRotation, matScale;
 
-    float spriteWidth = (this->right - this->left + 1);
-    float spriteHeight = (this->bottom - this->top + 1);
+    float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
+    float actualHeight = (this->bottom - this->top + 1) * Sprite::globalScale;
 
-    float centerX = x + (spriteWidth / 2.0f);
-    float centerY = y + (spriteHeight / 2.0f);
+    float centerX = std::round(x * Sprite::globalScale) + (actualWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualHeight / 2.0f);
 
     D3DXMatrixRotationZ(&matRotation, angle);
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+    D3DXMatrixScaling(&matScale, Sprite::globalScale, Sprite::globalScale, 1.0f);
 
     D3DX10_SPRITE spriteToDraw = this->spriteInfo;
-    spriteToDraw.matWorld = (this->matScaling * matRotation * matTranslation);
+    spriteToDraw.matWorld = (this->matScaling * matScale * matRotation * matTranslation);
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
 }
 
 void Sprite::Draw(float x, float y, D3DXCOLOR color)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
-    D3DXMATRIX matTranslation;
+    D3DXMATRIX matTranslation, matScale;
 
-    float spriteWidth = (this->right - this->left + 1);
-    float spriteHeight = (this->bottom - this->top + 1);
+    float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
+    float actualHeight = (this->bottom - this->top + 1) * Sprite::globalScale;
 
-    float centerX = x + (spriteWidth / 2.0f);
-    float centerY = y + (spriteHeight / 2.0f);
+    float centerX = std::round(x * Sprite::globalScale) + (actualWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualHeight / 2.0f);
 
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
+    D3DXMatrixScaling(&matScale, Sprite::globalScale, Sprite::globalScale, 1.0f);
 
     D3DX10_SPRITE spriteToDraw = this->spriteInfo;
-    spriteToDraw.matWorld = (this->matScaling * matTranslation);
+    spriteToDraw.matWorld = (this->matScaling * matScale * matTranslation);
     spriteToDraw.ColorModulate = color;
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
 }
 
 void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, float alpha)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
     D3DXMATRIX matTranslation, matScaling;
 
-    D3DXMatrixScaling(&matScaling, drawWidth, drawHeight, 1.0f);
+    float actualDrawWidth = drawWidth * Sprite::globalScale;
+    float actualDrawHeight = drawHeight * Sprite::globalScale;
 
-    float centerX = x + (drawWidth / 2.0f);
-    float centerY = y + (drawHeight / 2.0f);
+    D3DXMatrixScaling(&matScaling, actualDrawWidth, actualDrawHeight, 1.0f);
+
+    float centerX = std::round(x * Sprite::globalScale) + (actualDrawWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualDrawHeight / 2.0f);
 
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
 
@@ -131,13 +180,17 @@ void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, float alp
 
 void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, D3DXCOLOR color)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
     D3DXMATRIX matTranslation, matScaling;
 
-    D3DXMatrixScaling(&matScaling, drawWidth, drawHeight, 1.0f);
+    float actualDrawWidth = drawWidth * Sprite::globalScale;
+    float actualDrawHeight = drawHeight * Sprite::globalScale;
 
-    float centerX = x + (drawWidth / 2.0f);
-    float centerY = y + (drawHeight / 2.0f);
+    D3DXMatrixScaling(&matScaling, actualDrawWidth, actualDrawHeight, 1.0f);
+
+    float centerX = std::round(x * Sprite::globalScale) + (actualDrawWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualDrawHeight / 2.0f);
 
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
 
@@ -148,20 +201,23 @@ void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, D3DXCOLOR
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
 }
 
-
 void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, float alpha)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
     D3DXMATRIX matTranslation, matRotation, matScale;
 
     float spriteWidth = (this->right - this->left + 1);
     float spriteHeight = (this->bottom - this->top + 1);
 
-    D3DXMatrixScaling(&matScale, spriteWidth * scale, spriteHeight * scale, 1.0f);
+    D3DXMatrixScaling(&matScale, spriteWidth * scale * Sprite::globalScale, spriteHeight * scale * Sprite::globalScale, 1.0f);
     D3DXMatrixRotationZ(&matRotation, angle);
 
-    float centerX = x + (spriteWidth / 2.0f);
-    float centerY = y + (spriteHeight / 2.0f);
+    float actualWidth = spriteWidth * Sprite::globalScale;
+    float actualHeight = spriteHeight * Sprite::globalScale;
+
+    float centerX = std::round(x * Sprite::globalScale) + (actualWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualHeight / 2.0f);
 
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
 
@@ -174,17 +230,21 @@ void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, float
 
 void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, D3DXCOLOR color)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
     D3DXMATRIX matTranslation, matRotation, matScale;
 
     float spriteWidth = (this->right - this->left + 1);
     float spriteHeight = (this->bottom - this->top + 1);
 
-    D3DXMatrixScaling(&matScale, spriteWidth * scale, spriteHeight * scale, 1.0f);
+    D3DXMatrixScaling(&matScale, spriteWidth * scale * Sprite::globalScale, spriteHeight * scale * Sprite::globalScale, 1.0f);
     D3DXMatrixRotationZ(&matRotation, angle);
 
-    float centerX = x + (spriteWidth / 2.0f);
-    float centerY = y + (spriteHeight / 2.0f);
+    float actualWidth = spriteWidth * Sprite::globalScale;
+    float actualHeight = spriteHeight * Sprite::globalScale;
+
+    float centerX = std::round(x * Sprite::globalScale) + (actualWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualHeight / 2.0f);
 
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
 
@@ -197,17 +257,21 @@ void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, D3DXC
 
 void Sprite::DrawRotatedScaled(float x, float y, float angle, float scaleX, float scaleY, D3DXCOLOR color)
 {
+    if (this->texture == NULL) return;
     Game* game = Game::GetInstance();
     D3DXMATRIX matTranslation, matRotation, matScale;
 
     float spriteWidth = (this->right - this->left + 1);
     float spriteHeight = (this->bottom - this->top + 1);
 
-    D3DXMatrixScaling(&matScale, spriteWidth * scaleX, spriteHeight * scaleY, 1.0f);
+    D3DXMatrixScaling(&matScale, spriteWidth * scaleX * Sprite::globalScale, spriteHeight * scaleY * Sprite::globalScale, 1.0f);
     D3DXMatrixRotationZ(&matRotation, angle);
 
-    float centerX = x + (spriteWidth / 2.0f);
-    float centerY = y + (spriteHeight / 2.0f);
+    float actualWidth = spriteWidth * Sprite::globalScale;
+    float actualHeight = spriteHeight * Sprite::globalScale;
+
+    float centerX = std::round(x * Sprite::globalScale) + (actualWidth / 2.0f);
+    float centerY = std::round(y * Sprite::globalScale) + (actualHeight / 2.0f);
 
     D3DXMatrixTranslation(&matTranslation, centerX, centerY, 0.1f);
 
@@ -219,3 +283,4 @@ void Sprite::DrawRotatedScaled(float x, float y, float angle, float scaleX, floa
 }
 
 Sprite::~Sprite() {}
+

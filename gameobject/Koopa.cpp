@@ -6,6 +6,7 @@
 #include "../physics/Collision.h"
 #include "../animation/Animations.h"
 #include <cstdlib>
+#include "../gameplay/GameManager.h"
 
 Koopa::Koopa(float x, float y, int type) : Enemy(x, y, 312)
 {
@@ -38,7 +39,7 @@ bool Koopa::CheckCliffAhead(vector<GameObject*>* coObjects)
 	{
 		if (obj == this || obj->IsDeleted()) continue;
 		Block* block = dynamic_cast<Block*>(obj);
-		if (block && !dynamic_cast<Platform*>(block))
+		if (block && !block->IsOneWay())
 		{
 			float sl, st, sr, sb;
 			block->GetBoundingBox(sl, st, sr, sb);
@@ -123,14 +124,31 @@ void Koopa::Update(DWORD dt, vector<GameObject*>* coObjects)
 				enemy->GetBoundingBox(l2, t2, r2, b2);
 				if (r1 > l2 && l1 < r2 && b1 > t2 && t1 < b2)
 				{
-					// Đâm quái khác - chết lật ngược
-					enemy->OnStomped(NULL);
+					Koopa* otherKoopa = dynamic_cast<Koopa*>(enemy);
+					if (otherKoopa && otherKoopa->GetState() == KOOPA_STATE_SHELL_SPINNING)
+					{
+						// Hai mai rùa đang lăn đụng nhau -> Đổi hướng
+						if ((this->vx > 0 && l2 > l1) || (this->vx < 0 && l2 < l1))
+						{
+							this->vx = -this->vx;
+							this->nx = -this->nx;
+							
+							otherKoopa->vx = -otherKoopa->vx;
+							otherKoopa->nx = -otherKoopa->nx;
+						}
+					}
+					else
+					{
+						// Đâm quái khác - chết lật ngược
+						enemy->OnStomped(NULL);
+					}
 				}
 			}
 		}
 	}
 
-	// Red Koopa: Kiểm tra vực trước mặt khi đi bộ
+	// Đã bỏ logic quay đầu khi gặp vực (theo yêu cầu)
+	/*
 	if (type == KOOPA_TYPE_RED && state == KOOPA_STATE_WALKING)
 	{
 		if (vy == 0 && CheckCliffAhead(coObjects))
@@ -140,6 +158,7 @@ void Koopa::Update(DWORD dt, vector<GameObject*>* coObjects)
 			nx = -nx;
 		}
 	}
+	*/
 
 	// Flying Koopa: Nhảy lại khi chạm đất
 	if (type == KOOPA_TYPE_GREEN_FLYING && state == KOOPA_STATE_JUMPING)
@@ -247,6 +266,9 @@ void Koopa::OnStomped(Mario* mario)
 		vx = (nx > 0) ? -0.05f : 0.05f;
 		layer = LAYER_BACKGROUND;
 		died = true;
+		AudioManager::GetInstance()->PlaySFX("stomp");
+		GameManager::GetInstance()->AddScore(200);
+		GameManager::GetInstance()->AddKills(1);
 		return;
 	}
 
@@ -273,6 +295,7 @@ void Koopa::OnStomped(Mario* mario)
 		}
 
 		AudioManager::GetInstance()->PlaySFX("stomp");
+		GameManager::GetInstance()->AddScore(100);
 	}
 	else if (state == KOOPA_STATE_SHELL || state == KOOPA_STATE_SHELL_SHAKING)
 	{
@@ -281,6 +304,7 @@ void Koopa::OnStomped(Mario* mario)
 		{
 			int dir = (mario->GetX() < x) ? 1 : -1;
 			Kick(dir);
+			GameManager::GetInstance()->AddScore(100);
 		}
 	}
 	else if (state == KOOPA_STATE_SHELL_SPINNING)
@@ -291,6 +315,7 @@ void Koopa::OnStomped(Mario* mario)
 		vx = 0.0f;
 
 		AudioManager::GetInstance()->PlaySFX("stomp");
+		GameManager::GetInstance()->AddScore(100);
 	}
 }
 

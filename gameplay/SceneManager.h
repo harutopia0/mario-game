@@ -1,5 +1,7 @@
 #pragma once
 #include <Windows.h>
+#include <d3d10.h>
+#include <d3dx10.h>
 
 // Thời gian tạm dừng khi Mario biến lớn (mili-giây)
 #define MARIO_TRANSFORM_PAUSE_TIME 1000
@@ -43,27 +45,38 @@ private:
     bool isMarioCastingSkill;
     DWORD castSkillStartTime;
 
-    // World Slash variables
-    bool isMarioWorldSlashing;
-    DWORD worldSlashStartTime;
-    float worldSlashOverlayAlpha;
-    bool worldSlashEnemiesKilled;
+    // ScissorsAttack variables
+    bool isMarioScissorsAttacking;
+    DWORD scissorsAttackStartTime;
+    float scissorsAttackOverlayAlpha;
+    bool scissorsAttackEnemiesKilled;
     float wsX[5];
     float wsY[5];
     float wsAngle[5];
     float wsLength[5];
     float wsThickness[5];
+    
+    // UI components cho màn hình map
+    LPD3DX10SPRITE spriteHandler;
+    
+    // Input Handling
+    void KeyState(BYTE *states);
+    
+    void InitializeScene();
 
     // Cơ chế Roulette Thẻ bài khi thắng màn
     int rouletteCardType;
     DWORD lastRouletteTick;
     bool isRouletteDone;
+    DWORD lastTimeDeductTick;
 
     // Hit stop
     float hitStopTimer;
 
     SceneManager();
 public:
+    void OnKeyDown(int KeyCode);
+    void OnKeyUp(int KeyCode);
     static SceneManager* GetInstance();
     void Init();
     void Update(DWORD dt);
@@ -76,9 +89,9 @@ public:
     void ProcessMarioCastSkill(int cardType, int slot);
     bool IsCastingSkill() const { return isMarioCastingSkill; }
 
-    void ProcessWorldSlash();
-    bool IsWorldSlashing() const { return isMarioWorldSlashing; }
-    void RenderWorldSlashOverlay();
+    void ProcessScissorsAttack();
+    bool IsScissorsAttacking() const { return isMarioScissorsAttacking; }
+    void RenderScissorsAttackOverlay();
 
     GameState GetState() const { return currentState; }
     void SwitchTo(GameState newState);

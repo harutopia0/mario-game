@@ -73,12 +73,6 @@ void Intro::Update(DWORD dt)
             if (stateNum3 > 5) stateNum3 = 0;
             timerNum3 = 0;
         }
-
-        // 2. Xử lý kích hoạt Game Start (Bỏ phần chọn UP/DOWN)
-        if ((GetAsyncKeyState(VK_RETURN) & 0x8000) || (GetAsyncKeyState(VK_SPACE) & 0x8000))
-        {
-            isDone = true;
-        }
     }
 }
 
@@ -116,4 +110,29 @@ void Intro::Render()
             if (sprites->Get(2000)) sprites->Get(2000)->Draw(0.0f, curtainY);
         }
     }
+}
+
+void Intro::OnKeyDown(int KeyCode)
+{
+    if (KeyCode == VK_SPACE || KeyCode == VK_RETURN)
+    {
+        if (!isLogoDown)
+        {
+            // Bỏ qua intro (skip intro)
+            curtainY = curtainHeight;
+            isCurtainUp = true;
+            logoY = 175.0f;
+            isLogoDown = true;
+            HUD::GetInstance()->SetPlayer(1);
+        }
+        else
+        {
+            // Bắt đầu game (vào chọn màn)
+            isDone = true;
+        }
+    }
+}
+
+void Intro::OnKeyUp(int KeyCode)
+{
 }
