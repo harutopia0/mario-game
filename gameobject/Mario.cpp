@@ -468,7 +468,7 @@ void Mario::Update(DWORD dt, vector<GameObject *> *coObjects) {
       // khi đứng trên ống nước (pipe chặn overlap thật)
       if (isStarInvincible) {
         float margin = 4.0f;
-        bool starOverlap = !(fr + margin <= el || fl - margin >= er || 
+        bool starOverlap = !(fr <= el || fl >= er || 
                              fb + margin <= et || ft - margin >= eb);
         if (starOverlap) {
           enemy->SetDied(true);

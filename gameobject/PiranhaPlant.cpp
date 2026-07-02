@@ -8,9 +8,9 @@
 PiranhaPlant::PiranhaPlant(float x, float y) : Enemy(x, y, 5000) {
   this->state = PIRANHA_STATE_HIDING;
   float adjustedY = y - 2.0f;
-  this->maxY = adjustedY;                // Nằm sâu nhất
-  this->minY = adjustedY - this->height; // Nổi lên hết cỡ
-  this->y = this->maxY;                  // Bắt đầu ẩn trong ống
+  this->hiddenY = adjustedY - this->height; // Nằm sâu nhất
+  this->poppedY = adjustedY;                // Nổi lên hết cỡ
+  this->y = this->hiddenY;                  // Bắt đầu ẩn trong ống
   this->waitTimeStart = GetTickCount64();
   this->layer = LAYER_BACKGROUND; // Nằm dưới Pipe, nhưng trên Prop
 }
@@ -34,9 +34,8 @@ void PiranhaPlant::Update(DWORD dt, vector<GameObject *> *coObjects) {
   if (died)
     return;
 
-  // Khi cây đang hiện (không hiding), kiểm tra va chạm với Mario có Sao
-  // Xử lý từ phía cây vì Mario đứng trên pipe không phát hiện được cây trồi lên
-  if (state != PIRANHA_STATE_HIDING) {
+  // Khi cây đang hiện (không hiding) và đã trồi lên đủ cao, kiểm tra va chạm với Mario có Sao
+  if (state != PIRANHA_STATE_HIDING && (y - hiddenY) >= 10.0f) {
     Mario *mario = Map::GetInstance()->GetMario();
     if (mario && mario->isStarInvincible && !mario->IsDied()) {
       float ml, mt, mr, mb;
@@ -54,11 +53,11 @@ void PiranhaPlant::Update(DWORD dt, vector<GameObject *> *coObjects) {
   if (state == PIRANHA_STATE_HIDING) {
     if (GetTickCount64() - waitTimeStart > PIRANHA_HIDE_TIME) {
       state = PIRANHA_STATE_GOING_UP;
-      vy = -PIRANHA_SPEED; // Trồi lên là giảm Y
+      vy = PIRANHA_SPEED; // Trồi lên là tăng Y
     }
   } else if (state == PIRANHA_STATE_GOING_UP) {
-    if (y <= minY) {
-      y = minY;
+    if (y >= poppedY) {
+      y = poppedY;
       vy = 0;
       state = PIRANHA_STATE_BITING;
       waitTimeStart = GetTickCount64();
@@ -66,11 +65,11 @@ void PiranhaPlant::Update(DWORD dt, vector<GameObject *> *coObjects) {
   } else if (state == PIRANHA_STATE_BITING) {
     if (GetTickCount64() - waitTimeStart > PIRANHA_BITE_TIME) {
       state = PIRANHA_STATE_GOING_DOWN;
-      vy = PIRANHA_SPEED; // Thụt xuống là tăng Y
+      vy = -PIRANHA_SPEED; // Thụt xuống là giảm Y
     }
   } else if (state == PIRANHA_STATE_GOING_DOWN) {
-    if (y >= maxY) {
-      y = maxY;
+    if (y <= hiddenY) {
+      y = hiddenY;
       vy = 0;
       state = PIRANHA_STATE_HIDING;
       waitTimeStart = GetTickCount64();
@@ -93,12 +92,12 @@ void PiranhaPlant::Render() {
 
 void PiranhaPlant::GetBoundingBox(float &left, float &top, float &right,
                                   float &bottom) {
-  if (state == PIRANHA_STATE_HIDING) {
+  if (state == PIRANHA_STATE_HIDING || (y - hiddenY) < 10.0f) {
     left = top = right = bottom = 0;
     return;
   }
   left = x;
-  top = y;
+  top = poppedY;
   right = x + width;
   bottom = y + height;
 }
@@ -112,7 +111,7 @@ void PiranhaPlant::OnStomped(Mario *mario) {
     mario->TakeDamage();
   } else {
     this->state = PIRANHA_STATE_DIE;
-    this->vy = -PIRANHA_SPEED * 5.0f; // Bay lên (y giảm = lên trên)
+    this->vy = PIRANHA_SPEED * 5.0f; // Bay lên (y tăng = lên trên)
     this->vx = 0.05f;
     this->died = true;
     this->layer = LAYER_ENEMIES; // Render trước pipe để thấy animation chết

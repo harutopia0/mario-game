@@ -26,12 +26,12 @@ VenusFireTrap::VenusFireTrap(float x, float y) : Enemy(x, y, 5001) {
 }
 
 void VenusFireTrap::GetBoundingBox(float &left, float &top, float &right, float &bottom) {
-    if (state == VENUS_STATE_HIDING) {
+    if (state == VENUS_STATE_HIDING || (y - hiddenY) < 10.0f) {
         left = top = right = bottom = 0;
         return;
     }
     left = x;
-    top = y;
+    top = poppedY;
     right = x + width;
     bottom = y + height;
 }
@@ -75,8 +75,8 @@ void VenusFireTrap::Update(DWORD dt, vector<GameObject*>* coObjects) {
     
     if (died) return;
 
-    // Khi cây đang hiện (không hiding), kiểm tra va chạm với Mario có Sao
-    if (state != VENUS_STATE_HIDING) {
+    // Khi cây đang hiện (không hiding) và đã trồi lên đủ cao, kiểm tra va chạm với Mario có Sao
+    if (state != VENUS_STATE_HIDING && (y - hiddenY) >= 10.0f) {
         Mario *mario = Map::GetInstance()->GetMario();
         if (mario && mario->isStarInvincible && !mario->IsDied()) {
             float ml, mt, mr, mb;

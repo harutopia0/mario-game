@@ -18,8 +18,8 @@ class PiranhaPlant : public Enemy
 private:
     int state;
     ULONGLONG waitTimeStart;
-    float minY;
-    float maxY;
+    float hiddenY;
+    float poppedY;
 
 public:
     PiranhaPlant(float x, float y);
