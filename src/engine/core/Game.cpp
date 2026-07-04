@@ -1,10 +1,11 @@
 #include "engine/core/Game.h"
 
-Game* Game::__instance = NULL;
+Game *Game::__instance = NULL;
 
-Game* Game::GetInstance()
+Game *Game::GetInstance()
 {
-    if (__instance == NULL) __instance = new Game();
+    if (__instance == NULL)
+        __instance = new Game();
     return __instance;
 }
 
@@ -32,8 +33,8 @@ void Game::InitDirectX(HWND hWnd)
 
     D3D10CreateDeviceAndSwapChain(NULL, D3D10_DRIVER_TYPE_HARDWARE, NULL, 0, D3D10_SDK_VERSION, &sd, &pSwapChain, &pDevice);
 
-    ID3D10Texture2D* pBackBuffer = NULL;
-    if (SUCCEEDED(pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), (LPVOID*)&pBackBuffer)))
+    ID3D10Texture2D *pBackBuffer = NULL;
+    if (SUCCEEDED(pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), (LPVOID *)&pBackBuffer)))
     {
         pDevice->CreateRenderTargetView(pBackBuffer, NULL, &pRenderTargetView);
         pBackBuffer->Release();
@@ -70,7 +71,7 @@ void Game::InitDirectX(HWND hWnd)
     pDevice->CreateBlendState(&blendDesc, &pBlendStateAlpha);
 }
 
-bool Game::LoadTexture(LPCWSTR filePath, ID3D10ShaderResourceView** outTexture)
+bool Game::LoadTexture(LPCWSTR filePath, ID3D10ShaderResourceView **outTexture)
 {
     D3DX10_IMAGE_INFO imageInfo;
     HRESULT hr = D3DX10GetImageInfoFromFile(filePath, NULL, &imageInfo, NULL);
@@ -102,8 +103,7 @@ bool Game::LoadTexture(LPCWSTR filePath, ID3D10ShaderResourceView** outTexture)
         &info,
         NULL,
         outTexture,
-        NULL
-    );
+        NULL);
 
     if (FAILED(hr))
     {
@@ -116,11 +116,18 @@ bool Game::LoadTexture(LPCWSTR filePath, ID3D10ShaderResourceView** outTexture)
 
 void Game::ReleaseDirectX()
 {
-    if (pRenderTargetView) pRenderTargetView->Release();
-    if (pSwapChain) pSwapChain->Release();
-    if (pDevice) pDevice->Release();
-    if (pSpriteObject) pSpriteObject->Release();
-    if (pBlendStateAlpha) pBlendStateAlpha->Release();
+    if (pRenderTargetView)
+        pRenderTargetView->Release();
+    if (pSwapChain)
+        pSwapChain->Release();
+    if (pDevice)
+        pDevice->Release();
+    if (pSpriteObject)
+        pSpriteObject->Release();
+    if (pBlendStateAlpha)
+        pBlendStateAlpha->Release();
 }
 
-Game::~Game() {}
+Game::~Game()
+{
+}

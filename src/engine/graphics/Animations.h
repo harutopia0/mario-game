@@ -1,24 +1,24 @@
 #pragma once
-#include <unordered_map>
 #include "engine/graphics/Animation.h"
+#include <unordered_map>
 
 class Animations
 {
-private:
-    static Animations* __instance;
-    std::unordered_map<int, Animation*> animations;
+  private:
+    static Animations *__instance;
+    std::unordered_map<int, Animation *> animations;
 
-public:
-    static Animations* GetInstance();
-    void Add(int id, Animation* ani);
+  public:
+    static Animations *GetInstance();
+    void Add(int id, Animation *ani);
     void Clear()
     {
         for (auto x : animations)
         {
-            Animation* ani = x.second;
+            Animation *ani = x.second;
             delete ani;
         }
         animations.clear();
     }
-    Animation* Get(int id);
+    Animation *Get(int id);
 };

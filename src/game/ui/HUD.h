@@ -1,12 +1,12 @@
 #pragma once
-#include <string>
-#include <Windows.h>
 #include "engine/graphics/Sprites.h"
+#include <Windows.h>
+#include <string>
 
 class HUD
 {
-private:
-    static HUD* __instance;
+  private:
+    static HUD *__instance;
 
     // PMeter blink animation (chỉ thuộc về UI)
     DWORD pMeterBlinkTime;
@@ -18,7 +18,7 @@ private:
     // Vẽ một chuỗi số (text) tại tọa độ x, y chỉ định
     void DrawString(std::string text, float x, float y);
 
-public:
+  public:
     // Hủy instance (dọn dẹp bộ nhớ cho pattern Singleton)
     static void DestroyInstance();
 
@@ -26,7 +26,7 @@ public:
     HUD();
 
     // Lấy instance duy nhất của HUD (Singleton)
-    static HUD* GetInstance();
+    static HUD *GetInstance();
 
     // Tải toàn bộ sprite dùng cho HUD từ hệ thống
     void LoadSprites();
@@ -62,6 +62,12 @@ public:
     void DrawWorld(int world);
 
     // Các hàm cập nhật giá trị hiển thị cho HUD từ bên ngoài
-    void SetPMeter(int level) { currentPMeter = level; }
-    void SetPlayer(int player) { currentPlayer = player; }
+    void SetPMeter(int level)
+    {
+        currentPMeter = level;
+    }
+    void SetPlayer(int player)
+    {
+        currentPlayer = player;
+    }
 };

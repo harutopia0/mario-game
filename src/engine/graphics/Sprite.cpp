@@ -35,8 +35,9 @@ Sprite::Sprite(int id, int left, int top, int right, int bottom, LPDIRECT3DTEXTU
 
 void Sprite::Draw(float x, float y)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matScale;
 
     float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
@@ -55,8 +56,9 @@ void Sprite::Draw(float x, float y)
 
 void Sprite::Draw(float x, float y, int nx)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matScale;
 
     float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
@@ -82,8 +84,9 @@ void Sprite::Draw(float x, float y, int nx)
 
 void Sprite::Draw(float x, float y, int nx, int ny)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matScale;
 
     float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
@@ -115,8 +118,9 @@ void Sprite::Draw(float x, float y, int nx, int ny)
 
 void Sprite::Draw(float x, float y, float angle)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matRotation, matScale;
 
     float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
@@ -136,8 +140,9 @@ void Sprite::Draw(float x, float y, float angle)
 
 void Sprite::Draw(float x, float y, D3DXCOLOR color)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matScale;
 
     float actualWidth = (this->right - this->left + 1) * Sprite::globalScale;
@@ -157,8 +162,9 @@ void Sprite::Draw(float x, float y, D3DXCOLOR color)
 
 void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, float alpha)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matScaling;
 
     float actualDrawWidth = drawWidth * Sprite::globalScale;
@@ -180,8 +186,9 @@ void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, float alp
 
 void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, D3DXCOLOR color)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matScaling;
 
     float actualDrawWidth = drawWidth * Sprite::globalScale;
@@ -203,8 +210,9 @@ void Sprite::Draw(float x, float y, float drawWidth, float drawHeight, D3DXCOLOR
 
 void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, float alpha)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matRotation, matScale;
 
     float spriteWidth = (this->right - this->left + 1);
@@ -230,8 +238,9 @@ void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, float
 
 void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, D3DXCOLOR color)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matRotation, matScale;
 
     float spriteWidth = (this->right - this->left + 1);
@@ -257,8 +266,9 @@ void Sprite::DrawRotatedScaled(float x, float y, float angle, float scale, D3DXC
 
 void Sprite::DrawRotatedScaled(float x, float y, float angle, float scaleX, float scaleY, D3DXCOLOR color)
 {
-    if (this->texture == NULL) return;
-    Game* game = Game::GetInstance();
+    if (this->texture == NULL)
+        return;
+    Game *game = Game::GetInstance();
     D3DXMATRIX matTranslation, matRotation, matScale;
 
     float spriteWidth = (this->right - this->left + 1);
@@ -282,5 +292,6 @@ void Sprite::DrawRotatedScaled(float x, float y, float angle, float scaleX, floa
     game->GetSpriteHandler()->DrawSpritesImmediate(&spriteToDraw, 1, 0, 0);
 }
 
-Sprite::~Sprite() {}
-
+Sprite::~Sprite()
+{
+}

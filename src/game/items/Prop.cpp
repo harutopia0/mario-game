@@ -11,13 +11,14 @@ Prop::Prop(float x, float y, int spriteId, float width, float height) : GameObje
 
 void Prop::Render()
 {
-    Sprite* sprite = Sprites::GetInstance()->Get(spriteId);
-    if (sprite) {
+    Sprite *sprite = Sprites::GetInstance()->Get(spriteId);
+    if (sprite)
+    {
         sprite->Draw(x, y);
     }
 }
 
-void Prop::GetBoundingBox(float& l, float& t, float& r, float& b)
+void Prop::GetBoundingBox(float &l, float &t, float &r, float &b)
 {
     l = x;
     t = y;

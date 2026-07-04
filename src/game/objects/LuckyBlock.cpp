@@ -1,9 +1,9 @@
 #include "game/objects/LuckyBlock.h"
-#include "engine/graphics/Animations.h"
 #include "engine/audio/AudioManager.h"
-#include "game/scenes/Map.h"
+#include "engine/graphics/Animations.h"
 #include "game/items/Buff.h"
 #include "game/scenes/GameManager.h"
+#include "game/scenes/Map.h"
 #include <cstdlib>
 
 LuckyBlock::LuckyBlock(float x, float y, int activeAnimationId, int usedAnimationId)
@@ -11,11 +11,14 @@ LuckyBlock::LuckyBlock(float x, float y, int activeAnimationId, int usedAnimatio
 {
     this->activeAnimationId = activeAnimationId;
     this->usedAnimationId = usedAnimationId;
-    Animation* anim = Animations::GetInstance()->Get(activeAnimationId);
-    if (anim != NULL) {
+    Animation *anim = Animations::GetInstance()->Get(activeAnimationId);
+    if (anim != NULL)
+    {
         this->width = anim->GetWidth();
         this->height = anim->GetHeight();
-    } else {
+    }
+    else
+    {
         this->width = 16;
         this->height = 16;
     }
@@ -23,7 +26,7 @@ LuckyBlock::LuckyBlock(float x, float y, int activeAnimationId, int usedAnimatio
     // this->isStatic is already set by DynamicBlock
 }
 
-void LuckyBlock::GetBoundingBox(float& left, float& top, float& right, float& bottom)
+void LuckyBlock::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
     left = x;
     top = y;
@@ -34,16 +37,17 @@ void LuckyBlock::GetBoundingBox(float& left, float& top, float& right, float& bo
 void LuckyBlock::Render()
 {
     int aniId = isHit ? usedAnimationId : activeAnimationId;
-    Animation* ani = Animations::GetInstance()->Get(aniId);
-    if (ani != NULL) ani->Render(x, y);
+    Animation *ani = Animations::GetInstance()->Get(aniId);
+    if (ani != NULL)
+        ani->Render(x, y);
 }
 
 void LuckyBlock::SpawnItem()
 {
-    int items[] = { 301, 302, 303, 304 };
+    int items[] = {301, 302, 303, 304};
     int randomItem = items[rand() % 4];
 
-    Buff* buff = new Buff(x, y, randomItem);
+    Buff *buff = new Buff(x, y, randomItem);
     buff->StartSprouting(y);
     Map::GetInstance()->GetObjects().push_back(buff);
     Map::GetInstance()->AddObjectToGrid(buff);
@@ -53,7 +57,8 @@ void LuckyBlock::SpawnItem()
 
 void LuckyBlock::Hit()
 {
-    if (!isHit) {
+    if (!isHit)
+    {
         isHit = true;
         SpawnItem();
         GameManager::GetInstance()->AddScore(100);
@@ -62,7 +67,8 @@ void LuckyBlock::Hit()
 
 void LuckyBlock::Break(bool dropItem)
 {
-    if (!isHit && dropItem) {
+    if (!isHit && dropItem)
+    {
         SpawnItem();
     }
     this->Delete();

@@ -1,7 +1,7 @@
 #include "game/ui/WorldMap.h"
-#include "engine/graphics/Sprites.h"
-#include "engine/graphics/Animations.h"
 #include "engine/core/Game.h"
+#include "engine/graphics/Animations.h"
+#include "engine/graphics/Sprites.h"
 #include "game/scenes/GameManager.h"
 #include <cmath>
 
@@ -23,18 +23,40 @@ void WorldMap::LoadSprites()
 {
 }
 
-void WorldMap::GetNodePosition(int node, float& ox, float& oy)
+void WorldMap::GetNodePosition(int node, float &ox, float &oy)
 {
     switch (node)
     {
-    case 0: ox = 44.0f;  oy = 73.0f; break;  // Ô đứng tạm 1
-    case 1: ox = 107.0f; oy = 93.0f; break;  // Level 1
-    case 2: ox = 218.0f; oy = 93.0f; break;  // Level 2
-    case 3: ox = 329.0f; oy = 93.0f; break;  // Level 3
-    case 4: ox = 442.0f; oy = 93.0f; break;  // Level 4
-    case 5: ox = 541.0f; oy = 73.0f; break;  // Ô đứng tạm 2
-    case 6: ox = 545.0f; oy = 189.0f; break; // Level 5
-    default: break;
+    case 0:
+        ox = 44.0f;
+        oy = 73.0f;
+        break; // Ô đứng tạm 1
+    case 1:
+        ox = 107.0f;
+        oy = 93.0f;
+        break; // Level 1
+    case 2:
+        ox = 218.0f;
+        oy = 93.0f;
+        break; // Level 2
+    case 3:
+        ox = 329.0f;
+        oy = 93.0f;
+        break; // Level 3
+    case 4:
+        ox = 442.0f;
+        oy = 93.0f;
+        break; // Level 4
+    case 5:
+        ox = 541.0f;
+        oy = 73.0f;
+        break; // Ô đứng tạm 2
+    case 6:
+        ox = 545.0f;
+        oy = 189.0f;
+        break; // Level 5
+    default:
+        break;
     }
 }
 
@@ -47,16 +69,23 @@ void WorldMap::UpdateMarioPosition()
 
 int WorldMap::GetSelectedLevel()
 {
-    if (isMoving) return 0;
+    if (isMoving)
+        return 0;
 
     switch (currentNode)
     {
-    case 1: return 1;
-    case 2: return 2;
-    case 3: return 3;
-    case 4: return 4;
-    case 6: return 5;
-    default: return 0;
+    case 1:
+        return 1;
+    case 2:
+        return 2;
+    case 3:
+        return 3;
+    case 4:
+        return 4;
+    case 6:
+        return 5;
+    default:
+        return 0;
     }
 }
 
@@ -76,12 +105,24 @@ void WorldMap::SetLevelNode(int level)
     int tNode = 0;
     switch (level)
     {
-    case 1: tNode = 1; break;
-    case 2: tNode = 2; break;
-    case 3: tNode = 3; break;
-    case 4: tNode = 4; break;
-    case 5: tNode = 6; break;
-    default: tNode = 0; break;
+    case 1:
+        tNode = 1;
+        break;
+    case 2:
+        tNode = 2;
+        break;
+    case 3:
+        tNode = 3;
+        break;
+    case 4:
+        tNode = 4;
+        break;
+    case 5:
+        tNode = 6;
+        break;
+    default:
+        tNode = 0;
+        break;
     }
 
     InitiateMove(currentNode, tNode);
@@ -97,8 +138,10 @@ void WorldMap::InitiateMove(int fromNode, int toNode)
     numWaypoints = 0;
     currentWpIndex = 0;
 
-    if (endX > startX) facingDir = 1;
-    else if (endX < startX) facingDir = -1;
+    if (endX > startX)
+        facingDir = 1;
+    else if (endX < startX)
+        facingDir = -1;
 
     // Lộ trình tự động khi thắng Màn 4 -> Chạy qua Ô tạm 2 -> Lên Màn 5
     if (fromNode == 4 && toNode == 6)
@@ -107,9 +150,12 @@ void WorldMap::InitiateMove(int fromNode, int toNode)
         float node5X = 541.0f;
         float node5Y = 73.0f;
 
-        wpX[0] = startX;  wpY[0] = pathY;  // Chặng 0: Từ Level 4 xuống đường mòn
-        wpX[1] = node5X;  wpY[1] = node5Y;  // Chặng 1: Chạy bộ ngang qua Ô tạm 2
-        wpX[2] = endX;    wpY[2] = endY;    // Chặng 2: Từ Ô tạm 2 nhảy thẳng lên Level 5
+        wpX[0] = startX;
+        wpY[0] = pathY; // Chặng 0: Từ Level 4 xuống đường mòn
+        wpX[1] = node5X;
+        wpY[1] = node5Y; // Chặng 1: Chạy bộ ngang qua Ô tạm 2
+        wpX[2] = endX;
+        wpY[2] = endY; // Chặng 2: Từ Ô tạm 2 nhảy thẳng lên Level 5
 
         numWaypoints = 3;
     }
@@ -117,9 +163,12 @@ void WorldMap::InitiateMove(int fromNode, int toNode)
     {
         float pathY = 73.0f;
 
-        wpX[0] = startX; wpY[0] = pathY;
-        wpX[1] = endX;   wpY[1] = pathY;
-        wpX[2] = endX;   wpY[2] = endY;
+        wpX[0] = startX;
+        wpY[0] = pathY;
+        wpX[1] = endX;
+        wpY[1] = pathY;
+        wpX[2] = endX;
+        wpY[2] = endY;
 
         numWaypoints = 3;
     }
@@ -140,22 +189,28 @@ void WorldMap::InitiateMove(int fromNode, int toNode)
 bool WorldMap::IsNodeLocked(int node)
 {
     // Debug mode: tất cả node đều mở
-    if (GameManager::GetInstance()->IsDebugMode()) return false;
+    if (GameManager::GetInstance()->IsDebugMode())
+        return false;
 
     // Node 0 (ô đứng ban đầu) và Node 1 (Level 1) luôn mở
-    if (node <= 1) return false;
+    if (node <= 1)
+        return false;
 
     // Node 2 (Level 2): cần clear Level 1
-    if (node == 2) return !GameManager::GetInstance()->IsLevelCleared(1);
+    if (node == 2)
+        return !GameManager::GetInstance()->IsLevelCleared(1);
 
     // Node 3 (Level 3): cần clear Level 2
-    if (node == 3) return !GameManager::GetInstance()->IsLevelCleared(2);
+    if (node == 3)
+        return !GameManager::GetInstance()->IsLevelCleared(2);
 
     // Node 4 (Level 4): cần clear Level 3
-    if (node == 4) return !GameManager::GetInstance()->IsLevelCleared(3);
+    if (node == 4)
+        return !GameManager::GetInstance()->IsLevelCleared(3);
 
     // Node 5 (Ô tạm 2) và Node 6 (Level 5): cần clear Level 4
-    if (node == 5 || node == 6) return !GameManager::GetInstance()->IsLevelCleared(4);
+    if (node == 5 || node == 6)
+        return !GameManager::GetInstance()->IsLevelCleared(4);
 
     return false;
 }
@@ -227,67 +282,78 @@ void WorldMap::Update(DWORD dt)
             isEnterPressed = true;
         }
     }
-    else isEnterPressed = false;
+    else
+        isEnterPressed = false;
 
     static bool isRightPressed = false;
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
     {
-        if (!isRightPressed && currentNode >= 0 && currentNode <= 4) {
+        if (!isRightPressed && currentNode >= 0 && currentNode <= 4)
+        {
             int nextNode = currentNode + 1;
-            if (!IsNodeLocked(nextNode)) {
+            if (!IsNodeLocked(nextNode))
+            {
                 InitiateMove(currentNode, nextNode);
             }
             isRightPressed = true;
         }
     }
-    else isRightPressed = false;
+    else
+        isRightPressed = false;
 
     static bool isLeftPressed = false;
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)
     {
-        if (!isLeftPressed && currentNode >= 1 && currentNode <= 5) {
+        if (!isLeftPressed && currentNode >= 1 && currentNode <= 5)
+        {
             InitiateMove(currentNode, currentNode - 1);
             isLeftPressed = true;
         }
     }
-    else isLeftPressed = false;
+    else
+        isLeftPressed = false;
 
     static bool isUpPressed = false;
     if (GetAsyncKeyState(VK_UP) & 0x8000)
     {
-        if (!isUpPressed && currentNode == 5) {
-            if (!IsNodeLocked(6)) {
+        if (!isUpPressed && currentNode == 5)
+        {
+            if (!IsNodeLocked(6))
+            {
                 InitiateMove(currentNode, 6);
             }
             isUpPressed = true;
         }
     }
-    else isUpPressed = false;
+    else
+        isUpPressed = false;
 
     static bool isDownPressed = false;
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)
     {
-        if (!isDownPressed && currentNode == 6) {
+        if (!isDownPressed && currentNode == 6)
+        {
             InitiateMove(currentNode, 5);
             isDownPressed = true;
         }
     }
-    else isDownPressed = false;
+    else
+        isDownPressed = false;
 }
 
 void WorldMap::Render()
 {
-    Sprites* sprites = Sprites::GetInstance();
+    Sprites *sprites = Sprites::GetInstance();
 
     if (sprites->Get(8000))
     {
         sprites->Get(8000)->Draw(0.0f, 0.0f);
     }
 
-    Animation* ani = Animations::GetInstance()->Get(currentAnimID);
+    Animation *ani = Animations::GetInstance()->Get(currentAnimID);
     if (ani != NULL)
     {
-        Game* game = Game::GetInstance();
+        Game *game = Game::GetInstance();
         D3DXMATRIX matScale;
         float scaleFactor = 2.0f;
 

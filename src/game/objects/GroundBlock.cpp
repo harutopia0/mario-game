@@ -11,13 +11,14 @@ GroundBlock::GroundBlock(float x, float y, int animationId, float customWidth)
 
 void GroundBlock::Render()
 {
-    Animation* ani = Animations::GetInstance()->Get(animationId);
-    if (ani != NULL) {
+    Animation *ani = Animations::GetInstance()->Get(animationId);
+    if (ani != NULL)
+    {
         ani->Render(x, y);
     }
 }
 
-void GroundBlock::GetBoundingBox(float& left, float& top, float& right, float& bottom)
+void GroundBlock::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
     left = x;
     top = y;

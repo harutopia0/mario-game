@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
-#include <algorithm>
 #include "engine/core/GameObject.h"
+#include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -9,10 +9,10 @@ class GameObject;
 
 struct CollisionEvent
 {
-    GameObject* obj;
+    GameObject *obj;
     float t, nx, ny;
 
-    CollisionEvent(float t, float nx, float ny, GameObject* obj)
+    CollisionEvent(float t, float nx, float ny, GameObject *obj)
     {
         this->t = t;
         this->nx = nx;
@@ -21,24 +21,24 @@ struct CollisionEvent
     }
 };
 
-typedef CollisionEvent* LPCOLLISIONEVENT;
+typedef CollisionEvent *LPCOLLISIONEVENT;
 
 class Collision
 {
-private:
-    static Collision* __instance;
+  private:
+    static Collision *__instance;
 
-public:
-    static Collision* GetInstance();
+  public:
+    static Collision *GetInstance();
 
     void SweptAABB(
         float ml, float mt, float mr, float mb,
         float dx, float dy,
         float sl, float st, float sr, float sb,
-        float& t, float& nx, float& ny);
+        float &t, float &nx, float &ny);
     void Scan(
-        GameObject* objSrc,
+        GameObject *objSrc,
         float dx, float dy,
-        vector<GameObject*>* coObjects,
-        vector<LPCOLLISIONEVENT>& coEvents);
+        vector<GameObject *> *coObjects,
+        vector<LPCOLLISIONEVENT> &coEvents);
 };

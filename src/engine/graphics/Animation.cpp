@@ -11,10 +11,11 @@ Animation::Animation(int defaultTime)
 void Animation::Add(int spriteId, DWORD time)
 {
     int t = time;
-    if (time == 0) t = this->defaultTime;
+    if (time == 0)
+        t = this->defaultTime;
 
-    Sprite* sprite = Sprites::GetInstance()->Get(spriteId);
-    AnimationFrame* frame = new AnimationFrame(sprite, t);
+    Sprite *sprite = Sprites::GetInstance()->Get(spriteId);
+    AnimationFrame *frame = new AnimationFrame(sprite, t);
     frames.push_back(frame);
 }
 
@@ -33,7 +34,8 @@ void Animation::Render(float x, float y)
         {
             currentFrame++;
             lastFrameTime = now;
-            if (currentFrame == frames.size()) currentFrame = 0;
+            if (currentFrame == frames.size())
+                currentFrame = 0;
         }
     }
 
@@ -55,7 +57,8 @@ void Animation::Render(float x, float y, int nx)
         {
             currentFrame++;
             lastFrameTime = now;
-            if (currentFrame == frames.size()) currentFrame = 0;
+            if (currentFrame == frames.size())
+                currentFrame = 0;
         }
     }
 
@@ -77,7 +80,8 @@ void Animation::Render(float x, float y, int nx, int ny)
         {
             currentFrame++;
             lastFrameTime = now;
-            if (currentFrame == frames.size()) currentFrame = 0;
+            if (currentFrame == frames.size())
+                currentFrame = 0;
         }
     }
 
@@ -99,7 +103,8 @@ void Animation::Render(float x, float y, float angle)
         {
             currentFrame++;
             lastFrameTime = now;
-            if (currentFrame == frames.size()) currentFrame = 0;
+            if (currentFrame == frames.size())
+                currentFrame = 0;
         }
     }
 
@@ -121,11 +126,12 @@ void Animation::RenderScaled(float x, float y, float scaleX, float scaleY)
         {
             currentFrame++;
             lastFrameTime = now;
-            if (currentFrame == frames.size()) currentFrame = 0;
+            if (currentFrame == frames.size())
+                currentFrame = 0;
         }
     }
 
-    Sprite* sprite = frames[currentFrame]->GetSprite();
+    Sprite *sprite = frames[currentFrame]->GetSprite();
     D3DXCOLOR color(1.0f, 1.0f, 1.0f, 1.0f);
     sprite->DrawRotatedScaled(x, y, 0.0f, scaleX, scaleY, color);
 }
@@ -145,7 +151,8 @@ void Animation::Render(float x, float y, D3DXCOLOR color)
         {
             currentFrame++;
             lastFrameTime = now;
-            if (currentFrame == frames.size()) currentFrame = 0;
+            if (currentFrame == frames.size())
+                currentFrame = 0;
         }
     }
 
@@ -167,7 +174,8 @@ void Animation::Render(float x, float y, float drawWidth, float drawHeight, floa
         {
             currentFrame++;
             lastFrameTime = now;
-            if (currentFrame == frames.size()) currentFrame = 0;
+            if (currentFrame == frames.size())
+                currentFrame = 0;
         }
     }
 

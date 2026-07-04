@@ -1,7 +1,7 @@
 #pragma once
-#include <unordered_map>
 #include <d3d10.h>
 #include <d3dx10.h>
+#include <unordered_map>
 
 using namespace std;
 
@@ -10,37 +10,51 @@ using namespace std;
 // ==========================================
 class Texture
 {
-    ID3D10ShaderResourceView* shaderResourceView;
+    ID3D10ShaderResourceView *shaderResourceView;
     int width;
     int height;
 
-public:
-    Texture(ID3D10ShaderResourceView* srv, int w, int h) {
+  public:
+    Texture(ID3D10ShaderResourceView *srv, int w, int h)
+    {
         shaderResourceView = srv;
         width = w;
         height = h;
     }
-    ~Texture() { if (shaderResourceView) shaderResourceView->Release(); }
+    ~Texture()
+    {
+        if (shaderResourceView)
+            shaderResourceView->Release();
+    }
 
-    ID3D10ShaderResourceView* GetShaderResourceView() { return shaderResourceView; }
-    int GetWidth() { return width; }
-    int GetHeight() { return height; }
+    ID3D10ShaderResourceView *GetShaderResourceView()
+    {
+        return shaderResourceView;
+    }
+    int GetWidth()
+    {
+        return width;
+    }
+    int GetHeight()
+    {
+        return height;
+    }
 };
 
-typedef Texture* LPDIRECT3DTEXTURE;
+typedef Texture *LPDIRECT3DTEXTURE;
 
 // ==========================================
 // 2. LỚP SỐ NHIỀU: Quản lý kho chứa ảnh
 // ==========================================
 class Textures
 {
-    static Textures* __instance;
+    static Textures *__instance;
     unordered_map<int, LPDIRECT3DTEXTURE> textures;
 
-public:
+  public:
     Textures();
     void Add(int id, LPCWSTR filePath);
     LPDIRECT3DTEXTURE Get(int id);
 
-    static Textures* GetInstance();
+    static Textures *GetInstance();
 };

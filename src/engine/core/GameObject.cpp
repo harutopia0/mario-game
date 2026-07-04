@@ -15,7 +15,7 @@ GameObject::GameObject(float x, float y)
     layer = LAYER_BLOCKS;
 }
 
-void GameObject::Update(DWORD dt, vector<GameObject*>* coObjects)
+void GameObject::Update(DWORD dt, vector<GameObject *> *coObjects)
 {
     x += vx * dt;
     y += vy * dt;
@@ -29,7 +29,7 @@ void GameObject::RenderBoundingBox()
     float width = r - l;
     float height = b - t;
 
-    Sprite* bbox = Sprites::GetInstance()->Get(99999);
+    Sprite *bbox = Sprites::GetInstance()->Get(99999);
     if (bbox != NULL)
     {
         bbox->Draw(l, t, width, height, 0.4f);

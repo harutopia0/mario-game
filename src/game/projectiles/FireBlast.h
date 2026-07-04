@@ -6,10 +6,12 @@
 #define FIREBLAST_WIDTH 71.0f
 #define FIREBLAST_HEIGHT 23.0f
 
-class FireBlast : public Projectile {
-private:
+class FireBlast : public Projectile
+{
+  private:
     float startX;
-public:
+
+  public:
     FireBlast(float x, float y, int direction);
-    void Update(DWORD dt, vector<GameObject*>* coObjects) override;
+    void Update(DWORD dt, vector<GameObject *> *coObjects) override;
 };

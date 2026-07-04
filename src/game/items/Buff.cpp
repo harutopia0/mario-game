@@ -1,7 +1,7 @@
 #include "game/items/Buff.h"
+#include "engine/core/Collision.h"
 #include "engine/graphics/Animations.h"
 #include "game/objects/Block.h"
-#include "engine/core/Collision.h"
 
 #define BUFF_GRAVITY -0.001f
 #define BUFF_WALK_SPEED 0.05f
@@ -36,7 +36,7 @@ void Buff::StartSprouting(float startY)
     isStatic = true; // Trong lúc trồi lên sẽ không check va chạm gạch hay Mario di chuyển ngang
 }
 
-void Buff::GetBoundingBox(float& left, float& top, float& right, float& bottom)
+void Buff::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
     left = x;
     top = y;
@@ -44,9 +44,10 @@ void Buff::GetBoundingBox(float& left, float& top, float& right, float& bottom)
     bottom = y + height;
 }
 
-void Buff::Update(DWORD dt, vector<GameObject*>* coObjects)
+void Buff::Update(DWORD dt, vector<GameObject *> *coObjects)
 {
-    if (isDeleted) return;
+    if (isDeleted)
+        return;
 
     if (isSprouting)
     {
@@ -77,10 +78,11 @@ void Buff::Update(DWORD dt, vector<GameObject*>* coObjects)
 
     if (coObjects != nullptr)
     {
-        for (GameObject* obj : *coObjects)
+        for (GameObject *obj : *coObjects)
         {
-            if (obj == this || obj->IsDeleted()) continue;
-            Block* block = dynamic_cast<Block*>(obj);
+            if (obj == this || obj->IsDeleted())
+                continue;
+            Block *block = dynamic_cast<Block *>(obj);
             if (block && !block->IsOneWay()) // Không va chạm ngang với Platform một chiều
             {
                 float sl, st, sr, sb;
@@ -92,8 +94,7 @@ void Buff::Update(DWORD dt, vector<GameObject*>* coObjects)
                         ml, mt, mr, mb,
                         dx, 0.0f,
                         sl, st, sr, sb,
-                        t, temp_nx, temp_ny
-                    );
+                        t, temp_nx, temp_ny);
                     if (t < min_tx && temp_nx != 0)
                     {
                         min_tx = t;
@@ -119,10 +120,11 @@ void Buff::Update(DWORD dt, vector<GameObject*>* coObjects)
 
     if (coObjects != nullptr)
     {
-        for (GameObject* obj : *coObjects)
+        for (GameObject *obj : *coObjects)
         {
-            if (obj == this || obj->IsDeleted()) continue;
-            Block* block = dynamic_cast<Block*>(obj);
+            if (obj == this || obj->IsDeleted())
+                continue;
+            Block *block = dynamic_cast<Block *>(obj);
             if (block)
             {
                 float sl, st, sr, sb;
@@ -134,8 +136,7 @@ void Buff::Update(DWORD dt, vector<GameObject*>* coObjects)
                         ml, mt, mr, mb,
                         0.0f, dy,
                         sl, st, sr, sb,
-                        t, temp_nx, temp_ny
-                    );
+                        t, temp_nx, temp_ny);
                     if (t < min_ty && temp_ny != 0)
                     {
                         min_ty = t;
@@ -161,7 +162,7 @@ void Buff::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 void Buff::Render()
 {
-    Animation* ani = Animations::GetInstance()->Get(animationId);
+    Animation *ani = Animations::GetInstance()->Get(animationId);
 
     if (ani != NULL)
     {

@@ -1,34 +1,47 @@
 #pragma once
+#include "engine/graphics/Sprite.h"
 #include <Windows.h>
 #include <vector>
-#include "engine/graphics/Sprite.h"
 
 class AnimationFrame
 {
-private:
-    Sprite* sprite;
+  private:
+    Sprite *sprite;
     DWORD time;
 
-public:
-    AnimationFrame(Sprite* sprite, int time) { this->sprite = sprite; this->time = time; }
-    ~AnimationFrame() {}
-    DWORD GetTime() { return time; }
-    Sprite* GetSprite() { return sprite; }
+  public:
+    AnimationFrame(Sprite *sprite, int time)
+    {
+        this->sprite = sprite;
+        this->time = time;
+    }
+    ~AnimationFrame()
+    {
+    }
+    DWORD GetTime()
+    {
+        return time;
+    }
+    Sprite *GetSprite()
+    {
+        return sprite;
+    }
 };
 
 class Animation
 {
-private:
+  private:
     ULONGLONG lastFrameTime;
     int defaultTime;
     int currentFrame;
-    std::vector<AnimationFrame*> frames;
+    std::vector<AnimationFrame *> frames;
 
-public:
+  public:
     Animation(int defaultTime = 100);
     ~Animation()
     {
-        for (int i = 0; i < frames.size(); i++) delete frames[i];
+        for (int i = 0; i < frames.size(); i++)
+            delete frames[i];
         frames.clear();
     }
     void Add(int spriteId, DWORD time = 0);

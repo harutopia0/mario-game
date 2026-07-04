@@ -1,11 +1,11 @@
 #pragma once
+#include "engine/graphics/Sprites.h"
 #include <Windows.h>
 #include <math.h>
-#include "engine/graphics/Sprites.h"
 
 class Intro
 {
-private:
+  private:
     bool isDone;
 
     float curtainY;
@@ -21,13 +21,19 @@ private:
     DWORD timerNum3;
     int stateNum3;
 
-public:
+  public:
     Intro();
     void LoadSprites();
     void Update(DWORD dt);
     void Render();
     void OnKeyDown(int KeyCode);
     void OnKeyUp(int KeyCode);
-    bool IsDone() { return isDone; }
-    int GetSelectedOption() { return 1; } // Mặc định trả về 1 (Game Start) cho các hệ thống khác nếu cần
+    bool IsDone()
+    {
+        return isDone;
+    }
+    int GetSelectedOption()
+    {
+        return 1;
+    } // Mặc định trả về 1 (Game Start) cho các hệ thống khác nếu cần
 };

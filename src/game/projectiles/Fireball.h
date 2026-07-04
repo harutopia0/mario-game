@@ -10,11 +10,13 @@
 #define FIREBALL_STATE_NORMAL 1
 #define FIREBALL_STATE_EXPLODING 2
 
-class Fireball : public Projectile {
+class Fireball : public Projectile
+{
     int state;
     DWORD explodeStart;
-public:
+
+  public:
     Fireball(float x, float y, int direction);
-    void Update(DWORD dt, vector<GameObject*>* coObjects) override;
+    void Update(DWORD dt, vector<GameObject *> *coObjects) override;
     void Render() override;
 };

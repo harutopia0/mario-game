@@ -10,7 +10,8 @@
 #define MAX_CELL_ROW 50
 #define MAX_CELL_COL 200
 
-enum GameState {
+enum GameState
+{
     STATE_INTRO,
     STATE_WORLD_MAP,
     STATE_PLAYING
@@ -19,12 +20,13 @@ enum GameState {
 class Intro;
 class WorldMap;
 
-class SceneManager {
-private:
-    static SceneManager* instance;
+class SceneManager
+{
+  private:
+    static SceneManager *instance;
     GameState currentState;
-    Intro* introScene;
-    WorldMap* worldMapScene;
+    Intro *introScene;
+    WorldMap *worldMapScene;
 
     // Quản lý đếm ngược thời gian chết tập trung
     bool isMarioDying;
@@ -55,13 +57,13 @@ private:
     float wsAngle[5];
     float wsLength[5];
     float wsThickness[5];
-    
+
     // UI components cho màn hình map
     LPD3DX10SPRITE spriteHandler;
-    
+
     // Input Handling
     void KeyState(BYTE *states);
-    
+
     void InitializeScene();
 
     // Cơ chế Roulette Thẻ bài khi thắng màn
@@ -74,30 +76,49 @@ private:
     float hitStopTimer;
 
     SceneManager();
-public:
+
+  public:
     void OnKeyDown(int KeyCode);
     void OnKeyUp(int KeyCode);
-    static SceneManager* GetInstance();
+    static SceneManager *GetInstance();
     void Init();
     void Update(DWORD dt);
     void Render();
     void Cleanup();
 
-    void StartHitStop(float durationMs) { hitStopTimer = durationMs; }
-    bool IsHitStopped() const { return hitStopTimer > 0.0f; }
+    void StartHitStop(float durationMs)
+    {
+        hitStopTimer = durationMs;
+    }
+    bool IsHitStopped() const
+    {
+        return hitStopTimer > 0.0f;
+    }
 
     void ProcessMarioCastSkill(int cardType, int slot);
-    bool IsCastingSkill() const { return isMarioCastingSkill; }
+    bool IsCastingSkill() const
+    {
+        return isMarioCastingSkill;
+    }
 
     void ProcessScissorsAttack();
-    bool IsScissorsAttacking() const { return isMarioScissorsAttacking; }
+    bool IsScissorsAttacking() const
+    {
+        return isMarioScissorsAttacking;
+    }
     void RenderScissorsAttackOverlay();
 
-    GameState GetState() const { return currentState; }
+    GameState GetState() const
+    {
+        return currentState;
+    }
     void SwitchTo(GameState newState);
     void ProcessMarioDeath(); // Hàm đếm ngược 5s khi Mario chết
     void ProcessLevelClear(); // Hàm xử lý qua màn thường 6s
     void ProcessGameWin();    // Hàm xử lý thắng game màn cuối 6s
     void ProcessTransform();  // Hàm tạm dừng khi Mario biến lớn
-    bool IsTransforming() const { return isMarioTransforming; }
+    bool IsTransforming() const
+    {
+        return isMarioTransforming;
+    }
 };

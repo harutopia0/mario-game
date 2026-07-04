@@ -1,17 +1,20 @@
 #include "game/objects/Breakable.h"
 #include "engine/graphics/Animations.h"
-#include "game/scenes/Map.h"
 #include "game/effects/BrickDebrisEffect.h"
 #include "game/scenes/GameManager.h"
+#include "game/scenes/Map.h"
 
 Breakable::Breakable(float x, float y, int animationId) : DynamicBlock(x, y)
 {
     this->animationId = animationId;
-    Animation* anim = Animations::GetInstance()->Get(animationId);
-    if (anim != NULL) {
+    Animation *anim = Animations::GetInstance()->Get(animationId);
+    if (anim != NULL)
+    {
         this->width = anim->GetWidth();
         this->height = anim->GetHeight();
-    } else {
+    }
+    else
+    {
         this->width = 16;
         this->height = 16;
     }
@@ -31,41 +34,63 @@ void Breakable::SetRenderParams(bool top, bool floating, int aTop)
 
 void Breakable::UpdateRenderLogic()
 {
-    if (!isDynamicRender) return;
+    if (!isDynamicRender)
+        return;
 
     bool hasLeft = (leftNeighbor != nullptr);
     bool hasRight = (rightNeighbor != nullptr);
 
-    if (animTop == 211) { // Grass Top
-        if (isTop) {
-            if (isFloating) {
-                if (!hasLeft && !hasRight) animationId = 238; // Floating Isolated
-                else if (!hasLeft) animationId = 236; // Floating Left
-                else if (!hasRight) animationId = 237; // Floating Right
-                else animationId = 235; // Floating Center
-            } else {
-                if (!hasLeft && !hasRight) animationId = 228;
-                else if (!hasLeft) animationId = 226;
-                else if (!hasRight) animationId = 227;
-                else animationId = 225;
+    if (animTop == 211)
+    { // Grass Top
+        if (isTop)
+        {
+            if (isFloating)
+            {
+                if (!hasLeft && !hasRight)
+                    animationId = 238; // Floating Isolated
+                else if (!hasLeft)
+                    animationId = 236; // Floating Left
+                else if (!hasRight)
+                    animationId = 237; // Floating Right
+                else
+                    animationId = 235; // Floating Center
             }
-        } else {
-            if (!hasLeft && !hasRight) animationId = 232;
-            else if (!hasLeft) animationId = 230;
-            else if (!hasRight) animationId = 231;
-            else animationId = 229;
+            else
+            {
+                if (!hasLeft && !hasRight)
+                    animationId = 228;
+                else if (!hasLeft)
+                    animationId = 226;
+                else if (!hasRight)
+                    animationId = 227;
+                else
+                    animationId = 225;
+            }
+        }
+        else
+        {
+            if (!hasLeft && !hasRight)
+                animationId = 232;
+            else if (!hasLeft)
+                animationId = 230;
+            else if (!hasRight)
+                animationId = 231;
+            else
+                animationId = 229;
         }
     }
 }
 
-void Breakable::OnNeighborBroken(Breakable* neighbor)
+void Breakable::OnNeighborBroken(Breakable *neighbor)
 {
-    if (neighbor == leftNeighbor) leftNeighbor = nullptr;
-    if (neighbor == rightNeighbor) rightNeighbor = nullptr;
+    if (neighbor == leftNeighbor)
+        leftNeighbor = nullptr;
+    if (neighbor == rightNeighbor)
+        rightNeighbor = nullptr;
     UpdateRenderLogic();
 }
 
-void Breakable::GetBoundingBox(float& left, float& top, float& right, float& bottom)
+void Breakable::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
     left = x;
     top = y;
@@ -75,23 +100,27 @@ void Breakable::GetBoundingBox(float& left, float& top, float& right, float& bot
 
 void Breakable::Render()
 {
-    Animation* ani = Animations::GetInstance()->Get(animationId);
-    if (ani != NULL) ani->Render(x, y);
+    Animation *ani = Animations::GetInstance()->Get(animationId);
+    if (ani != NULL)
+        ani->Render(x, y);
 }
 
 void Breakable::Break(bool dropItem)
 {
-    if (isDeleted) return;
+    if (isDeleted)
+        return;
 
     // Spawn VFX
-    BrickDebrisEffect* debris = new BrickDebrisEffect(x, y, animationId);
+    BrickDebrisEffect *debris = new BrickDebrisEffect(x, y, animationId);
     Map::GetInstance()->GetObjects().push_back(debris);
     Map::GetInstance()->AddObjectToGrid(debris);
 
     this->isDeleted = true;
-    
-    if (leftNeighbor) leftNeighbor->OnNeighborBroken(this);
-    if (rightNeighbor) rightNeighbor->OnNeighborBroken(this);
+
+    if (leftNeighbor)
+        leftNeighbor->OnNeighborBroken(this);
+    if (rightNeighbor)
+        rightNeighbor->OnNeighborBroken(this);
     this->Delete();
 
     GameManager::GetInstance()->AddScore(10);

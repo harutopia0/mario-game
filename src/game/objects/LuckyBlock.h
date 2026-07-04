@@ -3,7 +3,7 @@
 
 class LuckyBlock : public DynamicBlock
 {
-private:
+  private:
     float width;
     float height;
     int activeAnimationId;
@@ -11,16 +11,22 @@ private:
     bool isHit;
     void SpawnItem();
 
-public:
+  public:
     LuckyBlock(float x, float y, int activeAnimationId, int usedAnimationId);
 
-    void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
+    void GetBoundingBox(float &left, float &top, float &right, float &bottom) override;
     void Render() override;
 
     void Hit();
-    bool IsHit() { return isHit; }
+    bool IsHit()
+    {
+        return isHit;
+    }
 
-    bool IsOneWay() const override { return isHit; }
+    bool IsOneWay() const override
+    {
+        return isHit;
+    }
 
     virtual void Break(bool dropItem = true);
 };

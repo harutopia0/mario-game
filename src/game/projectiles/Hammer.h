@@ -10,13 +10,14 @@
 
 #define HAMMER_ANI 11000
 
-class Hammer : public Projectile {
-private:
+class Hammer : public Projectile
+{
+  private:
     float vy;
 
-public:
+  public:
     Hammer(float x, float y, int direction);
-    virtual void Update(DWORD dt, vector<GameObject*>* coObjects) override;
+    virtual void Update(DWORD dt, vector<GameObject *> *coObjects) override;
     virtual void Render() override;
-    virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
+    virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom) override;
 };

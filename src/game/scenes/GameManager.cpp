@@ -1,8 +1,8 @@
 #include "game/scenes/GameManager.h"
 
-GameManager* GameManager::__instance = nullptr;
+GameManager *GameManager::__instance = nullptr;
 
-GameManager* GameManager::GetInstance()
+GameManager *GameManager::GetInstance()
 {
     if (__instance == nullptr)
     {
@@ -12,8 +12,10 @@ GameManager* GameManager::GetInstance()
         __instance->isGameWin = false;
         __instance->isLevelClear = false;
         __instance->isDebugMode = false;
-        for (int i = 0; i < 6; i++) __instance->clearedLevels[i] = false;
-        for (int i = 0; i < 3; i++) __instance->holdingCards[i] = 0;
+        for (int i = 0; i < 6; i++)
+            __instance->clearedLevels[i] = false;
+        for (int i = 0; i < 3; i++)
+            __instance->holdingCards[i] = 0;
 
         __instance->score = 0;
         __instance->kills = 0;
@@ -39,7 +41,8 @@ void GameManager::DestroyInstance()
 
 void GameManager::ResetClearedLevels()
 {
-    for (int i = 0; i < 6; i++) clearedLevels[i] = false;
+    for (int i = 0; i < 6; i++)
+        clearedLevels[i] = false;
 }
 
 bool GameManager::AddCard(int cardType)
@@ -57,12 +60,14 @@ bool GameManager::AddCard(int cardType)
 
 void GameManager::ClearHoldingCards()
 {
-    for (int i = 0; i < 3; i++) holdingCards[i] = 0;
+    for (int i = 0; i < 3; i++)
+        holdingCards[i] = 0;
 }
 
 int GameManager::UseCard(int slot)
 {
-    if (slot < 0 || slot > 2) return 0;
+    if (slot < 0 || slot > 2)
+        return 0;
     int cardType = holdingCards[slot];
     holdingCards[slot] = 0;
     return cardType;
@@ -76,7 +81,8 @@ void GameManager::ResetTime()
 
 void GameManager::UpdateTime(DWORD dt)
 {
-    if (isLevelClear || isGameWin) return;
+    if (isLevelClear || isGameWin)
+        return;
 
     if (time > 0)
     {
@@ -88,7 +94,6 @@ void GameManager::UpdateTime(DWORD dt)
         }
     }
 }
-
 
 void GameManager::ResetForNewLevel()
 {

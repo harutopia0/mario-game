@@ -1,14 +1,14 @@
-#pragma once
+﻿#pragma once
 
 #include <Windows.h>
 
 /*
-	Abstract class to define keyboard event handlers
+    Abstract class to define keyboard event handlers
 */
 class CKeyEventHandler
 {
-public:
-	virtual void KeyState(BYTE* state) = 0;
+  public:
+    virtual void KeyState(BYTE *state) = 0;
 };
 
-typedef CKeyEventHandler* LPKEYEVENTHANDLER;
+typedef CKeyEventHandler *LPKEYEVENTHANDLER;

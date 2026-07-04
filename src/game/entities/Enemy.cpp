@@ -1,19 +1,22 @@
 #include "game/entities/Enemy.h"
-#include "game/objects/Block.h"
-#include "game/objects/Platform.h"
 #include "engine/core/Collision.h"
 #include "engine/graphics/Animations.h"
+#include "game/objects/Block.h"
+#include "game/objects/Platform.h"
 
 Enemy::Enemy(float x, float y, int animationId)
     : GameObject(x, y)
 {
     this->animationId = animationId;
     this->layer = LAYER_ENEMIES;
-    Animation* anim = Animations::GetInstance()->Get(animationId);
-    if (anim != NULL) {
+    Animation *anim = Animations::GetInstance()->Get(animationId);
+    if (anim != NULL)
+    {
         this->width = anim->GetWidth();
         this->height = anim->GetHeight();
-    } else {
+    }
+    else
+    {
         this->width = 16;
         this->height = 16;
     }
@@ -25,7 +28,7 @@ Enemy::Enemy(float x, float y, int animationId)
     nx = -1; // Mặc định hướng sang trái
 }
 
-void Enemy::GetBoundingBox(float& left, float& top, float& right, float& bottom)
+void Enemy::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
     left = x;
     top = y;
@@ -33,10 +36,12 @@ void Enemy::GetBoundingBox(float& left, float& top, float& right, float& bottom)
     bottom = y + height;
 }
 
-void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
+void Enemy::Update(DWORD dt, vector<GameObject *> *coObjects)
 {
-    if (died) return;
-    if (isFreezed) {
+    if (died)
+        return;
+    if (isFreezed)
+    {
         vx = 0.0f;
         vy = 0.0f;
         return;
@@ -55,10 +60,11 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     float min_tx = 1.0f;
     float nx_col = 0;
 
-    for (GameObject* obj : *coObjects)
+    for (GameObject *obj : *coObjects)
     {
-        if (obj == this || obj->IsDeleted()) continue;
-        Block* block = dynamic_cast<Block*>(obj);
+        if (obj == this || obj->IsDeleted())
+            continue;
+        Block *block = dynamic_cast<Block *>(obj);
         if (block && !block->IsOneWay()) // Không va chạm ngang với Platform
         {
             float sl, st, sr, sb;
@@ -70,8 +76,7 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
                     ml, mt, mr, mb,
                     dx, 0.0f,
                     sl, st, sr, sb,
-                    t, temp_nx, temp_ny
-                );
+                    t, temp_nx, temp_ny);
                 if (t < min_tx && temp_nx != 0)
                 {
                     min_tx = t;
@@ -95,10 +100,11 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     float min_ty = 1.0f;
     float ny_col = 0;
 
-    for (GameObject* obj : *coObjects)
+    for (GameObject *obj : *coObjects)
     {
-        if (obj == this || obj->IsDeleted()) continue;
-        Block* block = dynamic_cast<Block*>(obj);
+        if (obj == this || obj->IsDeleted())
+            continue;
+        Block *block = dynamic_cast<Block *>(obj);
         if (block)
         {
             float sl, st, sr, sb;
@@ -110,8 +116,7 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
                     ml, mt, mr, mb,
                     0.0f, dy,
                     sl, st, sr, sb,
-                    t, temp_nx, temp_ny
-                );
+                    t, temp_nx, temp_ny);
                 if (t < min_ty && temp_ny != 0)
                 {
                     min_ty = t;
@@ -126,11 +131,13 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     if (ny_col != 0)
     {
         vy = 0;
-        if (ny_col == 1) isOnGround = true;
+        if (ny_col == 1)
+            isOnGround = true;
     }
 
     // Xử lý rớt khỏi map
-    if (y < 0.0f) {
+    if (y < 0.0f)
+    {
         this->died = true;
         this->isDeleted = true;
         return;
@@ -140,22 +147,23 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
     if (isOnGround && !CanFallOffLedge())
     {
         bool hasGroundAhead = false;
-        
+
         // Tạo một bounding box nhỏ (feeler) phía trước và ngay dưới chân enemy
         float feelerL = (vx > 0) ? (x + width) : (x - 2.0f);
         float feelerR = feelerL + 2.0f;
         float feelerT = y - 2.0f; // Ngay dưới chân (y hướng lên nên trừ đi)
         float feelerB = y;
 
-        for (GameObject* obj : *coObjects)
+        for (GameObject *obj : *coObjects)
         {
-            if (obj == this || obj->IsDeleted()) continue;
-            Block* block = dynamic_cast<Block*>(obj);
+            if (obj == this || obj->IsDeleted())
+                continue;
+            Block *block = dynamic_cast<Block *>(obj);
             if (block)
             {
                 float sl, st, sr, sb;
                 block->GetBoundingBox(sl, st, sr, sb);
-                
+
                 // Kiểm tra xem feeler có chạm vào block nào không
                 if (feelerL < sr && feelerR > sl && feelerT < sb && feelerB > st)
                 {
@@ -175,11 +183,12 @@ void Enemy::Update(DWORD dt, vector<GameObject*>* coObjects)
 
 void Enemy::Render()
 {
-    if (died) return;
+    if (died)
+        return;
     Animations::GetInstance()->Get(animationId)->Render(x, y);
 }
 
-void Enemy::OnCollision(GameObject* obj)
+void Enemy::OnCollision(GameObject *obj)
 {
 }
 

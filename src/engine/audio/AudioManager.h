@@ -2,13 +2,14 @@
 #define AUDIO_MANAGER_H
 
 #include "engine/audio/miniaudio.h"
-#include <string>
 #include <map>
+#include <string>
 
-class AudioManager {
-public:
+class AudioManager
+{
+  public:
     // Lấy instance duy nhất của AudioManager (Singleton)
-    static AudioManager* GetInstance();
+    static AudioManager *GetInstance();
 
     // Dừng nhạc và giải phóng hệ thống engine âm thanh
     void CleanUp();
@@ -37,12 +38,12 @@ public:
     // Dừng và giải phóng nhạc nền đang phát hiện tại
     void StopMusic();
 
-private:
+  private:
     // Khởi tạo engine âm thanh
     AudioManager();
     ~AudioManager();
 
-    static AudioManager* s_Instance;
+    static AudioManager *s_Instance;
 
     ma_engine m_Engine;
     ma_sound m_CurrentMusic; // Dùng riêng để điều khiển nhạc nền

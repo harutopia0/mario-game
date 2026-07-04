@@ -20,27 +20,28 @@
 #define HAMMERBRO_ANI_THROW_LEFT 11003
 #define HAMMERBRO_ANI_THROW_RIGHT 11004
 
-class HammerBro : public Enemy {
-private:
+class HammerBro : public Enemy
+{
+  private:
     float startX;
     float startY;
-    
+
     int state;
     bool isThrowing;
     ULONGLONG throwStart;
     ULONGLONG throwCooldownStart;
     ULONGLONG flatTimeStart;
-    
+
     ULONGLONG jumpCooldownStart;
     bool isOnGround;
     bool isDroppingDown;
 
     float currentWalkingDirection; // Để lưu hướng di chuyển thực tế độc lập với hướng quay mặt
 
-public:
+  public:
     HammerBro(float x, float y);
-    virtual void Update(DWORD dt, vector<GameObject*>* coObjects) override;
+    virtual void Update(DWORD dt, vector<GameObject *> *coObjects) override;
     virtual void Render() override;
-    virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom) override;
-    virtual void OnStomped(Mario* mario) override;
+    virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom) override;
+    virtual void OnStomped(Mario *mario) override;
 };

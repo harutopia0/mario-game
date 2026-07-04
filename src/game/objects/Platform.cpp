@@ -4,17 +4,20 @@
 Platform::Platform(float x, float y, int animationId) : StaticBlock(x, y)
 {
     this->animationId = animationId;
-    Animation* anim = Animations::GetInstance()->Get(animationId);
-    if (anim != NULL) {
+    Animation *anim = Animations::GetInstance()->Get(animationId);
+    if (anim != NULL)
+    {
         this->width = anim->GetWidth();
         this->height = anim->GetHeight();
-    } else {
+    }
+    else
+    {
         this->width = 16;
         this->height = 16;
     }
 }
 
-void Platform::GetBoundingBox(float& left, float& top, float& right, float& bottom)
+void Platform::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
     left = x;
     top = y;
@@ -24,6 +27,7 @@ void Platform::GetBoundingBox(float& left, float& top, float& right, float& bott
 
 void Platform::Render()
 {
-    Animation* ani = Animations::GetInstance()->Get(this->animationId);
-    if (ani != NULL) ani->Render(x, y);
+    Animation *ani = Animations::GetInstance()->Get(this->animationId);
+    if (ani != NULL)
+        ani->Render(x, y);
 }

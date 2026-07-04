@@ -1,11 +1,12 @@
 #include "game/projectiles/Fireball.h"
-#include "engine/graphics/Animations.h"
 #include "engine/core/Collision.h"
-#include "game/objects/Platform.h"
-#include "game/objects/Block.h"
+#include "engine/graphics/Animations.h"
 #include "game/entities/Enemy.h"
+#include "game/objects/Block.h"
+#include "game/objects/Platform.h"
 
-Fireball::Fireball(float x, float y, int direction) : Projectile(x, y, direction) {
+Fireball::Fireball(float x, float y, int direction) : Projectile(x, y, direction)
+{
     width = FIREBALL_WIDTH;
     height = FIREBALL_HEIGHT;
     animationId = 600; // Fireball animation
@@ -15,13 +16,17 @@ Fireball::Fireball(float x, float y, int direction) : Projectile(x, y, direction
     explodeStart = 0;
 }
 
-void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
-    if (isDeleted) return;
+void Fireball::Update(DWORD dt, vector<GameObject *> *coObjects)
+{
+    if (isDeleted)
+        return;
 
-    if (state == FIREBALL_STATE_EXPLODING) {
+    if (state == FIREBALL_STATE_EXPLODING)
+    {
         vx = 0;
         vy = 0;
-        if (GetTickCount64() - explodeStart > 150) {
+        if (GetTickCount64() - explodeStart > 150)
+        {
             this->Delete();
         }
         return;
@@ -38,20 +43,26 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
     float ml, mt, mr, mb;
     GetBoundingBox(ml, mt, mr, mb);
 
-    for (UINT i = 0; i < coObjects->size(); i++) {
-        GameObject* e = coObjects->at(i);
-        if (e == this || e->IsDeleted()) continue;
+    for (UINT i = 0; i < coObjects->size(); i++)
+    {
+        GameObject *e = coObjects->at(i);
+        if (e == this || e->IsDeleted())
+            continue;
 
         float sl, st, sr, sb;
         e->GetBoundingBox(sl, st, sr, sb);
 
-        if (mb > st && mt < sb) {
+        if (mb > st && mt < sb)
+        {
             float t, temp_nx, temp_ny;
             Collision::GetInstance()->SweptAABB(ml, mt, mr, mb, dx, 0.0f, sl, st, sr, sb, t, temp_nx, temp_ny);
 
-            if (t < 1.0f && temp_nx != 0) {
-                if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
-                    if (!enemy->IsDied()) {
+            if (t < 1.0f && temp_nx != 0)
+            {
+                if (Enemy *enemy = dynamic_cast<Enemy *>(e))
+                {
+                    if (!enemy->IsDied())
+                    {
                         enemy->SetDied(true);
                         x += t * dx; // Cập nhật vị trí tới sát quái
                         state = FIREBALL_STATE_EXPLODING;
@@ -61,8 +72,10 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                         return;
                     }
                 }
-                else if (dynamic_cast<Block*>(e) && !e->IsOneWay()) {
-                    if (t < min_tx) {
+                else if (dynamic_cast<Block *>(e) && !e->IsOneWay())
+                {
+                    if (t < min_tx)
+                    {
                         min_tx = t;
                         nx_col = temp_nx;
                     }
@@ -72,7 +85,8 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
     }
 
     x += min_tx * dx + nx_col * 0.01f;
-    if (nx_col != 0) {
+    if (nx_col != 0)
+    {
         state = FIREBALL_STATE_EXPLODING;
         layer = LAYER_EFFECTS;
         explodeStart = GetTickCount64();
@@ -85,20 +99,26 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
     float min_ty = 1.0f;
     float ny_col = 0;
 
-    for (UINT i = 0; i < coObjects->size(); i++) {
-        GameObject* e = coObjects->at(i);
-        if (e == this || e->IsDeleted()) continue;
+    for (UINT i = 0; i < coObjects->size(); i++)
+    {
+        GameObject *e = coObjects->at(i);
+        if (e == this || e->IsDeleted())
+            continue;
 
         float sl, st, sr, sb;
         e->GetBoundingBox(sl, st, sr, sb);
 
-        if (mr > sl && ml < sr) {
+        if (mr > sl && ml < sr)
+        {
             float t, temp_nx, temp_ny;
             Collision::GetInstance()->SweptAABB(ml, mt, mr, mb, 0.0f, dy, sl, st, sr, sb, t, temp_nx, temp_ny);
 
-            if (t < 1.0f && temp_ny != 0) {
-                if (Enemy* enemy = dynamic_cast<Enemy*>(e)) {
-                    if (!enemy->IsDied()) {
+            if (t < 1.0f && temp_ny != 0)
+            {
+                if (Enemy *enemy = dynamic_cast<Enemy *>(e))
+                {
+                    if (!enemy->IsDied())
+                    {
                         enemy->SetDied(true);
                         y += t * dy; // Cập nhật vị trí tới sát quái
                         state = FIREBALL_STATE_EXPLODING;
@@ -108,10 +128,13 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
                         return;
                     }
                 }
-                else if (dynamic_cast<Block*>(e)) {
-                    if (e->IsOneWay() && temp_ny != 1) continue;
+                else if (dynamic_cast<Block *>(e))
+                {
+                    if (e->IsOneWay() && temp_ny != 1)
+                        continue;
 
-                    if (t < min_ty) {
+                    if (t < min_ty)
+                    {
                         min_ty = t;
                         ny_col = temp_ny;
                     }
@@ -122,23 +145,32 @@ void Fireball::Update(DWORD dt, vector<GameObject*>* coObjects) {
 
     y += min_ty * dy + ny_col * 0.01f;
 
-    if (ny_col != 0) {
-        if (ny_col == 1) { // Chạm đất thì nảy lên
+    if (ny_col != 0)
+    {
+        if (ny_col == 1)
+        { // Chạm đất thì nảy lên
             vy = FIREBALL_BOUNCE_SPEED;
-        } else { // Đập đầu lên trần
+        }
+        else
+        { // Đập đầu lên trần
             vy = 0;
         }
     }
 }
 
-void Fireball::Render() {
-    Animation* ani = Animations::GetInstance()->Get(animationId);
-    if (ani != NULL) {
-        if (state == FIREBALL_STATE_EXPLODING) {
+void Fireball::Render()
+{
+    Animation *ani = Animations::GetInstance()->Get(animationId);
+    if (ani != NULL)
+    {
+        if (state == FIREBALL_STATE_EXPLODING)
+        {
             float offsetX = (ani->GetWidth() - FIREBALL_WIDTH) / 2.0f;
             float offsetY = (ani->GetHeight() - FIREBALL_HEIGHT) / 2.0f;
             ani->Render(x - offsetX, y - offsetY);
-        } else {
+        }
+        else
+        {
             ani->Render(x, y);
         }
     }
