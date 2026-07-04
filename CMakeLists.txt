@@ -1,6 +1,30 @@
 cmake_minimum_required(VERSION 3.15)
 project(Mario VERSION 1.0 LANGUAGES CXX)
 
+# Automatic NuGet Restore for DirectX SDK packages
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/packages/Microsoft.DXSDK.D3DX.9.29.952.8")
+    message(STATUS "NuGet packages not found. Attempting to restore...")
+    find_program(NUGET_EXE nuget)
+    if(NOT NUGET_EXE)
+        set(NUGET_EXE "${CMAKE_BINARY_DIR}/nuget.exe")
+        if(NOT EXISTS "${NUGET_EXE}")
+            message(STATUS "Downloading nuget.exe...")
+            file(DOWNLOAD "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" "${NUGET_EXE}" SHOW_PROGRESS)
+        endif()
+    endif()
+    message(STATUS "Restoring packages using ${NUGET_EXE}...")
+    execute_process(
+        COMMAND "${NUGET_EXE}" restore "${CMAKE_CURRENT_SOURCE_DIR}/packages.config" -PackagesDirectory "${CMAKE_CURRENT_SOURCE_DIR}/packages"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        RESULT_VARIABLE NUGET_RESTORE_RESULT
+    )
+    if(NOT NUGET_RESTORE_RESULT EQUAL 0)
+        message(FATAL_ERROR "Failed to restore NuGet packages!")
+    else()
+        message(STATUS "NuGet packages restored successfully!")
+    endif()
+endif()
+
 # C++ Standard Configuration
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
