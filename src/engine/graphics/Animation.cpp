@@ -1,0 +1,189 @@
+#include "engine/graphics/Animation.h"
+#include "engine/graphics/Sprites.h"
+
+Animation::Animation(int defaultTime)
+{
+    this->defaultTime = defaultTime;
+    lastFrameTime = -1;
+    currentFrame = -1;
+}
+
+void Animation::Add(int spriteId, DWORD time)
+{
+    int t = time;
+    if (time == 0) t = this->defaultTime;
+
+    Sprite* sprite = Sprites::GetInstance()->Get(spriteId);
+    AnimationFrame* frame = new AnimationFrame(sprite, t);
+    frames.push_back(frame);
+}
+
+void Animation::Render(float x, float y)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y);
+}
+
+void Animation::Render(float x, float y, int nx)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y, nx);
+}
+
+void Animation::Render(float x, float y, int nx, int ny)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y, nx, ny);
+}
+
+void Animation::Render(float x, float y, float angle)
+{
+    DWORD now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y, angle);
+}
+
+void Animation::RenderScaled(float x, float y, float scaleX, float scaleY)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    Sprite* sprite = frames[currentFrame]->GetSprite();
+    D3DXCOLOR color(1.0f, 1.0f, 1.0f, 1.0f);
+    sprite->DrawRotatedScaled(x, y, 0.0f, scaleX, scaleY, color);
+}
+
+void Animation::Render(float x, float y, D3DXCOLOR color)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y, color);
+}
+
+void Animation::Render(float x, float y, float drawWidth, float drawHeight, float alpha)
+{
+    ULONGLONG now = GetTickCount64();
+    if (currentFrame == -1)
+    {
+        currentFrame = 0;
+        lastFrameTime = now;
+    }
+    else
+    {
+        DWORD t = frames[currentFrame]->GetTime();
+        if (now - lastFrameTime > t)
+        {
+            currentFrame++;
+            lastFrameTime = now;
+            if (currentFrame == frames.size()) currentFrame = 0;
+        }
+    }
+
+    frames[currentFrame]->GetSprite()->Draw(x, y, drawWidth, drawHeight, alpha);
+}
+
+int Animation::GetWidth()
+{
+    if (frames.size() > 0)
+        return frames[0]->GetSprite()->GetWidth();
+    return 0;
+}
+
+int Animation::GetHeight()
+{
+    if (frames.size() > 0)
+        return frames[0]->GetSprite()->GetHeight();
+    return 0;
+}
