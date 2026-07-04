@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include "engine/core/debug.h"
+#include "engine/core/Debug.h"
 
 HWND _hwnd = NULL;
 
